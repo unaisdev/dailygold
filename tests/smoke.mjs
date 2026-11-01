@@ -125,7 +125,7 @@ try {
   await bootGame(page, server.url, { seed: 424242 });
   let s = await waitFor(page, (st) => st.inOverworld, { what: 'overworld' });
   check(s.x === START[0] && s.y === START[1], `player starts at ${START} (got ${s.x},${s.y})`);
-  check(redFacing(s.mem) === DIR_SOUTH, 'ORO faces the player from the Champion's spot');
+  check(redFacing(s.mem) === DIR_SOUTH, "ORO faces the player from the Champion's spot");
   check(optionsBattleStyle(s.mem) === STYLE_SET, 'battle style starts as SET');
   await sleep(1500);
   await screenshot(page, `${OUT}/01-start.png`);
@@ -169,6 +169,7 @@ try {
   const red = readParty(s.mem, 'Enemy');
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
   check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "ORO's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
+  check(red.party.filter(Boolean).length === 6 && red.party[0]?.shiny, "ORO's lead Gyarados is present and shiny");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");
   await waitForActionMenu(page);

@@ -732,10 +732,10 @@ index 8a23dfe..e7fa9fe 100644
                                                  0, gDecompressionBuffer);
 diff --git a/src/dailyred.c b/src/dailyred.c
 new file mode 100644
-index 0000000..71c2e2e
+index 0000000..62677cf
 --- /dev/null
 +++ b/src/dailyred.c
-@@ -0,0 +1,232 @@
+@@ -0,0 +1,240 @@
 +#include "global.h"
 +#include "gflib.h"
 +#include "dailyred.h"
@@ -950,7 +950,7 @@ index 0000000..71c2e2e
 +void DailyRed_ApplyBossEVs(struct Pokemon *party, u8 partySize)
 +{
 +    u8 i, stat;
-+    u32 personality, otId;
++    u32 personality, oldOtId, otId;
 +
 +    for (i = 0; i < partySize && i < DAILYRED_BOSS_PARTY_SIZE; i++)
 +    {
@@ -961,10 +961,18 @@ index 0000000..71c2e2e
 +
 +    // OT_ID_RANDOM_NO_SHINY forbids shinies; rewrite Gyarados's OT ID so
 +    // GET_SHINY_VALUE is 0 (always shiny). Lead is always slot 0.
++    //
++    // Substruct data is encrypted with personality ^ otId. SetMonData for
++    // MON_DATA_OT_ID only changes the field and does not re-key, which turns
++    // the mon into a Bad Egg that battle skips (Ampharos leads, 5 Pokemon).
++    // Re-key the encrypted words before updating the OT ID.
 +    if (partySize > 0 && GetMonData(&party[0], MON_DATA_SPECIES) == SPECIES_GYARADOS)
 +    {
 +        personality = GetMonData(&party[0], MON_DATA_PERSONALITY);
++        oldOtId = GetMonData(&party[0], MON_DATA_OT_ID);
 +        otId = (u32)(HIHALF(personality) ^ LOHALF(personality)) << 16;
++        for (i = 0; i < ARRAY_COUNT(party[0].box.secure.raw); i++)
++            party[0].box.secure.raw[i] ^= oldOtId ^ otId;
 +        SetMonData(&party[0], MON_DATA_OT_ID, &otId);
 +    }
 +}
