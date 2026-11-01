@@ -6,8 +6,9 @@
 /pokefirered/
 # scripts/fetch-vendor.sh
 /web/vendor/
-# scripts/build-rom.sh. Build output; don't commit it.
-/web/game/
+# scripts/build-rom.sh. ROM build output; keep sprites under web/game/ tracked.
+/web/game/*.gba
+/web/game/*.gba.gz
 
 # Wrangler's local cache (Cloudflare deploys)
 /.wrangler/

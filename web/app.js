@@ -1,4 +1,4 @@
-// Website controller: the daily title card (RED, your stats, Play), the
+// Website controller: the daily title card (ORO, your stats, Play), the
 // emulator, and the toolbar and touch controls. All game behaviour lives in the
 // ROM; this file starts it with the day's seed, watches for the result, and
 // keeps the stats (see daily.js).
@@ -88,7 +88,7 @@ function renderTitle() {
   ui.play.hidden = Boolean(result);
   ui.played.hidden = !result;
   ui.practiceNote.hidden = !practiceSeed;
-  if (result) ui.playedResult.textContent = result === 'won' ? 'You beat RED today!' : 'RED won today.';
+  if (result) ui.playedResult.textContent = result === 'won' ? 'You beat ORO today!' : 'ORO won today.';
   updateCountdown();
 }
 

@@ -67,7 +67,7 @@ try {
   await page.screenshot({ path: `${OUT}/site-title.png`, fullPage: true });
   let s = await shown(page);
   check(s.canPlay && s.wins === '0' && s.losses === '0' && s.winStreak === '0' && s.dayStreak === '0', `new visitor sees Play and zeroed stats (${statLine(s)})`);
-  check(await page.evaluate(() => document.querySelector('.red-sprite').naturalWidth === 64), "RED's sprite is shown on the title card");
+  check(await page.evaluate(() => document.querySelector('.red-sprite').naturalWidth === 64), "ORO's sprite is shown on the title card");
   const leftovers = await page.evaluate(() => ['.tagline', '.steps', '#seed', '#new-run'].filter((sel) => document.querySelector(sel)));
   check(leftovers.length === 0, `removed: tagline, how-it-works, seed, New run (${leftovers.join(', ') || 'none left'})`);
   const footer = await page.evaluate(() => document.querySelector('.footer')?.textContent || '');
@@ -92,7 +92,7 @@ try {
   check(await finishDailyGame(page, 'site-win'), 'after a win the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '0' && s.winStreak === '1' && s.dayStreak === '1', `win recorded (${statLine(s)})`);
-  check(!s.canPlay && s.played === 'You beat RED today!' && /^Next battle in \d\d:\d\d:\d\d$/.test(s.next), `no Play button; shows "${s.played}" / "${s.next}"`);
+  check(!s.canPlay && s.played === 'You beat ORO today!' && /^Next battle in \d\d:\d\d:\d\d$/.test(s.next), `no Play button; shows "${s.played}" / "${s.next}"`);
   await page.screenshot({ path: `${OUT}/site-played.png`, fullPage: true });
 
   await page.reload();
@@ -125,7 +125,7 @@ try {
   check(await finishDailyGame(page, 'site-loss'), 'after a loss the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '1' && s.winStreak === '0' && s.dayStreak === '2', `loss recorded (${statLine(s)})`);
-  check(s.played === 'RED won today.', `shows "${s.played}"`);
+  check(s.played === 'ORO won today.', `shows "${s.played}"`);
 
   // Day 3: leave in the middle of the battle -> counts as a loss.
   await page.clock.setFixedTime(at(DAY3));
@@ -137,7 +137,7 @@ try {
   await page.reload();
   await sleep(1000);
   s = await shown(page);
-  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'RED won today.', `leaving mid-battle counts as a loss (${statLine(s)})`);
+  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'ORO won today.', `leaving mid-battle counts as a loss (${statLine(s)})`);
 
   // Day 5: a missed day resets the streaks.
   await page.clock.setFixedTime(at(DAY5));

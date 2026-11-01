@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Daily Red</title>
-  <meta name="description" content="One Pokémon battle a day: six random level 100 Pokémon against RED at the top of the mountain.">
+  <title>Daily Oro</title>
+  <meta name="description" content="One Pokémon battle a day: six random level 100 Pokémon against ORO in the Champion's room.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="vendor/pixelify-sans.woff2" as="font" type="font/woff2" crossorigin>
@@ -14,7 +14,7 @@
 <body>
   <main class="app" data-state="title">
     <header class="masthead">
-      <h1 class="title">Daily Red</h1>
+      <h1 class="title">Daily Oro</h1>
     </header>
 
     <section class="console" id="console" aria-label="Game">
@@ -22,7 +22,15 @@
         <div class="screen" id="screen">
           <div class="card card-title">
             <div class="snow" aria-hidden="true"></div>
-            <img class="red-sprite" src="game/red.png" width="64" height="64" alt="RED">
+            <img class="red-sprite" src="game/oro.png" width="64" height="64" alt="ORO">
+            <ul class="boss-team" aria-label="ORO's team">
+              <li><img src="game/team/gyarados.png" width="40" height="40" alt="Gyarados"></li>
+              <li><img src="game/team/ampharos.png" width="40" height="40" alt="Ampharos"></li>
+              <li><img src="game/team/heracross.png" width="40" height="40" alt="Heracross"></li>
+              <li><img src="game/team/togetic.png" width="40" height="40" alt="Togetic"></li>
+              <li><img src="game/team/ho-oh.png" width="40" height="40" alt="Ho-Oh"></li>
+              <li><img src="game/team/typhlosion.png" width="40" height="40" alt="Typhlosion"></li>
+            </ul>
             <dl class="stats">
               <div><dt>Wins</dt><dd id="stat-wins">0</dd></div>
               <div><dt>Losses</dt><dd id="stat-losses">0</dd></div>
@@ -86,7 +94,7 @@
     </section>
 
     <footer class="footer">
-      <p>Daily Red is a free, unofficial fan project. It isn't affiliated with or endorsed by Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company. Pokémon and all game content are © Nintendo, Creatures Inc. and GAME FREAK inc.</p>
+      <p>Daily Oro is a free, unofficial fan project. It isn't affiliated with or endorsed by Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company. Pokémon and all game content are © Nintendo, Creatures Inc. and GAME FREAK inc.</p>
       <p><a href="licenses.txt">Licenses</a> · <a href="https://github.com/amoi-builds/dailyred">Source</a></p>
     </footer>
   </main>

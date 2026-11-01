@@ -1,10 +1,11 @@
-# Daily Red
+# Daily Oro
 
-A daily Pokémon battle in the browser, like Wordle: once a day you press
-**Play**, get the day's six random level 100 Pokémon from Generations 1–3
-(everyone gets the same team that day), and climb to RED at the top of the
-mountain. You get one battle per day. Your wins, losses, win streak and daily
-play streak are kept in your browser.
+Fork of [Daily Red](https://github.com/amoi-builds/dailyred): a daily Pokémon
+battle in the browser, like Wordle. Once a day you press **Play**, get the
+day's six random level 100 Pokémon from Generations 1–3 (everyone gets the
+same team that day), and face **ORO** (Ethan) in the Champion's room. You
+get one battle per day. Your wins, losses, win streak and daily play streak
+are kept in your browser.
 
 Every battle runs on the original Pokémon FireRed engine: the game is the
 [pret/pokefirered](https://github.com/pret/pokefirered) decompilation with a
@@ -15,7 +16,7 @@ reimplemented in JavaScript.
 - [Quick start (macOS)](#quick-start-macos)
 - [How it works](#how-it-works)
 - [Team generation](#team-generation)
-- [RED's team](#reds-team)
+- [ORO's team](#oros-team)
 - [Development workflow](#development-workflow)
 - [Testing and debugging](#testing-and-debugging)
 - [Running it locally](#running-it-locally)
@@ -103,15 +104,15 @@ file server works without special headers. Everything loads from `web/vendor/`.
 | Copyright screen → straight in (seed set) | `src/intro.c` → `CB2_DailyRed_StartFromCopyright` (`src/dailyred.c`) |
 | Title screen → straight in (no seed) | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
 | New game data: LEAF (FireRed's female player), fast text | `StartNewGame` in `src/dailyred.c`, then vanilla `CB2_NewGame` |
-| Team + warp to the summit instead of the bedroom | `src/new_game.c` → `DailyRed_InitNewGame` |
-| The summit: an open peak with no exits; stairs up to RED, who faces the drop | `data/maps/DailyRed_Summit/`, `data/layouts/DailyRed_Summit/` |
-| Snow on the summit (fixes FireRed's unused snow weather, whose flakes never came back) | `src/field_weather_effects.c` |
-| Talking to RED → battle → "You defeated RED!" / "Your team was wiped out…" → record → "Play again tomorrow!" / "Try again tomorrow." → fade out | `data/maps/DailyRed_Summit/scripts.inc` and `text.inc`; the `DailyRed_On*` specials in `src/dailyred.c` |
-| Mountain battle background on the summit | `BattleSetup_GetTerrainId` in `src/battle_setup.c` |
-| No free switch when RED's Pokémon faints: Battle Style starts on SET and is locked in Options | `StartNewGame` in `src/dailyred.c`, `src/option_menu.c` |
-| RED as a trainer | `TRAINER_DAILYRED_RED` in `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
+| Team + warp to the Champion's room instead of the bedroom | `src/new_game.c` → `DailyRed_InitNewGame` |
+| Champion's room: no exits; ORO (Ethan) faces south at (6, 8) | `data/maps/DailyRed_Summit/` (layout `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
+| Talking to ORO → battle → "You defeated ORO!" / "Your team was wiped out…" → record → "Play again tomorrow!" / "Try again tomorrow." → fade out | `data/maps/DailyRed_Summit/scripts.inc` and `text.inc`; the `DailyRed_On*` specials in `src/dailyred.c` |
+| Building battle background in the League | `BattleSetup_GetTerrainId` in `src/battle_setup.c` |
+| No free switch when ORO's Pokémon faints: Battle Style starts on SET and is locked in Options | `StartNewGame` in `src/dailyred.c`, `src/option_menu.c` |
+| ORO as a trainer (Ethan sprites from Hall of Legends) | `TRAINER_DAILYRED_RED` in `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
 | Menus: POKéMON / OPTION / EXIT; party: SUMMARY / SWITCH / CANCEL | `src/start_menu.c`, `src/party_menu.c`; window height for short menus in `src/new_menu_helpers.c` |
-| RED's overworld sprite, in its own palette slot so it doesn't clash with LEAF's | `OBJ_EVENT_GFX_DAILYRED_RED` in `include/constants/event_objects.h`, `src/data/object_events/` |
+| Player HORTE: bald overworld, VS front, battle back | `src/dailyred.c`, `horte_*` trainer pics, `RedNormal` → BaldingMan |
+| ORO's overworld sprite, in its own palette slot so it doesn't clash with HORTE's | `OBJ_EVENT_GFX_DAILYRED_RED` in `include/constants/event_objects.h`, `src/data/object_events/` |
 
 The battle itself is a standard FireRed trainer battle. The map script uses
 `trainerbattle_earlyrival` with `RIVAL_BATTLE_HEAL_AFTER`, the mode FireRed
@@ -126,10 +127,10 @@ Every vanilla file that was changed has a `Daily Red:` comment at the change:
 grep -rn "Daily Red" pokefirered/src pokefirered/include pokefirered/data
 ```
 
-The summit layout is a copy of Navel Rock's summit (the peak where Ho-Oh
-appears) with the arrival ladder removed. RED stands on the tip at (9, 11)
-facing north, out over the drop, and turns around when you talk to him. The project uses pokefirered's `modern` target (GCC 14),
-not the byte-matching `agbcc` build, so it doesn't reproduce the retail ROM.
+The map reuses the Pokémon League Champion's room layout (same venue as in
+Hall of Legends). ORO stands at (6, 8) facing south; you start at (6, 12).
+The project uses pokefirered's `modern` target (GCC 14), not the
+byte-matching `agbcc` build, so it doesn't reproduce the retail ROM.
 
 ## Team generation
 
@@ -208,37 +209,37 @@ moves, and species-specific items (Light Ball, Thick Club…) aren't in the pool
 The generator uses its own RNG state, separate from the game's `Random()`, so
 teams depend only on the seed.
 
-## RED's team
+## ORO's team
 
 Edit **`pokefirered/src/dailyred_boss.c`**: species, level, IVs, held item and
 moves use FireRed's normal `TrainerMonItemCustomMoves` format, plus an EV
-table next to it. It's Red's Mt. Silver team from HeartGold/SoulSilver
-(Pikachu, Espeon, Snorlax, Venusaur, Charizard, Blastoise) at level 100 with
-perfect IVs, held items and full EV spreads. HGSS used several Gen 4 moves, so
-the movesets are adapted to Gen 3 ones.
+table next to it. The lineup follows Ethan's team from
+[Hall of Legends](https://github.com/amoi-builds/halloflegends)
+(Gyarados, Ampharos, Heracross, Togekiss, Ho-Oh, Typhlosion) at level 100
+with perfect IVs, held items and full EV spreads. His lead Gyarados is shiny,
+as in Hall of Legends. Togekiss and several Gen 4 moves don't exist in
+FireRed, so Togetic stands in and movesets are adapted to Gen 3. You fight
+him in the Champion's room (same venue as in Hall of Legends).
 
 | Pokémon | HP | Atk | Def | Spe | SpA | SpD | Total |
 |---|---|---|---|---|---|---|---|
-| Pikachu (Light Ball doubles its Sp. Atk) | 35 | 55 | 30 | 90 | 50 | 40 | 300 |
-| Espeon | 65 | 65 | 60 | 110 | 130 | 95 | 525 |
-| Snorlax | 160 | 110 | 65 | 30 | 65 | 110 | 540 |
-| Venusaur | 80 | 82 | 83 | 80 | 100 | 100 | 525 |
-| Charizard | 78 | 84 | 78 | 100 | 109 | 85 | 534 |
-| Blastoise | 79 | 83 | 100 | 78 | 85 | 105 | 530 |
-| **Team** | | | | | | | **2954** |
+| Gyarados | 95 | 125 | 79 | 81 | 60 | 100 | 540 |
+| Ampharos | 90 | 75 | 85 | 55 | 115 | 90 | 510 |
+| Heracross | 80 | 125 | 75 | 85 | 40 | 95 | 500 |
+| Togetic | 55 | 40 | 85 | 40 | 80 | 105 | 405 |
+| Ho-Oh | 106 | 130 | 90 | 90 | 110 | 154 | 680 |
+| Typhlosion | 78 | 84 | 78 | 100 | 109 | 85 | 534 |
+| **Team** | | | | | | | **3169** |
 
-These are Gen 3 base stats from `src/data/pokemon/species_info.h`. With your
-team's IVs (25–31) and focused EVs, both sides get about the same out of their
-base stats. Measured from game RAM, a 525-total Pokémon reaches about 1520
-actual stat points for RED and about 1533 for you; his natures come from
-FireRed's fixed formula and sometimes cut a stat he needs. (With fully random
-IVs and EVs it was about 1445 for you, which made him much stronger point for
-point.)
+These are Gen 3 base stats from `src/data/pokemon/species_info.h`. Daily team
+generation difficulty (minimum BST, IVs, legendary odds, etc.) is unchanged
+from Daily Red.
 
-RED's name, trainer class ("PKMN TRAINER"), sprite and AI flags (the same as
-FireRed's Champion) are in `[TRAINER_DAILYRED_RED]` in
-`pokefirered/src/data/trainers.h`. He gets the Champion battle music
-(`src/pokemon.c`). FireRed trainers have no EVs, so a 3-line hook in
+ORO's name, Champion trainer class, battle sprite (Ethan from Hall of
+Legends) and AI flags are in `[TRAINER_DAILYRED_RED]` in
+`pokefirered/src/data/trainers.h`. He keeps the Champion battle music
+(`src/pokemon.c`). The player is **HORTE** (bald overworld, VS front and
+battle back sprites). FireRed trainers have no EVs, so a 3-line hook in
 `CreateNPCTrainerParty` (`src/battle_main.c`) applies the EV table. Natures
 come from FireRed's usual name-based formula and aren't configurable.
 
@@ -250,8 +251,10 @@ come from FireRed's usual name-based formula and aren't configurable.
 4. When you're happy, run `scripts/save-patch.sh` and commit
    `patches/pokefirered-dailyred.patch`.
 
-`pokefirered/`, `.toolchain/`, `web/vendor/` and `web/game/` are not tracked
-(see `.gitignore`); a clean checkout recreates them with the scripts above.
+`pokefirered/`, `.toolchain/` and `web/vendor/` are not tracked (see
+`.gitignore`); a clean checkout recreates them with the scripts above.
+Sprites under `web/game/` (ORO + his team) are tracked; only the built ROM
+(`.gba` / `.gba.gz`) is ignored.
 `git -C pokefirered diff` shows all game changes against upstream.
 
 To play the ROM outside the browser, open
@@ -385,5 +388,5 @@ tests/                               headless browser tests and the teams tool
 
 Inside `pokefirered/`, the Daily Red code is `include/dailyred.h`,
 `include/constants/dailyred.h`, `src/dailyred.c` (game flow and seed),
-`src/dailyred_team.c` (team generator), `src/dailyred_boss.c` (RED's team), and
+`src/dailyred_team.c` (team generator), `src/dailyred_boss.c` (ORO's team), and
 `data/maps/DailyRed_Summit/` plus `data/layouts/DailyRed_Summit/` (the map).

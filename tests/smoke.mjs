@@ -23,14 +23,15 @@ function define(file, name) {
 }
 const VAR_BATTLES = define('include/constants/vars.h', 'VAR_DAILYRED_BATTLES');
 const VAR_WINS = define('include/constants/vars.h', 'VAR_DAILYRED_WINS');
-const TERRAIN_MOUNTAIN = define('include/constants/battle.h', 'BATTLE_TERRAIN_MOUNTAIN');
+const TERRAIN_BUILDING = define('include/constants/battle.h', 'BATTLE_TERRAIN_BUILDING');
 const STYLE_SET = define('include/constants/global.h', 'OPTIONS_BATTLE_STYLE_SET');
 const LOCALID_RED = define('include/constants/map_event_ids.h', 'LOCALID_DAILYRED_RED');
 const DIR_NORTH = define('include/constants/global.h', 'DIR_NORTH');
+const DIR_SOUTH = define('include/constants/global.h', 'DIR_SOUTH');
 const SPECIES_PIKACHU = define('include/constants/species.h', 'SPECIES_PIKACHU');
 const MOVE_SEISMIC_TOSS = define('include/constants/moves.h', 'MOVE_SEISMIC_TOSS');
 const START = [define('include/constants/dailyred.h', 'DAILYRED_START_X'), define('include/constants/dailyred.h', 'DAILYRED_START_Y')];
-const RED_FRONT = [9, 12]; // the tile below RED, at the top of the stairs
+const RED_FRONT = [6, 9]; // the tile south of ORO in the Champion's room
 
 const MON_SIZE = 100, MON_HP = 86;          // struct Pokemon
 const BMON_SIZE = 0x58, BMON_MOVES = 0x0C, BMON_PP = 0x24, BMON_HP = 0x28, BMON_MAXHP = 0x2C; // struct BattlePokemon
@@ -124,7 +125,7 @@ try {
   await bootGame(page, server.url, { seed: 424242 });
   let s = await waitFor(page, (st) => st.inOverworld, { what: 'overworld' });
   check(s.x === START[0] && s.y === START[1], `player starts at ${START} (got ${s.x},${s.y})`);
-  check(redFacing(s.mem) === DIR_NORTH, 'RED faces away from the player, out over the drop');
+  check(redFacing(s.mem) === DIR_SOUTH, 'ORO faces the player from the Champion's spot');
   check(optionsBattleStyle(s.mem) === STYLE_SET, 'battle style starts as SET');
   await sleep(1500);
   await screenshot(page, `${OUT}/01-start.png`);
@@ -162,12 +163,12 @@ try {
   // 3. Climb to RED -> trainer battle on the peak. Force a win.
   s = await talkToRed(page);
   check(s.inBattle, 'talking to RED starts a battle');
-  check(s.mem.read(symbol('gBattleTerrain'), 1)[0] === TERRAIN_MOUNTAIN, 'battle uses the mountain background');
+  check(s.mem.read(symbol('gBattleTerrain'), 1)[0] === TERRAIN_BUILDING, 'battle uses the building background');
   check(s.mem.read(symbol('gBattleScripting') + BATTLE_STYLE_OFFSET, 1)[0] === STYLE_SET, 'the battle runs in SET style');
   check(s.mem.read(symbol('gTrainerBattleOpponent_A'), 2).readUInt16LE(0) === define('include/constants/opponents.h', 'TRAINER_DAILYRED_RED'), 'opponent is TRAINER_DAILYRED_RED');
   const red = readParty(s.mem, 'Enemy');
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
-  check(red.party.map((m) => m?.speciesName).join(',') === 'PIKACHU,ESPEON,SNORLAX,VENUSAUR,CHARIZARD,BLASTOISE', "RED's team is Pikachu, Espeon, Snorlax, Venusaur, Charizard, Blastoise");
+  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "ORO's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");
   await waitForActionMenu(page);
@@ -206,7 +207,7 @@ try {
   const team2 = readParty(s.mem);
   checkTeam('team after a win', team2);
   check(teamKey(team2.party) !== teamKey(team1.party), 'a new team is generated after the win');
-  check(redFacing(s.mem) === DIR_NORTH, 'RED faces the drop again for the next run');
+  check(redFacing(s.mem) === DIR_SOUTH, 'ORO faces south again for the next run');
   await screenshot(page, `${OUT}/11-after-win.png`);
 
   // 4. Battle again and force a loss.

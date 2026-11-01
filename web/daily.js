@@ -1,7 +1,7 @@
 // The daily game and the player's stats, saved in this browser (localStorage).
 //
 // Everyone gets the same team on the same calendar day (in their own time
-// zone, like Wordle), and each browser gets one battle with RED per day.
+// zone, like Wordle), and each browser gets one battle with ORO per day.
 
 const STORAGE_KEY = 'dailyred-stats';
 
@@ -20,7 +20,7 @@ export function addDays(date, days) {
 // The day's team seed: a hash (FNV-1a) of the date, never 0.
 export function dailySeed(date) {
   let hash = 0x811c9dc5;
-  for (const ch of `dailyred:${date}`) {
+  for (const ch of `dailyoro:${date}`) {
     hash ^= ch.charCodeAt(0);
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
@@ -73,7 +73,7 @@ export function currentStreaks(stats, date) {
   return { winStreak: alive ? stats.winStreak : 0, dayStreak: alive ? stats.dayStreak : 0 };
 }
 
-// From the moment RED's battle starts the day counts as played, so leaving
+// From the moment ORO's battle starts the day counts as played, so leaving
 // mid-battle counts as a loss (see settleAbandonedGame).
 export function markBattleStarted(stats, date) {
   if (stats.pending === date || resultFor(stats, date)) return;

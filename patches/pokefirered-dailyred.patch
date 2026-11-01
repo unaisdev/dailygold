@@ -75,23 +75,23 @@ index 41d0eb1..00b884c 100644
  }
 diff --git a/data/maps/DailyRed_Summit/map.json b/data/maps/DailyRed_Summit/map.json
 new file mode 100644
-index 0000000..6317762
+index 0000000..0d6306a
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/map.json
 @@ -0,0 +1,37 @@
 +{
 +  "id": "MAP_DAILY_RED_SUMMIT",
 +  "name": "DailyRed_Summit",
-+  "layout": "LAYOUT_DAILY_RED_SUMMIT",
++  "layout": "LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM",
 +  "music": "MUS_VICTORY_ROAD",
-+  "region_map_section": "MAPSEC_NAVEL_ROCK",
++  "region_map_section": "MAPSEC_POKEMON_LEAGUE",
 +  "requires_flash": false,
-+  "weather": "WEATHER_SNOW",
-+  "map_type": "MAP_TYPE_ROUTE",
++  "weather": "WEATHER_NONE",
++  "map_type": "MAP_TYPE_INDOOR",
 +  "allow_cycling": false,
 +  "allow_escaping": false,
 +  "allow_running": false,
-+  "show_map_name": false,
++  "show_map_name": true,
 +  "floor_number": 0,
 +  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
 +  "connections": null,
@@ -100,10 +100,10 @@ index 0000000..6317762
 +      "local_id": "LOCALID_DAILYRED_RED",
 +      "type": "object",
 +      "graphics_id": "OBJ_EVENT_GFX_DAILYRED_RED",
-+      "x": 9,
-+      "y": 11,
++      "x": 6,
++      "y": 8,
 +      "elevation": 3,
-+      "movement_type": "MOVEMENT_TYPE_FACE_UP",
++      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
 +      "movement_range_x": 0,
 +      "movement_range_y": 0,
 +      "trainer_type": "TRAINER_TYPE_NONE",
@@ -201,7 +201,7 @@ index 0000000..033ded0
 +	end
 diff --git a/data/maps/DailyRed_Summit/text.inc b/data/maps/DailyRed_Summit/text.inc
 new file mode 100644
-index 0000000..1a0b48b
+index 0000000..b1b9d9e
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/text.inc
 @@ -0,0 +1,33 @@
@@ -209,16 +209,16 @@ index 0000000..1a0b48b
 +    .string "…\p"
 +    .string "…………$"
 +
-+@ Shown in battle when RED loses.
++@ Shown in battle when ORO loses.
 +DailyRed_Summit_Text_RedDefeat::
 +    .string "…$"
 +
-+@ Shown in battle when RED wins.
++@ Shown in battle when ORO wins.
 +DailyRed_Summit_Text_RedVictory::
 +    .string "…$"
 +
 +DailyRed_Summit_Text_PlayerWon::
-+    .string "You defeated RED!$"
++    .string "You defeated ORO!$"
 +
 +DailyRed_Summit_Text_PlayerLost::
 +    .string "Your team was wiped out…$"
@@ -237,7 +237,7 @@ index 0000000..1a0b48b
 +    .string "Record: {STR_VAR_1} win(s) in\n"
 +    .string "{STR_VAR_2} battle(s).\p"
 +    .string "A new team of six is ready.\n"
-+    .string "Climb back up and face RED!$"
++    .string "Walk up and face ORO!$"
 diff --git a/data/maps/map_groups.json b/data/maps/map_groups.json
 index 8c382f5..cae2f25 100644
 --- a/data/maps/map_groups.json
@@ -266,34 +266,253 @@ index d880bf6..485a37e 100644
 +	def_special DailyRed_OnDailyGameOver
 +	def_special DailyRed_IsDailyGame
  gSpecialsEnd::
+diff --git a/graphics/object_events/palettes/ethan.pal b/graphics/object_events/palettes/ethan.pal
+new file mode 100644
+index 0000000..cbabb22
+--- /dev/null
++++ b/graphics/object_events/palettes/ethan.pal
+@@ -0,0 +1,19 @@
++JASC-PAL
++0100
++16
++120 200 160
++0 0 0
++40 40 48
++216 176 104
++248 216 104
++80 80 88
++168 120 64
++216 144 112
++248 192 144
++120 64 64
++104 40 40
++192 56 56
++176 176 208
++232 232 248
++248 104 72
++0 0 0
+diff --git a/graphics/object_events/pics/people/ethan.png b/graphics/object_events/pics/people/ethan.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..15733c5afce0a449834407bdd0300d4a39c38fc2
+GIT binary patch
+literal 1428
+zcmeAS@N?(olHy`uVBq!ia0vp^6M$HOgBeJk3S#`vz`)E9;1l9nabf{bL_@>i#)ga^
+zH!=bOB34v5+?Y`C<G_Rp2Zsy|jRO`I8#Y{c@#4pi3=g2nQ7{?;!zl!k&-R8hFfjRh
+zx;TbZ%y~QQ;ikn3Jgv5ZJd9ud%9pDPT;U4OPf!2<W=5v9ZEwqG#*KcLrStcEJSLt0
+zN1TztT<ZFt{o9;37aKoh=lvw*{!j2h^nq@+%I9-#r|-#_u*$!EJHvgZvI8HAXI@BN
+z()jB5&dQu0(Y35^8XWieWhv+E$rL#2$C&nf#k$wF2evmTCkP0Nxu2a7sW*$GI5KFK
+zY~@-@h8>JmOfrnC=Ni4wTOkzce4&O@wq5Xm>;>Tm3>6o<7{m?*ZT)_Flg_=>*QQ81
+zxymuzVX$T7YnaJ!jpK;x?UmnK7PWeZZ@VVLaEH;B@!J7m7DmVTq~&MUZK!TGXx1!X
+ze#ao!Fpoihmye(d3uo0%*)E~AyspKKzTWHwmy8&y7~X8@6JVWkgXid@j#<|fbwYNB
+z&9G{S6+W#}!)j&X&3_~NM~lyt;7!u5U3Sk)zZ%{YRbe_3bLo%>Z$kXTWs9Yn)S11)
+z9g=@ByfI}`PQ1O1g)d;gTxD$Wxep5ke5YKV_MrGSBeTV>6)$GI35aQ^a_GpJsFlEc
+zFX-~F)=JiEJl9l3#nxnB6PvQ@$kHYGZBuqIyfC{e${*BlOYAuR0^x)lZ-GD4GS-JT
+zYMSWoI)3l9+;vWe3(GR9E(xw#yJ7xLCWWK*ij%mu<S%5DR50H=-*Q<?g~X-1s?VHX
+zFPi>6!e7|q$)D%3j7R>w;#}=e{g0=F>CWrypUMAX>MRA*&t5%0ao(5Timz6_oLAnr
+zZtj}n{SUAGOrP7Y%(DLKdC}W{AF12c#{7L*`sH@;zo?Jz<=x#`?f(AHJEQQA;pjwZ
+U#+#iD)u626>FVdQ&MBb@0Q@vMF8}}l
+
+literal 0
+HcmV?d00001
+
+diff --git a/graphics/trainers/back_pics/horte_back_pic.png b/graphics/trainers/back_pics/horte_back_pic.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..b04412e8920490bbf312d115e3f090b576a4c0fb
+GIT binary patch
+literal 2220
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/graphics/trainers/front_pics/ethan_front_pic.png b/graphics/trainers/front_pics/ethan_front_pic.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..999a0e0f19b72ad6c845ddc10c6742e518bfcd76
+GIT binary patch
+literal 620
+zcmV-y0+aoTP)<h;3K|Lk000e1NJLTq002M$002M)0{{R3SVwH_0000mP)t-sc*vjt
+z001Z`FxaqY_}FMrP*|vVK-iFQ_`r~OKtO0HD8M*4u&~hR==k_(NB{r;yb4K~00001
+zbW%=J06^y0W&i*I>PbXFRCwC$mBDJ;KoEwtf*x|yE(p~mE!Kc&%?dw-p!6t#=*4}A
+z7>Z^30AAnfkPr#_5*GBd5U3%C66H`sAqVTwb3o6~T|2q?*CFQ)_~QLE^Uvs?mE-)6
+zmqb;0z2`xaeCQ+G%Ov@j_5gm8Bww<g6r*!~c|{mtf_OkQgn%F#&4@ynAf%9UE<&%T
+z!fX}r6-*%pzpwcNEg`@MTQz-nx5RC@%ElDWffa>PE12M<a>`|~fC^4Zb#Ys$3)tj)
+zrLLM^)jb-d7^(SmvitOX3xKy_H6y>>#v4%Mw9~Q{_kZFHsAO78Eq*jntw9P-T610B
+z)pd>f;Brm0l~Q|{5R>pxYG|2gylyt9q}R~2<1W6X&CMgK;mWR#!t|y?H5i#riH|!}
+zgK08|C;uW_x;w3-$xlgWH^k?*-8CsAJ^;gf)3!|>I{bPLG(@?H)Cm^ffQI}4Fa<RD
+z<~YkU$629Kn{)Gnwq`beWNUzUWq@HHU?q5d4`7@0Y$qND(!CG_h{ys_4zDqh+m~dn
+z7}%z7lZza$@08m&#?c&|*ZaGL6>|iX%YC780Yox&{=^}mJh&kEx<-~gJZTp6IPko3
+zXLp*80`b$6XE`0;PJa^*56*0wqcYv+|CyfwPiHUr4*mlZ=9OuJ1@r&_0000<MNUMn
+GLSTYzbsCWX
+
+literal 0
+HcmV?d00001
+
+diff --git a/graphics/trainers/front_pics/horte_front_pic.png b/graphics/trainers/front_pics/horte_front_pic.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..f6e36388c3f14a32a50b9f03225ecd859203fa92
+GIT binary patch
+literal 724
+zcmV;_0xSKAP)<h;3K|Lk000e1NJLTq002M$002M)0{{R3SVwH_0000mP)t-sbH$|p
+z-p%H;l)Z~;VnI2il!JR}Vp2*$DJdY;)y=fDtdx|C#hfvVa~S{s{{R30pWLi<00001
+zbW%=J06^y0W&i*JQb|NXRCt`VRljf3KotI-8yYuN;&*|C4#*87f{K3ts*0Vmzy@p`
+z(}}s27`hd)b!#RDBqYYF42&#|2q1xkLYyuPNcK4b$w-Nf9Os9B+yxfiV&D0@?|tvP
+zcRt|12jwU3VE8sYHgexfKuIoO*m3|=J6Zto_|ap1ig9d69e_b#U;sUX1wW?H10*5_
+zIy!()HjKKsk`kGVh9_>HHzK_cHwUg^8LQe9c<*v3^VX)rAjTlBRF~pqtuOfLYrT_}
+z(~acBa3$bg{SBLCEQr!pBRZ0LhVsGlYwcxAFY?LqV|bt5tvu5(?DXKH_8H%$+J~~_
+zZl$#*Ew`y=h=7pSdKuCTph-Tpd`W)F%S;LaHqMN6!{zsa(MI^8rgySdrG`DS1p+0&
+zl+0FdK#*XmW}uG$!?MqbJcWj(>km9&^=qO<k>ZBe?gLD%5Dagx09fLy#{jkZ{K|H{
+z*t1-UTQp`C7#f+boHCSvYK5bXyWmS1-Ln)QM=v(X!7n=*?#~LFzWm%i4a7quBo?6~
+z4yeGeeM&1pxE=+&&gJ>{xyY0FR0B>UEFT4X+Jggp!w#{z000Pe6^Lo;01J>vwQ^>&
+z0;_HtLRj9eDn&DHbyr4i_AJa8Dn&6_fSEkPiIZv#aU^!A070??+5d~?Ppbq37ba_y
+zz9<5IAIGTm%<7_(03zF_MH+Z^Cujh~xk7V*{elsSG9#FOyK&SEW9>oVBFHfu-WQKZ
+z%nyG$MzNE_voFD@dzhNe_2fnAn<H;i$q-HV(VD&eQ~Uu`%B0imQ~9L;0000<MNUMn
+GLSTYYol08(
+
+literal 0
+HcmV?d00001
+
+diff --git a/graphics/trainers/palettes/ethan_front_pic.pal b/graphics/trainers/palettes/ethan_front_pic.pal
+new file mode 100644
+index 0000000..cbabb22
+--- /dev/null
++++ b/graphics/trainers/palettes/ethan_front_pic.pal
+@@ -0,0 +1,19 @@
++JASC-PAL
++0100
++16
++120 200 160
++0 0 0
++40 40 48
++216 176 104
++248 216 104
++80 80 88
++168 120 64
++216 144 112
++248 192 144
++120 64 64
++104 40 40
++192 56 56
++176 176 208
++232 232 248
++248 104 72
++0 0 0
+diff --git a/graphics/trainers/palettes/horte_back_pic.pal b/graphics/trainers/palettes/horte_back_pic.pal
+new file mode 100644
+index 0000000..1205b3e
+--- /dev/null
++++ b/graphics/trainers/palettes/horte_back_pic.pal
+@@ -0,0 +1,19 @@
++JASC-PAL
++0100
++16
++115 197 164
++255 222 205
++230 180 148
++189 139 106
++98 65 57
++164 148 131
++123 106 98
++82 74 65
++41 41 32
++213 213 205
++180 180 172
++148 148 139
++197 156 49
++139 115 24
++255 255 255
++0 0 0
+diff --git a/graphics/trainers/palettes/horte_front_pic.pal b/graphics/trainers/palettes/horte_front_pic.pal
+new file mode 100644
+index 0000000..1205b3e
+--- /dev/null
++++ b/graphics/trainers/palettes/horte_front_pic.pal
+@@ -0,0 +1,19 @@
++JASC-PAL
++0100
++16
++115 197 164
++255 222 205
++230 180 148
++189 139 106
++98 65 57
++164 148 131
++123 106 98
++82 74 65
++41 41 32
++213 213 205
++180 180 172
++148 148 139
++197 156 49
++139 115 24
++255 255 255
++0 0 0
 diff --git a/include/constants/dailyred.h b/include/constants/dailyred.h
 new file mode 100644
-index 0000000..27c41b2
+index 0000000..62ea5d2
 --- /dev/null
 +++ b/include/constants/dailyred.h
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,10 @@
 +#ifndef GUARD_CONSTANTS_DAILYRED_H
 +#define GUARD_CONSTANTS_DAILYRED_H
 +
-+// Daily Red constants shared by C code and map scripts.
++// Daily Oro constants shared by C code and map scripts.
 +
-+// Where the player stands at the start of each run on MAP_DAILY_RED_SUMMIT:
-+// on the platform at the foot of the stairs. RED stands at the tip of the
-+// peak at (9, 11), facing out over the drop (see
-+// data/maps/DailyRed_Summit/map.json).
-+#define DAILYRED_START_X 9
-+#define DAILYRED_START_Y 18
++// Player starts in the Champion's room, south of ORO at (6, 8).
++#define DAILYRED_START_X 6
++#define DAILYRED_START_Y 12
 +
 +#endif // GUARD_CONSTANTS_DAILYRED_H
 diff --git a/include/constants/event_objects.h b/include/constants/event_objects.h
-index 9d8c514..2bddf55 100644
+index 9d8c514..231e4ab 100644
 --- a/include/constants/event_objects.h
 +++ b/include/constants/event_objects.h
 @@ -155,8 +155,10 @@
  #define OBJ_EVENT_GFX_DEOXYS_A 149
  #define OBJ_EVENT_GFX_DEOXYS_N 150
  #define OBJ_EVENT_GFX_SS_ANNE 151
-+// Daily Red: RED standing on the summit (see gObjectEventGraphicsInfo_DailyRedRed).
++// Daily Oro: ORO (Ethan) in the Champion's room (see gObjectEventGraphicsInfo_DailyRedRed).
 +#define OBJ_EVENT_GFX_DAILYRED_RED 152
  
 -#define NUM_OBJ_EVENT_GFX     152
@@ -384,6 +603,63 @@ index 0000000..47b058b
 +void DailyRed_GenerateTeam(struct Pokemon *party, u32 *rngState);
 +
 +#endif // GUARD_DAILYRED_H
+diff --git a/spritesheet_rules.mk b/spritesheet_rules.mk
+index 50cfd49..a6026cf 100644
+--- a/spritesheet_rules.mk
++++ b/spritesheet_rules.mk
+@@ -91,6 +91,9 @@ $(OBJEVENTGFXDIR)/people/daisy.4bpp: %.4bpp: %.png
+ $(OBJEVENTGFXDIR)/people/erika.4bpp: %.4bpp: %.png
+ 	$(GFX) $< $@ -mwidth 2 -mheight 4
+ 
++$(OBJEVENTGFXDIR)/people/ethan.4bpp: %.4bpp: %.png
++	$(GFX) $< $@ -mwidth 2 -mheight 4
++
+ $(OBJEVENTGFXDIR)/people/fat_man.4bpp: %.4bpp: %.png
+ 	$(GFX) $< $@ -mwidth 2 -mheight 4
+ 
+diff --git a/src/battle_controller_player.c b/src/battle_controller_player.c
+index d8e1fe7..54d86b3 100644
+--- a/src/battle_controller_player.c
++++ b/src/battle_controller_player.c
+@@ -23,6 +23,7 @@
+ #include "constants/moves.h"
+ #include "constants/songs.h"
+ #include "constants/sound.h"
++#include "constants/trainers.h"
+ 
+ static void PlayerHandleGetMonData(void);
+ static void PlayerHandleSetMonData(void);
+@@ -2189,7 +2190,9 @@ static void PlayerHandleDrawTrainerPic(void)
+     }
+     else
+     {
+-        trainerPicId = gSaveBlock2Ptr->playerGender;
++        // Daily Oro: Gentleman has no back pic in FireRed; Old Man is the
++        // bald-ish back that matches HORTE closest in battle.
++        trainerPicId = TRAINER_BACK_PIC_OLD_MAN;
+     }
+     DecompressTrainerBackPalette(trainerPicId, gActiveBattler);
+     SetMultiuseSpriteTemplateToTrainerBack(trainerPicId, GetBattlerPosition(gActiveBattler));
+@@ -2219,7 +2222,9 @@ static void PlayerHandleTrainerSlide(void)
+     }
+     else
+     {
+-        trainerPicId = gSaveBlock2Ptr->playerGender + 0;
++        // Daily Oro: Gentleman has no back pic in FireRed; Old Man is the
++        // bald-ish back that matches HORTE closest in battle.
++        trainerPicId = TRAINER_BACK_PIC_OLD_MAN;
+     }
+     DecompressTrainerBackPalette(trainerPicId, gActiveBattler);
+     SetMultiuseSpriteTemplateToTrainerBack(trainerPicId, GetBattlerPosition(gActiveBattler));
+@@ -2720,7 +2725,7 @@ static void PlayerHandleIntroTrainerBallThrow(void)
+     StoreSpriteCallbackInData6(&gSprites[gBattlerSpriteIds[gActiveBattler]], SpriteCB_FreePlayerSpriteLoadMonSprite);
+     StartSpriteAnim(&gSprites[gBattlerSpriteIds[gActiveBattler]], 1);
+     paletteNum = AllocSpritePalette(0xD6F8);
+-    LoadCompressedPalette(gTrainerBackPicPaletteTable[gSaveBlock2Ptr->playerGender].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
++    LoadCompressedPalette(gTrainerBackPicPaletteTable[TRAINER_BACK_PIC_OLD_MAN].data, OBJ_PLTT_ID(paletteNum), PLTT_SIZE_4BPP);
+     gSprites[gBattlerSpriteIds[gActiveBattler]].oam.paletteNum = paletteNum;
+     taskId = CreateTask(Task_StartSendOutAnim, 5);
+     gTasks[taskId].data[0] = gActiveBattler;
 diff --git a/src/battle_main.c b/src/battle_main.c
 index 64c9e59..9ade275 100644
 --- a/src/battle_main.c
@@ -408,22 +684,20 @@ index 64c9e59..9ade275 100644
  
      return gTrainers[trainerNum].partySize;
 diff --git a/src/battle_setup.c b/src/battle_setup.c
-index 6d62084..44f97e4 100644
+index 6d62084..281c856 100644
 --- a/src/battle_setup.c
 +++ b/src/battle_setup.c
-@@ -468,6 +468,11 @@ u8 BattleSetup_GetTerrainId(void)
-     u16 tileBehavior;
-     s16 x, y;
+@@ -630,6 +630,9 @@ static u8 GetTrainerBattleTransition(void)
  
-+    // Daily Red: the summit is an open mountain peak.
-+    if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_DAILY_RED_SUMMIT)
-+     && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_DAILY_RED_SUMMIT))
-+        return BATTLE_TERRAIN_MOUNTAIN;
-+
-     PlayerGetDestCoords(&x, &y);
-     tileBehavior = MapGridGetMetatileBehaviorAt(x, y);
-     if (MetatileBehavior_IsTallGrass(tileBehavior))
-@@ -896,7 +901,9 @@ void ClearTrainerFlag(u16 trainerId)
+     if (gTrainerBattleOpponent_A == TRAINER_SECRET_BASE)
+         return B_TRANSITION_BLUE;
++    // Daily Oro: ORO uses Lance's mugshot transition (Ethan front pic remapped).
++    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++        return B_TRANSITION_LANCE;
+     if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_ELITE_FOUR)
+     {
+         if (gTrainerBattleOpponent_A == TRAINER_ELITE_FOUR_LORELEI || gTrainerBattleOpponent_A == TRAINER_ELITE_FOUR_LORELEI_2)
+@@ -896,7 +899,9 @@ void ClearTrainerFlag(u16 trainerId)
  void StartTrainerBattle(void)
  {
      gBattleTypeFlags = BATTLE_TYPE_TRAINER;
@@ -434,12 +708,34 @@ index 6d62084..44f97e4 100644
          gBattleTypeFlags |= BATTLE_TYPE_FIRST_BATTLE;
      gMain.savedCallback = CB2_EndTrainerBattle;
      DoTrainerBattle();
+diff --git a/src/battle_transition.c b/src/battle_transition.c
+index 8a23dfe..e7fa9fe 100644
+--- a/src/battle_transition.c
++++ b/src/battle_transition.c
+@@ -10,6 +10,7 @@
+ #include "decompress.h"
+ #include "gpu_regs.h"
+ #include "battle_transition.h"
++#include "constants/trainers.h"
+ #include "field_effect.h"
+ #include "field_weather.h"
+ #include "field_camera.h"
+@@ -2157,7 +2158,8 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
+                                                   sMugshotsOpponentCoords[mugshotId][0] - 32,
+                                                   sMugshotsOpponentCoords[mugshotId][1] + 42,
+                                                   0, gDecompressionBuffer);
+-    task->tPlayerSpriteId = CreateTrainerSprite(PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender, TRUE),
++    // Daily Oro: bald HORTE front (TRAINER_PIC_RED remapped).
++    task->tPlayerSpriteId = CreateTrainerSprite(TRAINER_PIC_RED,
+                                                 DISPLAY_WIDTH + 32,
+                                                 106,
+                                                 0, gDecompressionBuffer);
 diff --git a/src/dailyred.c b/src/dailyred.c
 new file mode 100644
-index 0000000..1ec6e68
+index 0000000..71c2e2e
 --- /dev/null
 +++ b/src/dailyred.c
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,232 @@
 +#include "global.h"
 +#include "gflib.h"
 +#include "dailyred.h"
@@ -517,8 +813,8 @@ index 0000000..1ec6e68
 +
 +extern u16 gTrainerId; // main.c: low half of the player's trainer ID
 +
-+static const u8 sText_PlayerName[] = _("LEAF");
-+static const u8 sText_RivalName[] = _("RED");
++static const u8 sText_PlayerName[] = _("HORTE");
++static const u8 sText_RivalName[] = _("ORO");
 +
 +// The config is read through volatile pointers: the compiler would otherwise
 +// assume the values are still the zeros the ROM was built with.
@@ -545,18 +841,18 @@ index 0000000..1ec6e68
 +    return GetInjectedSeed() != 0;
 +}
 +
-+// Fresh, unsaved game data every boot: LEAF, female, fast text, SET battle
-+// style. CB2_NewGame then calls NewGameInitData, which calls
-+// DailyRed_InitNewGame.
++// Fresh, unsaved game data every boot: HORTE (bald male overworld),
++// fast text, SET battle style. CB2_NewGame then calls NewGameInitData,
++// which calls DailyRed_InitNewGame.
 +static void StartNewGame(void)
 +{
 +    Sav2_ClearSetDefault();
 +    SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
 +    gSaveBlock2Ptr->optionsTextSpeed = OPTIONS_TEXT_SPEED_FAST;
-+    // No "Will LEAF change POKeMON?" when RED's Pokemon faints. The Options
-+    // menu keeps this locked (option_menu.c).
++    // No "Will HORTE change POKeMON?" when ORO's Pokemon faints. The
++    // Options menu keeps this locked (option_menu.c).
 +    gSaveBlock2Ptr->optionsBattleStyle = OPTIONS_BATTLE_STYLE_SET;
-+    gSaveBlock2Ptr->playerGender = FEMALE; // FireRed's own female player, LEAF
++    gSaveBlock2Ptr->playerGender = MALE; // bald overworld via RedNormal -> BaldingMan
 +    StringCopy(gSaveBlock2Ptr->playerName, sText_PlayerName);
 +    StringCopy(gSaveBlock1Ptr->rivalName, sText_RivalName);
 +    SetMainCallback2(CB2_NewGame);
@@ -648,11 +944,13 @@ index 0000000..1ec6e68
 +    return IsDailyGame();
 +}
 +
-+// Vanilla trainer parties have no EVs; give RED his spreads from
-+// gDailyRedBossEVs. Called from CreateNPCTrainerParty.
++// Vanilla trainer parties have no EVs; give ORO his spreads from
++// gDailyRedBossEVs. Also force his lead Gyarados shiny (Hall of Legends).
++// Called from CreateNPCTrainerParty.
 +void DailyRed_ApplyBossEVs(struct Pokemon *party, u8 partySize)
 +{
 +    u8 i, stat;
++    u32 personality, otId;
 +
 +    for (i = 0; i < partySize && i < DAILYRED_BOSS_PARTY_SIZE; i++)
 +    {
@@ -660,25 +958,35 @@ index 0000000..1ec6e68
 +            SetMonData(&party[i], MON_DATA_HP_EV + stat, &gDailyRedBossEVs[i][stat]);
 +        CalculateMonStats(&party[i]);
 +    }
++
++    // OT_ID_RANDOM_NO_SHINY forbids shinies; rewrite Gyarados's OT ID so
++    // GET_SHINY_VALUE is 0 (always shiny). Lead is always slot 0.
++    if (partySize > 0 && GetMonData(&party[0], MON_DATA_SPECIES) == SPECIES_GYARADOS)
++    {
++        personality = GetMonData(&party[0], MON_DATA_PERSONALITY);
++        otId = (u32)(HIHALF(personality) ^ LOHALF(personality)) << 16;
++        SetMonData(&party[0], MON_DATA_OT_ID, &otId);
++    }
 +}
 diff --git a/src/dailyred_boss.c b/src/dailyred_boss.c
 new file mode 100644
-index 0000000..37ee62e
+index 0000000..f129dac
 --- /dev/null
 +++ b/src/dailyred_boss.c
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,78 @@
 +#include "global.h"
 +#include "dailyred.h"
 +#include "constants/items.h"
 +#include "constants/moves.h"
 +#include "constants/species.h"
 +
-+// RED's team for Daily Red. This file is the one place to edit it.
++// ORO's (Ethan's) team for Daily Oro. This file is the one place to edit it.
 +//
-+// Species and order follow Red's Mt. Silver team from HeartGold/SoulSilver.
-+// Movesets are adapted to moves that exist in Gen 3 (HGSS used several Gen 4
-+// moves), and every Pokemon is level 100 with perfect IVs and a full EV
-+// spread.
++// Species and order follow Ethan's team from Hall of Legends
++// (https://github.com/amoi-builds/halloflegends): Gyarados, Ampharos,
++// Heracross, Togekiss, Ho-Oh, Typhlosion. Togekiss and several Gen 4 moves
++// don't exist in FireRed, so Togetic stands in and movesets are adapted to
++// Gen 3. Every Pokemon is level 100 with perfect IVs and a full EV spread.
 +//
 +// The battle itself is a normal FireRed trainer battle: the trainer entry
 +// (name, class, sprite, AI flags) is TRAINER_DAILYRED_RED in
@@ -691,44 +999,44 @@ index 0000000..37ee62e
 +    {
 +        .iv = 255,
 +        .lvl = 100,
-+        .species = SPECIES_PIKACHU,
-+        .heldItem = ITEM_LIGHT_BALL,
-+        .moves = {MOVE_VOLT_TACKLE, MOVE_THUNDERBOLT, MOVE_IRON_TAIL, MOVE_QUICK_ATTACK},
-+    },
-+    {
-+        .iv = 255,
-+        .lvl = 100,
-+        .species = SPECIES_ESPEON,
-+        .heldItem = ITEM_TWISTED_SPOON,
-+        .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_MORNING_SUN},
-+    },
-+    {
-+        .iv = 255,
-+        .lvl = 100,
-+        .species = SPECIES_SNORLAX,
-+        .heldItem = ITEM_LEFTOVERS,
-+        .moves = {MOVE_BODY_SLAM, MOVE_EARTHQUAKE, MOVE_SHADOW_BALL, MOVE_REST},
-+    },
-+    {
-+        .iv = 255,
-+        .lvl = 100,
-+        .species = SPECIES_VENUSAUR,
-+        .heldItem = ITEM_MIRACLE_SEED,
-+        .moves = {MOVE_GIGA_DRAIN, MOVE_SLUDGE_BOMB, MOVE_SLEEP_POWDER, MOVE_LEECH_SEED},
-+    },
-+    {
-+        .iv = 255,
-+        .lvl = 100,
-+        .species = SPECIES_CHARIZARD,
-+        .heldItem = ITEM_CHARCOAL,
-+        .moves = {MOVE_FLAMETHROWER, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE},
-+    },
-+    {
-+        .iv = 255,
-+        .lvl = 100,
-+        .species = SPECIES_BLASTOISE,
++        .species = SPECIES_GYARADOS, // shiny (forced in DailyRed_ApplyBossEVs)
 +        .heldItem = ITEM_MYSTIC_WATER,
-+        .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_HYDRO_CANNON},
++        .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE},
++    },
++    {
++        .iv = 255,
++        .lvl = 100,
++        .species = SPECIES_AMPHAROS,
++        .heldItem = ITEM_MAGNET,
++        .moves = {MOVE_THUNDERBOLT, MOVE_BRICK_BREAK, MOVE_SIGNAL_BEAM, MOVE_FIRE_PUNCH},
++    },
++    {
++        .iv = 255,
++        .lvl = 100,
++        .species = SPECIES_HERACROSS,
++        .heldItem = ITEM_SCOPE_LENS,
++        .moves = {MOVE_SWORDS_DANCE, MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE},
++    },
++    {
++        .iv = 255,
++        .lvl = 100,
++        .species = SPECIES_TOGETIC,
++        .heldItem = ITEM_LEFTOVERS,
++        .moves = {MOVE_CALM_MIND, MOVE_SOFT_BOILED, MOVE_PSYCHIC, MOVE_AERIAL_ACE},
++    },
++    {
++        .iv = 255,
++        .lvl = 100,
++        .species = SPECIES_HO_OH,
++        .heldItem = ITEM_LEFTOVERS,
++        .moves = {MOVE_SACRED_FIRE, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE, MOVE_RECOVER},
++    },
++    {
++        .iv = 255,
++        .lvl = 100,
++        .species = SPECIES_TYPHLOSION,
++        .heldItem = ITEM_CHARCOAL,
++        .moves = {MOVE_ERUPTION, MOVE_FIRE_BLAST, MOVE_THUNDER_PUNCH, MOVE_EXTRASENSORY},
 +    },
 +};
 +
@@ -737,12 +1045,12 @@ index 0000000..37ee62e
 +// Vanilla FireRed trainers have no EVs; DailyRed_ApplyBossEVs adds these.
 +const u8 gDailyRedBossEVs[DAILYRED_BOSS_PARTY_SIZE][NUM_STATS] =
 +{
-+    {  0, 124,   0, 252, 132,   0}, // Pikachu
-+    {  4,   0,   0, 252, 252,   0}, // Espeon
-+    {252, 252,   4,   0,   0,   0}, // Snorlax
-+    {252,   0,   0,   4, 252,   0}, // Venusaur
-+    {  0,   4,   0, 252, 252,   0}, // Charizard
-+    {252,   0,   0,   4, 252,   0}, // Blastoise
++    {  4, 252,   0, 252,   0,   0}, // Gyarados
++    {252,   0,   0,   6, 252,   0}, // Ampharos
++    {  4, 252,   0, 252,   0,   0}, // Heracross
++    {252,   0,   0,   6, 252,   0}, // Togetic
++    {252, 252,   0,   6,   0,   0}, // Ho-Oh
++    {  4,   0,   0, 252, 252,   0}, // Typhlosion
 +};
 diff --git a/src/dailyred_team.c b/src/dailyred_team.c
 new file mode 100644
@@ -1255,23 +1563,101 @@ index 498f281..4ee8eb3 100644
  #include "graphics.h"
  #include "constants/items.h"
  #include "constants/moves.h"
+diff --git a/src/data/graphics/trainers.h b/src/data/graphics/trainers.h
+index 0b4a21e..4f5a104 100644
+--- a/src/data/graphics/trainers.h
++++ b/src/data/graphics/trainers.h
+@@ -343,8 +343,8 @@ const u32 gTrainerPalette_EliteFourBruno[] = INCBIN_U32("graphics/trainers/palet
+ const u32 gTrainerFrontPic_EliteFourAgatha[] = INCBIN_U32("graphics/trainers/front_pics/elite_four_agatha_front_pic.4bpp.lz");
+ const u32 gTrainerPalette_EliteFourAgatha[] = INCBIN_U32("graphics/trainers/palettes/elite_four_agatha.gbapal.lz");
+ 
+-const u32 gTrainerFrontPic_EliteFourLance[] = INCBIN_U32("graphics/trainers/front_pics/elite_four_lance_front_pic.4bpp.lz");
+-const u32 gTrainerPalette_EliteFourLance[] = INCBIN_U32("graphics/trainers/palettes/elite_four_lance.gbapal.lz");
++const u32 gTrainerFrontPic_EliteFourLance[] = INCBIN_U32("graphics/trainers/front_pics/ethan_front_pic.4bpp.lz"); // Daily Oro: Ethan/ORO
++const u32 gTrainerPalette_EliteFourLance[] = INCBIN_U32("graphics/trainers/palettes/ethan_front_pic.gbapal.lz"); // Daily Oro: Ethan/ORO
+ 
+ const u32 gTrainerFrontPic_LeaderBrock[] = INCBIN_U32("graphics/trainers/front_pics/leader_brock_front_pic.4bpp.lz");
+ const u32 gTrainerPalette_LeaderBrock[] = INCBIN_U32("graphics/trainers/palettes/leader_brock.gbapal.lz");
+@@ -403,8 +403,8 @@ const u32 gTrainerPalette_RSBrendan2[] = INCBIN_U32("graphics/trainers/palettes/
+ const u32 gTrainerFrontPic_RSMay2[] = INCBIN_U32("graphics/trainers/front_pics/ruby_sapphire_may_front_pic.4bpp.lz");
+ const u32 gTrainerPalette_RSMay2[] = INCBIN_U32("graphics/trainers/palettes/ruby_sapphire_may.gbapal.lz");
+ 
+-const u32 gTrainerFrontPic_Red[] = INCBIN_U32("graphics/trainers/front_pics/red_front_pic.4bpp.lz");
+-const u32 gTrainerPalette_Red[] = INCBIN_U32("graphics/trainers/palettes/red.gbapal.lz");
++const u32 gTrainerFrontPic_Red[] = INCBIN_U32("graphics/trainers/front_pics/horte_front_pic.4bpp.lz"); // Daily Oro: bald HORTE
++const u32 gTrainerPalette_Red[] = INCBIN_U32("graphics/trainers/palettes/horte_front_pic.gbapal.lz"); // Daily Oro: bald HORTE
+ 
+ const u32 gTrainerFrontPic_Leaf[] = INCBIN_U32("graphics/trainers/front_pics/leaf_front_pic.4bpp.lz");
+ const u32 gTrainerPalette_Leaf[] = INCBIN_U32("graphics/trainers/palettes/leaf.gbapal.lz");
+@@ -445,7 +445,7 @@ const u32 gTrainerPalette_Painter[] = INCBIN_U32("graphics/trainers/palettes/pai
+ const u8 gTrainerBackPic_Red[] = INCBIN_U8("graphics/trainers/back_pics/red_back_pic.4bpp");
+ const u8 gTrainerBackPic_Leaf[] = INCBIN_U8("graphics/trainers/back_pics/leaf_back_pic.4bpp");
+ const u8 gTrainerBackPic_Pokedude[] = INCBIN_U8("graphics/trainers/back_pics/pokedude_back_pic.4bpp");
+-const u8 gTrainerBackPic_OldMan[] = INCBIN_U8("graphics/trainers/back_pics/old_man_back_pic.4bpp");
++const u8 gTrainerBackPic_OldMan[] = INCBIN_U8("graphics/trainers/back_pics/horte_back_pic.4bpp"); // Daily Oro: HORTE
+ 
+ const u8 gTrainerBackPic_RSBrendan[] = INCBIN_U8("graphics/trainers/back_pics/ruby_sapphire_brendan_back_pic.4bpp");
+ const u8 gTrainerBackPic_RSMay[] = INCBIN_U8("graphics/trainers/back_pics/ruby_sapphire_may_back_pic.4bpp");
+@@ -453,4 +453,4 @@ const u8 gTrainerBackPic_RSMay[] = INCBIN_U8("graphics/trainers/back_pics/ruby_s
+ const u32 gTrainerPalette_RedBackPic[] = INCBIN_U32("graphics/trainers/palettes/red_back_pic.gbapal.lz");
+ const u32 gTrainerPalette_LeafBackPic[] = INCBIN_U32("graphics/trainers/palettes/leaf_back_pic.gbapal.lz");
+ const u32 gTrainerPalette_PokedudeBackPic[] = INCBIN_U32("graphics/trainers/palettes/pokedude_back_pic.gbapal.lz");
+-const u32 gTrainerPalette_OldManBackPic[] = INCBIN_U32("graphics/trainers/palettes/old_man_back_pic.gbapal.lz");
++const u32 gTrainerPalette_OldManBackPic[] = INCBIN_U32("graphics/trainers/palettes/horte_back_pic.gbapal.lz"); // Daily Oro: HORTE
+diff --git a/src/data/object_events/object_event_graphics.h b/src/data/object_events/object_event_graphics.h
+index 4e229cb..fbe6510 100644
+--- a/src/data/object_events/object_event_graphics.h
++++ b/src/data/object_events/object_event_graphics.h
+@@ -136,6 +136,8 @@ const u16 gObjectEventPic_DeoxysN[] = INCBIN_U16("graphics/object_events/pics/po
+ const u16 gObjectEventPic_Agatha[] = INCBIN_U16("graphics/object_events/pics/people/agatha.4bpp");
+ const u16 gObjectEventPic_Misty[] = INCBIN_U16("graphics/object_events/pics/people/misty.4bpp");
+ const u16 gObjectEventPic_Lance[] = INCBIN_U16("graphics/object_events/pics/people/lance.4bpp");
++const u16 gObjectEventPic_Ethan[] = INCBIN_U16("graphics/object_events/pics/people/ethan.4bpp"); // Daily Oro
++const u16 gObjectEventPal_Ethan[] = INCBIN_U16("graphics/object_events/palettes/ethan.gbapal"); // Daily Oro
+ const u16 gObjectEventPic_GBAKid[] = INCBIN_U16("graphics/object_events/pics/people/gba_kid.4bpp");
+ const u16 gObjectEventPic_Mom[] = INCBIN_U16("graphics/object_events/pics/people/mom.4bpp");
+ const u16 gObjectEventPic_Pidgeot[] = INCBIN_U16("graphics/object_events/pics/pokemon/pidgeot.4bpp");
 diff --git a/src/data/object_events/object_event_graphics_info.h b/src/data/object_events/object_event_graphics_info.h
-index 78ee95a..43b368e 100644
+index 78ee95a..72ac0bb 100644
 --- a/src/data/object_events/object_event_graphics_info.h
 +++ b/src/data/object_events/object_event_graphics_info.h
-@@ -2923,3 +2923,25 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SSAnne = {
+@@ -1,8 +1,10 @@
++// Daily Oro: player (HORTE) is the balding-man overworld sprite. VS/front
++// uses custom bald horte_front_pic; battle back uses bald horte_back_pic.
+ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RedNormal = {
+     .tileTag = TAG_NONE,
+-    .paletteTag = OBJ_EVENT_PAL_TAG_PLAYER_RED,
+-    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_BRIDGE_REFLECTION,
+-    .size = 512,
++    .paletteTag = OBJ_EVENT_PAL_TAG_NPC_WHITE,
++    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
++    .size = 256,
+     .width = 16,
+     .height = 32,
+     .paletteSlot = PALSLOT_PLAYER,
+@@ -12,8 +14,8 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RedNormal = {
+     .tracks = TRACKS_FOOT,
+     .oam = &gObjectEventBaseOam_16x32,
+     .subspriteTables = gObjectEventSpriteOamTables_16x32,
+-    .anims = sAnimTable_RedGreenNormal,
+-    .images = sPicTable_RedNormal,
++    .anims = sAnimTable_Standard,
++    .images = sPicTable_BaldingMan,
+     .affineAnims = gDummySpriteAffineAnimTable,
+ };
+ 
+@@ -2923,3 +2925,24 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SSAnne = {
      .images = sPicTable_SSAnne,
      .affineAnims = gDummySpriteAffineAnimTable,
  };
 +
-+// Daily Red: RED as an NPC. Same sprite as the male player's, but in the
-+// special NPC palette slot: the player (LEAF) uses the player slot, and two
-+// different palettes in one slot would recolor one of them.
++// Daily Oro: ORO (Ethan) in the Champion's room. Overworld sprite/palette from
++// Hall of Legends; special NPC palette slot so it doesn't clash with HORTE.
 +const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_DailyRedRed = {
 +    .tileTag = TAG_NONE,
-+    .paletteTag = OBJ_EVENT_PAL_TAG_PLAYER_RED,
++    .paletteTag = OBJ_EVENT_PAL_TAG_ETHAN,
 +    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
-+    .size = 512,
++    .size = 256,
 +    .width = 16,
 +    .height = 32,
 +    .paletteSlot = PALSLOT_NPC_SPECIAL,
@@ -1281,8 +1667,8 @@ index 78ee95a..43b368e 100644
 +    .tracks = TRACKS_FOOT,
 +    .oam = &gObjectEventBaseOam_16x32,
 +    .subspriteTables = gObjectEventSpriteOamTables_16x32,
-+    .anims = sAnimTable_RedGreenNormal,
-+    .images = sPicTable_RedNormal,
++    .anims = sAnimTable_Standard,
++    .images = sPicTable_Ethan,
 +    .affineAnims = gDummySpriteAffineAnimTable,
 +};
 diff --git a/src/data/object_events/object_event_graphics_info_pointers.h b/src/data/object_events/object_event_graphics_info_pointers.h
@@ -1303,26 +1689,70 @@ index af2f8af..888c366 100644
      [OBJ_EVENT_GFX_SS_ANNE]                  = &gObjectEventGraphicsInfo_SSAnne,
 +    [OBJ_EVENT_GFX_DAILYRED_RED]             = &gObjectEventGraphicsInfo_DailyRedRed, // Daily Red
  };
+diff --git a/src/data/object_events/object_event_pic_tables.h b/src/data/object_events/object_event_pic_tables.h
+index 70889d7..41fe057 100644
+--- a/src/data/object_events/object_event_pic_tables.h
++++ b/src/data/object_events/object_event_pic_tables.h
+@@ -1111,6 +1111,19 @@ static const struct SpriteFrameImage sPicTable_Lance[] = {
+     overworld_frame(gObjectEventPic_Lance, 2, 4, 2),
+ };
+ 
++// Daily Oro: Ethan overworld (from Hall of Legends), same frame layout as Blue.
++static const struct SpriteFrameImage sPicTable_Ethan[] = {
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 0),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 1),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 2),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 3),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 4),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 5),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 6),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 7),
++    overworld_frame(gObjectEventPic_Ethan, 2, 4, 8),
++};
++
+ static const struct SpriteFrameImage sPicTable_Blue[] = {
+     overworld_frame(gObjectEventPic_Blue, 2, 4, 0),
+     overworld_frame(gObjectEventPic_Blue, 2, 4, 1),
 diff --git a/src/data/trainers.h b/src/data/trainers.h
-index 02afbfd..58db371 100644
+index 02afbfd..28bbba2 100644
 --- a/src/data/trainers.h
 +++ b/src/data/trainers.h
 @@ -7422,4 +7422,15 @@ const struct Trainer gTrainers[] = {
          .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE,
          .party = NO_ITEM_DEFAULT_MOVES(sParty_CueBallPaxton),
      },
-+    // Daily Red: the boss. His team and EVs are in src/dailyred_boss.c.
++    // Daily Oro: the boss. His team and EVs are in src/dailyred_boss.c.
 +    [TRAINER_DAILYRED_RED] = {
-+        .trainerClass = TRAINER_CLASS_PKMN_TRAINER,
++        .trainerClass = TRAINER_CLASS_CHAMPION,
 +        .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
-+        .trainerPic = TRAINER_PIC_RED,
-+        .trainerName = _("RED"),
++        .trainerPic = TRAINER_PIC_ELITE_FOUR_LANCE, // remapped to Ethan front pic
++        .trainerName = _("ORO"),
 +        .items = {},
 +        .doubleBattle = FALSE,
 +        .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY,
 +        .party = ITEM_CUSTOM_MOVES(gDailyRedBossParty),
 +    },
  };
+diff --git a/src/event_object_movement.c b/src/event_object_movement.c
+index 8e82824..b3fef30 100644
+--- a/src/event_object_movement.c
++++ b/src/event_object_movement.c
+@@ -468,6 +468,7 @@ static const u8 gInitialMovementTypeFacingDirections[MOVEMENT_TYPES_COUNT] = {
+ #define OBJ_EVENT_PAL_TAG_RS_GROUDON                  0x1119
+ #define OBJ_EVENT_PAL_TAG_RS_GROUDON_REFLECTION       0x111A
+ #define OBJ_EVENT_PAL_TAG_RS_SUBMARINE_SHADOW         0x111B
++#define OBJ_EVENT_PAL_TAG_ETHAN                       0x111C // Daily Oro: Ethan's overworld palette
+ #define OBJ_EVENT_PAL_TAG_NONE                        0x11FF
+ 
+ #include "data/object_events/object_event_graphics_info_pointers.h"
+@@ -497,6 +498,7 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
+     {gObjectEventPal_Meteorite,               OBJ_EVENT_PAL_TAG_METEORITE},
+     {gObjectEventPal_SSAnne,                  OBJ_EVENT_PAL_TAG_SS_ANNE},
+     {gObjectEventPal_Seagallop,               OBJ_EVENT_PAL_TAG_SEAGALLOP},
++    {gObjectEventPal_Ethan,                   OBJ_EVENT_PAL_TAG_ETHAN}, // Daily Oro
+     {},
+ };
+ 
 diff --git a/src/field_weather_effects.c b/src/field_weather_effects.c
 index 6d69e35..1add29c 100644
 --- a/src/field_weather_effects.c
@@ -1467,14 +1897,14 @@ index 7f3a881..d072abe 100644
  }
  
 diff --git a/src/pokemon.c b/src/pokemon.c
-index 66a5c3d..2ff1925 100644
+index 66a5c3d..a7891d2 100644
 --- a/src/pokemon.c
 +++ b/src/pokemon.c
 @@ -5857,6 +5857,9 @@ static u16 GetBattleBGM(void)
          return MUS_RS_VS_TRAINER;
      if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
      {
-+        // Daily Red: RED keeps his "PKMN TRAINER" class but gets the champion theme.
++        // Daily Oro: ORO keeps the champion battle theme.
 +        if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
 +            return MUS_VS_CHAMPION;
          switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)

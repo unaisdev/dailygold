@@ -21,7 +21,7 @@ export LIBRARY_PATH="$TC/libpng/lib${LIBRARY_PATH:+:$LIBRARY_PATH}"
 # A no-op pkg-config so the tool Makefiles don't print "command not found".
 export PATH="$ROOT/scripts/shims:$PATH"
 
-JOBS="$(sysctl -n hw.ncpu 2>/dev/null || nproc)"
+JOBS="$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)"
 
 if [ "$#" -gt 0 ]; then
   make -C "$GAME" -j"$JOBS" TOOLCHAIN="$TC/arm-none-eabi" MODERN=1 "$@"
@@ -36,8 +36,16 @@ ROM="$GAME/pokefirered_modern.gba"
 mkdir -p "$ROOT/web/game"
 rm -f "$ROOT/web/game/dailyred.gba"
 gzip -9 -n -c "$ROM" > "$ROOT/web/game/dailyred.gba.gz"
-# RED's battle sprite for the site's title card (from the decomp, like the ROM).
-cp "$GAME/graphics/trainers/front_pics/red_front_pic.png" "$ROOT/web/game/red.png"
+# ORO's (Ethan) battle sprite for the site's title card (from the decomp, like the ROM).
+cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" "$ROOT/web/game/oro.png"
+cp "$ROOT/web/game/oro.png" "$ROOT/web/game/red.png"
+# Team icons for the title card.
+for mon in gyarados ampharos heracross togetic ho_oh typhlosion; do
+  src="$GAME/graphics/pokemon/$mon/icon.png"
+  dst_name="$mon"
+  [ "$mon" = "ho_oh" ] && dst_name="ho-oh"
+  cp "$src" "$ROOT/web/game/team/${dst_name}.png"
+done
 echo
 echo "Built $ROM"
 echo "Website copy: web/game/dailyred.gba.gz ($(wc -c < "$ROOT/web/game/dailyred.gba.gz" | tr -d ' ') bytes)"
