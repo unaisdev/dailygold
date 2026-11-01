@@ -2,13 +2,6 @@
 
 # scripts/setup-macos.sh
 /.toolchain/
-# scripts/get-pokefirered.sh (pret/pokefirered + patches/)
-/pokefirered/
-# scripts/fetch-vendor.sh
-/web/vendor/
-# scripts/build-rom.sh. ROM build output; keep sprites under web/game/ tracked.
-/web/game/*.gba
-/web/game/*.gba.gz
 
 # Wrangler's local cache (Cloudflare deploys)
 /.wrangler/
