@@ -2,7 +2,7 @@
 
 Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
 recibes el mismo equipo aleatorio de seis Pokémon de nivel 100 y te enfrentas a
-**ORO (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
+**Gold (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
 victorias, derrotas y rachas se guardan en tu navegador.
 
 Cada combate se ejecuta en el motor original de Pokémon FireRed: el juego parte
@@ -16,7 +16,7 @@ Daily Gold es una adaptación de [Daily Red](https://github.com/amoi-builds/dail
 - [Inicio rápido (macOS)](#inicio-rapido-macos)
 - [Cómo funciona](#como-funciona)
 - [Generación de equipos](#generacion-de-equipos)
-- [Equipo de ORO](#equipo-de-oro)
+- [Equipo de Gold](#equipo-de-gold)
 - [Flujo de desarrollo](#flujo-de-desarrollo)
 - [Pruebas y depuración](#pruebas-y-depuracion)
 - [Ejecución local](#ejecucion-local)
@@ -109,14 +109,14 @@ especiales. Todo se carga desde `web/vendor/`.
 | Pantalla de título → inicio directo sin semilla | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
 | Datos de partida: LEAF (jugadora de FireRed), texto rápido | `StartNewGame` en `src/dailyred.c`, después el `CB2_NewGame` original |
 | Equipo y traslado a la sala del Campeón en lugar de la habitación | `src/new_game.c` → `DailyRed_InitNewGame` |
-| Sala del Campeón sin salidas; ORO mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
-| Hablar con ORO → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
+| Sala del Campeón sin salidas; Gold mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
+| Hablar con Gold → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
 | Fondo de combate de la Liga | `BattleSetup_GetTerrainId` en `src/battle_setup.c` |
-| Sin cambio gratis de Pokémon al debilitar a uno de ORO: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
-| ORO como entrenador (sprites de Ethan, de Hall of Legends) | `TRAINER_DAILYRED_RED` en `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
+| Sin cambio gratis de Pokémon al debilitar a uno de Gold: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
+| Gold como entrenador (sprites de Ethan, de Hall of Legends) | `TRAINER_DAILYRED_RED` en `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
 | Menús: POKéMON / OPTION / EXIT; equipo: SUMMARY / SWITCH / CANCEL | `src/start_menu.c`, `src/party_menu.c`; altura de las ventanas en `src/new_menu_helpers.c` |
 | Jugador HORTE: sprite calvo del mapa, frontal VS y espalda de combate | `src/dailyred.c`, sprites `horte_*`, `RedNormal` → BaldingMan |
-| Sprite de ORO en su propia paleta para no interferir con HORTE | `OBJ_EVENT_GFX_DAILYRED_RED` en `include/constants/event_objects.h`, `src/data/object_events/` |
+| Sprite de Gold en su propia paleta para no interferir con HORTE | `OBJ_EVENT_GFX_DAILYRED_RED` en `include/constants/event_objects.h`, `src/data/object_events/` |
 
 El combate es un combate normal contra un entrenador de FireRed. El guion del
 mapa usa `trainerbattle_earlyrival` con `RIVAL_BATTLE_HEAL_AFTER`, el modo de la
@@ -133,7 +133,7 @@ grep -rn "Daily Red" pokefirered/src pokefirered/include pokefirered/data
 ```
 
 El mapa reutiliza el diseño de la sala del Campeón de la Liga Pokémon (el mismo
-lugar que Hall of Legends). ORO está en (6, 8), mirando al sur; empiezas en
+lugar que Hall of Legends). Gold está en (6, 8), mirando al sur; empiezas en
 (6, 12). El proyecto usa el objetivo `modern` de pokefirered (GCC 14), no la
 compilación `agbcc` idéntica byte a byte, por lo que no reproduce la ROM
 comercial.
@@ -228,7 +228,7 @@ incluyen objetos específicos de especie como Bola Luminosa o Hueso Grueso. El
 generador usa su propio estado aleatorio, independiente de `Random()`, por lo
 que los equipos dependen solo de la semilla.
 
-## Equipo de ORO
+## Equipo de Gold
 
 Edita **`pokefirered/src/dailyred_boss.c`** para cambiar especies, nivel, IV,
 objeto y movimientos, usando el formato normal de FireRed
@@ -256,7 +256,7 @@ Son estadísticas base de la tercera generación, tomadas de
 diario (mínimo de estadísticas base, IV, probabilidad de legendario, etc.) no
 cambia con respecto a Daily Red.
 
-El nombre de ORO, su clase de entrenador Campeón, su sprite de combate (Ethan,
+El nombre de Gold, su clase de entrenador Campeón, su sprite de combate (Ethan,
 de Hall of Legends) y sus indicadores de IA están en
 `[TRAINER_DAILYRED_RED]` dentro de `pokefirered/src/data/trainers.h`. Conserva
 la música de combate de Campeón (`src/pokemon.c`). El jugador es **HORTE**
@@ -276,7 +276,7 @@ la fórmula habitual de FireRed basada en el nombre y no se pueden configurar.
 
 `pokefirered/`, `.toolchain/` y `web/vendor/` no están versionados (véase
 `.gitignore`); en una copia limpia se vuelven a crear con los scripts. Los
-sprites de `web/game/` (ORO y su equipo) sí están versionados; solo se ignora
+sprites de `web/game/` (Gold y su equipo) sí están versionados; solo se ignora
 la ROM compilada (`.gba` / `.gba.gz`). `git -C pokefirered diff` muestra
 todos los cambios respecto al código original.
 
@@ -419,5 +419,5 @@ tests/                               pruebas de navegador y herramienta de equip
 Dentro de `pokefirered/`, el código de Daily Gold está en `include/dailyred.h`,
 `include/constants/dailyred.h`, `src/dailyred.c` (flujo y semilla),
 `src/dailyred_team.c` (generador de equipos), `src/dailyred_boss.c` (equipo
-de ORO), `data/maps/DailyRed_Summit/` y `data/layouts/DailyRed_Summit/`
+de Gold), `data/maps/DailyRed_Summit/` y `data/layouts/DailyRed_Summit/`
 (el mapa).

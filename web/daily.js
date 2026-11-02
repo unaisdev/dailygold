@@ -1,7 +1,7 @@
 // The daily game and the player's stats, saved in this browser (localStorage).
 //
 // Everyone gets the same team on the same calendar day (in their own time
-// zone, like Wordle), and each browser gets one battle with ORO per day.
+// zone, like Wordle), and each browser gets one battle with Gold per day.
 
 const STORAGE_KEY = 'dailyred-stats';
 
@@ -73,7 +73,7 @@ export function currentStreaks(stats, date) {
   return { winStreak: alive ? stats.winStreak : 0, dayStreak: alive ? stats.dayStreak : 0 };
 }
 
-// From the moment ORO's battle starts the day counts as played, so leaving
+// From the moment Gold's battle starts the day counts as played, so leaving
 // mid-battle counts as a loss (see settleAbandonedGame).
 export function markBattleStarted(stats, date) {
   if (stats.pending === date || resultFor(stats, date)) return;

@@ -61,7 +61,7 @@ const speciesId = (name) => [...SPECIES].find(([, n]) => n === name)[0];
 const redTotal = ['GYARADOS', 'AMPHAROS', 'HERACROSS', 'TOGETIC', 'HO_OH', 'TYPHLOSION'].reduce((sum, n) => sum + baseStatTotal(speciesId(n)), 0);
 const totals = seeds.map((s) => teamBaseStatTotal(results.get(s).party));
 console.log(`Team base stat totals: min ${Math.min(...totals)}, average ${Math.round(totals.reduce((a, b) => a + b, 0) / totals.length)}, max ${Math.max(...totals)} `
-  + `(minimum ${MIN_TEAM_BST}; ORO ${redTotal}; ${totals.filter((t) => t > redTotal).length} of ${totals.length} teams out-total ORO).`);
+  + `(minimum ${MIN_TEAM_BST}; Gold ${redTotal}; ${totals.filter((t) => t > redTotal).length} of ${totals.length} teams out-total Gold).`);
 const legendaryTeams = seeds.filter((s) => results.get(s).party.some((m) => m && isLegendary(m))).length;
 console.log(`Teams with a legendary: ${legendaryTeams} of ${seeds.length}.`);
 process.exit(invalid ? 1 : 0);

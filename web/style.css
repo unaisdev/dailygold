@@ -133,7 +133,7 @@ a { color: inherit; text-underline-offset: 3px; }
   color: #b9c8d5;
 }
 
-/* Title card: ORO, his team, the player's stats, then Play (or today's result). */
+/* Title card: Gold, his team, the player's stats, then Play (or today's result). */
 .card-title { gap: 4.5cqh; padding: 4cqh; }
 
 .red-sprite {

@@ -31,7 +31,7 @@ const DIR_SOUTH = define('include/constants/global.h', 'DIR_SOUTH');
 const SPECIES_PIKACHU = define('include/constants/species.h', 'SPECIES_PIKACHU');
 const MOVE_SEISMIC_TOSS = define('include/constants/moves.h', 'MOVE_SEISMIC_TOSS');
 const START = [define('include/constants/dailyred.h', 'DAILYRED_START_X'), define('include/constants/dailyred.h', 'DAILYRED_START_Y')];
-const RED_FRONT = [6, 9]; // the tile south of ORO in the Champion's room
+const RED_FRONT = [6, 9]; // the tile south of Gold in the Champion's room
 
 const MON_SIZE = 100, MON_HP = 86;          // struct Pokemon
 const BMON_SIZE = 0x58, BMON_MOVES = 0x0C, BMON_PP = 0x24, BMON_HP = 0x28, BMON_MAXHP = 0x2C; // struct BattlePokemon
@@ -125,7 +125,7 @@ try {
   await bootGame(page, server.url, { seed: 424242 });
   let s = await waitFor(page, (st) => st.inOverworld, { what: 'overworld' });
   check(s.x === START[0] && s.y === START[1], `player starts at ${START} (got ${s.x},${s.y})`);
-  check(redFacing(s.mem) === DIR_SOUTH, "ORO faces the player from the Champion's spot");
+  check(redFacing(s.mem) === DIR_SOUTH, "Gold faces the player from the Champion's spot");
   check(optionsBattleStyle(s.mem) === STYLE_SET, 'battle style starts as SET');
   await sleep(1500);
   await screenshot(page, `${OUT}/01-start.png`);
@@ -168,8 +168,8 @@ try {
   check(s.mem.read(symbol('gTrainerBattleOpponent_A'), 2).readUInt16LE(0) === define('include/constants/opponents.h', 'TRAINER_DAILYRED_RED'), 'opponent is TRAINER_DAILYRED_RED');
   const red = readParty(s.mem, 'Enemy');
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
-  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "ORO's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
-  check(red.party.filter(Boolean).length === 6 && red.party[0]?.shiny, "ORO's lead Gyarados is present and shiny");
+  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "Gold's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
+  check(red.party.filter(Boolean).length === 6 && red.party[0]?.shiny, "Gold's lead Gyarados is present and shiny");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");
   await waitForActionMenu(page);
@@ -208,7 +208,7 @@ try {
   const team2 = readParty(s.mem);
   checkTeam('team after a win', team2);
   check(teamKey(team2.party) !== teamKey(team1.party), 'a new team is generated after the win');
-  check(redFacing(s.mem) === DIR_SOUTH, 'ORO faces south again for the next run');
+  check(redFacing(s.mem) === DIR_SOUTH, 'Gold faces south again for the next run');
   await screenshot(page, `${OUT}/11-after-win.png`);
 
   // 4. Battle again and force a loss.
