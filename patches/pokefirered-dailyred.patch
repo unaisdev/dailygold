@@ -986,7 +986,7 @@ new file mode 100644
 index 0000000..f129dac
 --- /dev/null
 +++ b/src/dailyred_boss.c
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,76 @@
 +#include "global.h"
 +#include "dailyred.h"
 +#include "constants/items.h"
@@ -995,11 +995,9 @@ index 0000000..f129dac
 +
 +// Gold's (Ethan's) team for Daily Gold. This file is the one place to edit it.
 +//
-+// Species and order follow Ethan's team from Hall of Legends
-+// (https://github.com/amoi-builds/halloflegends): Gyarados, Ampharos,
-+// Heracross, Togekiss, Ho-Oh, Typhlosion. Togekiss and several Gen 4 moves
-+// don't exist in FireRed, so Togetic stands in and movesets are adapted to
-+// Gen 3. Every Pokemon is level 100 with perfect IVs and a full EV spread.
++// Species and order follow Ethan's team from Hall of Legends, with Umbreon
++// in the fourth slot. Every Pokemon is level 100 with perfect IVs and a full
++// EV spread.
 +//
 +// The battle itself is a normal FireRed trainer battle: the trainer entry
 +// (name, class, sprite, AI flags) is TRAINER_DAILYRED_RED in
@@ -1013,35 +1011,35 @@ index 0000000..f129dac
 +        .iv = 255,
 +        .lvl = 100,
 +        .species = SPECIES_GYARADOS, // shiny (forced in DailyRed_ApplyBossEVs)
-+        .heldItem = ITEM_MYSTIC_WATER,
-+        .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE},
++        .heldItem = ITEM_LUM_BERRY,
++        .moves = {MOVE_DRAGON_DANCE, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_RETURN},
 +    },
 +    {
 +        .iv = 255,
 +        .lvl = 100,
 +        .species = SPECIES_AMPHAROS,
 +        .heldItem = ITEM_MAGNET,
-+        .moves = {MOVE_THUNDERBOLT, MOVE_BRICK_BREAK, MOVE_SIGNAL_BEAM, MOVE_FIRE_PUNCH},
++        .moves = {MOVE_THUNDERBOLT, MOVE_ICE_PUNCH, MOVE_THUNDER_WAVE, MOVE_LIGHT_SCREEN},
 +    },
 +    {
 +        .iv = 255,
 +        .lvl = 100,
 +        .species = SPECIES_HERACROSS,
-+        .heldItem = ITEM_SCOPE_LENS,
++        .heldItem = ITEM_SILVER_POWDER,
 +        .moves = {MOVE_SWORDS_DANCE, MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE},
 +    },
 +    {
 +        .iv = 255,
 +        .lvl = 100,
-+        .species = SPECIES_TOGETIC,
++        .species = SPECIES_UMBREON,
 +        .heldItem = ITEM_LEFTOVERS,
-+        .moves = {MOVE_CALM_MIND, MOVE_SOFT_BOILED, MOVE_PSYCHIC, MOVE_AERIAL_ACE},
++        .moves = {MOVE_WISH, MOVE_PROTECT, MOVE_TOXIC, MOVE_FAINT_ATTACK},
 +    },
 +    {
 +        .iv = 255,
 +        .lvl = 100,
 +        .species = SPECIES_HO_OH,
-+        .heldItem = ITEM_LEFTOVERS,
++        .heldItem = ITEM_SHARP_BEAK,
 +        .moves = {MOVE_SACRED_FIRE, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE, MOVE_RECOVER},
 +    },
 +    {
@@ -1061,7 +1059,7 @@ index 0000000..f129dac
 +    {  4, 252,   0, 252,   0,   0}, // Gyarados
 +    {252,   0,   0,   6, 252,   0}, // Ampharos
 +    {  4, 252,   0, 252,   0,   0}, // Heracross
-+    {252,   0,   0,   6, 252,   0}, // Togetic
++    {252,   0, 252,   0,   0,   4}, // Umbreon
 +    {252, 252,   0,   6,   0,   0}, // Ho-Oh
 +    {  4,   0,   0, 252, 252,   0}, // Typhlosion
 +};

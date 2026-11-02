@@ -168,7 +168,7 @@ try {
   check(s.mem.read(symbol('gTrainerBattleOpponent_A'), 2).readUInt16LE(0) === define('include/constants/opponents.h', 'TRAINER_DAILYRED_RED'), 'opponent is TRAINER_DAILYRED_RED');
   const red = readParty(s.mem, 'Enemy');
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
-  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "Gold's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
+  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,UMBREON,HO_OH,TYPHLOSION', "Gold's team is Gyarados, Ampharos, Heracross, Umbreon, Ho-Oh, Typhlosion");
   check(red.party.filter(Boolean).length === 6 && red.party[0]?.shiny, "Gold's lead Gyarados is present and shiny");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");

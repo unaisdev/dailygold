@@ -1,3 +1,5 @@
+Fork de [Daily Red](https://github.com/amoi-builds/dailyred).
+
 # Daily Gold
 
 Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
@@ -10,8 +12,6 @@ de la decompilación [pret/pokefirered](https://github.com/pret/pokefirered),
 con algunos cambios propios, se compila como ROM de GBA y se ejecuta en el
 navegador mediante el emulador mGBA compilado para WebAssembly. JavaScript no
 simula los combates.
-
-Daily Gold es una adaptación de [Daily Red](https://github.com/amoi-builds/dailyred).
 
 - [Inicio rápido (macOS)](#inicio-rapido-macos)
 - [Cómo funciona](#como-funciona)
@@ -232,24 +232,22 @@ que los equipos dependen solo de la semilla.
 
 Edita **`pokefirered/src/dailyred_boss.c`** para cambiar especies, nivel, IV,
 objeto y movimientos, usando el formato normal de FireRed
-`TrainerMonItemCustomMoves` y una tabla de EV junto a él. El equipo sigue al de
-Ethan en [Hall of Legends](https://github.com/amoi-builds/halloflegends):
-Gyarados, Ampharos, Heracross, Togekiss, Ho-Oh y Typhlosion. Todos están al
-nivel 100, con IV perfectos, objetos equipados y EV completos. El Gyarados
-inicial es variocolor, igual que en Hall of Legends. Togekiss y varios
-movimientos de cuarta generación no existen en FireRed; Togetic ocupa su lugar
-y los movimientos se adaptan a la tercera generación. El combate tiene lugar
-en la sala del Campeón.
+`TrainerMonItemCustomMoves` y una tabla de EV junto a él. El equipo actual es
+Gyarados, Ampharos, Heracross, Umbreon, Ho-Oh y Typhlosion (basado en el de
+Ethan en [Hall of Legends](https://github.com/amoi-builds/halloflegends), con
+Umbreon en el cuarto puesto). Todos están al nivel 100, con IV perfectos,
+objetos equipados y EV completos. El Gyarados inicial es variocolor. El combate
+tiene lugar en la sala del Campeón.
 
 | Pokémon | PS | Atq | Def | Vel | At. Esp. | Def. Esp. | Total |
 |---|---|---|---|---|---|---|---|
 | Gyarados | 95 | 125 | 79 | 81 | 60 | 100 | 540 |
 | Ampharos | 90 | 75 | 85 | 55 | 115 | 90 | 510 |
 | Heracross | 80 | 125 | 75 | 85 | 40 | 95 | 500 |
-| Togetic | 55 | 40 | 85 | 40 | 80 | 105 | 405 |
+| Umbreon | 95 | 65 | 110 | 65 | 60 | 130 | 525 |
 | Ho-Oh | 106 | 130 | 90 | 90 | 110 | 154 | 680 |
 | Typhlosion | 78 | 84 | 78 | 100 | 109 | 85 | 534 |
-| **Equipo** | | | | | | | **3169** |
+| **Equipo** | | | | | | | **3289** |
 
 Son estadísticas base de la tercera generación, tomadas de
 `src/data/pokemon/species_info.h`. La dificultad de generación del equipo
