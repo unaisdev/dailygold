@@ -204,7 +204,7 @@ new file mode 100644
 index 0000000..b1b9d9e
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/text.inc
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,38 @@
 +DailyRed_Summit_Text_RedIntro::
 +    .string "Te estaba esperando HORTELANO.\p"
 +    .string "Así que finalmente has podido\n"
@@ -216,7 +216,8 @@ index 0000000..b1b9d9e
 +
 +@ Shown in battle when Gold loses.
 +DailyRed_Summit_Text_RedDefeat::
-+    .string "…$"
++    .string "¡Has derrotado a GOLD de la\n"
++    .string "ELITE FOUR de CAMPEONES!$"
 +
 +@ Shown in battle when Gold wins.
 +DailyRed_Summit_Text_RedVictory::
