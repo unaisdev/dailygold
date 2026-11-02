@@ -36,9 +36,9 @@ ROM="$GAME/pokefirered_modern.gba"
 mkdir -p "$ROOT/web/game"
 rm -f "$ROOT/web/game/dailyred.gba"
 gzip -9 -n -c "$ROM" > "$ROOT/web/game/dailyred.gba.gz"
-# ORO's (Ethan) battle sprite for the site's title card (from the decomp, like the ROM).
-cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" "$ROOT/web/game/oro.png"
-cp "$ROOT/web/game/oro.png" "$ROOT/web/game/red.png"
+# Gold's (Ethan) battle sprite for the site's title card (from the decomp, like the ROM).
+cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" "$ROOT/web/game/gold.png"
+cp "$ROOT/web/game/gold.png" "$ROOT/web/game/red.png"
 # Team icons for the title card.
 for mon in gyarados ampharos heracross umbreon ho_oh typhlosion; do
   src="$GAME/graphics/pokemon/$mon/icon.png"

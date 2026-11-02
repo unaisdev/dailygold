@@ -133,7 +133,7 @@ a { color: inherit; text-underline-offset: 3px; }
   color: #b9c8d5;
 }
 
-/* Title card: ORO, his team, the player's stats, then Play (or today's result). */
+/* Title card: Gold, the player's stats, then Play (or today's result). */
 .card-title { gap: 4.5cqh; padding: 4cqh; }
 
 .red-sprite {
@@ -142,22 +142,6 @@ a { color: inherit; text-underline-offset: 3px; }
   width: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 1cqh 0 rgba(0, 0, 0, 0.35));
-}
-
-.boss-team {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  gap: 1.2cqw;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.boss-team img {
-  width: auto;
-  height: 11cqh;
-  image-rendering: pixelated;
 }
 
 .stats {

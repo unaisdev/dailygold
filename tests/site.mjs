@@ -67,7 +67,7 @@ try {
   await page.screenshot({ path: `${OUT}/site-title.png`, fullPage: true });
   let s = await shown(page);
   check(s.canPlay && s.wins === '0' && s.losses === '0' && s.winStreak === '0' && s.dayStreak === '0', `new visitor sees Play and zeroed stats (${statLine(s)})`);
-  check(await page.evaluate(() => document.querySelector('.red-sprite').naturalWidth === 64), "ORO's sprite is shown on the title card");
+  check(await page.evaluate(() => document.querySelector('.red-sprite').naturalWidth === 64), "Gold's sprite is shown on the title card");
   const leftovers = await page.evaluate(() => ['.tagline', '.steps', '#seed', '#new-run'].filter((sel) => document.querySelector(sel)));
   check(leftovers.length === 0, `removed: tagline, how-it-works, seed, New run (${leftovers.join(', ') || 'none left'})`);
   const footer = await page.evaluate(() => document.querySelector('.footer')?.textContent || '');
@@ -92,7 +92,7 @@ try {
   check(await finishDailyGame(page, 'site-win'), 'after a win the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '0' && s.winStreak === '1' && s.dayStreak === '1', `win recorded (${statLine(s)})`);
-  check(!s.canPlay && s.played === '¡Hoy has derrotado a ORO!' && /^Próximo combate en \d\d:\d\d:\d\d$/.test(s.next), `no aparece el botón Jugar; muestra "${s.played}" / "${s.next}"`);
+  check(!s.canPlay && s.played === 'You beat Gold today!' && /^Next battle in \d\d:\d\d:\d\d$/.test(s.next), `no Play button; shows "${s.played}" / "${s.next}"`);
   await page.screenshot({ path: `${OUT}/site-played.png`, fullPage: true });
 
   await page.reload();
@@ -125,7 +125,7 @@ try {
   check(await finishDailyGame(page, 'site-loss'), 'after a loss the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '1' && s.winStreak === '0' && s.dayStreak === '2', `loss recorded (${statLine(s)})`);
-  check(s.played === 'ORO ha ganado hoy.', `muestra "${s.played}"`);
+  check(s.played === 'Gold won today.', `shows "${s.played}"`);
 
   // Day 3: leave in the middle of the battle -> counts as a loss.
   await page.clock.setFixedTime(at(DAY3));
@@ -137,7 +137,7 @@ try {
   await page.reload();
   await sleep(1000);
   s = await shown(page);
-  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'ORO ha ganado hoy.', `salir durante el combate cuenta como derrota (${statLine(s)})`);
+  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'Gold won today.', `leaving mid-battle counts as a loss (${statLine(s)})`);
 
   // Day 5: a missed day resets the streaks.
   await page.clock.setFixedTime(at(DAY5));
@@ -193,7 +193,7 @@ try {
   await phone.screenshot({ path: `${OUT}/site-phone-playing.png` });
   await phoneContext.close();
 
-  // Un fallo de descarga muestra el aviso y permite reintentar.
+  // A failed download shows the error card, and Try again recovers.
   const brokenContext = await browser.newContext();
   const broken = await brokenContext.newPage();
   await broken.route('**/game/dailyred.gba.gz', (route) => route.fulfill({ status: 404, body: 'missing' }));
@@ -205,7 +205,7 @@ try {
   await broken.unroute('**/game/dailyred.gba.gz');
   await broken.click('#retry');
   await attach(broken);
-  check(true, 'Reintentar inicia el juego después del error');
+  check(true, 'Try again starts the game after the error');
   await brokenContext.close();
 } catch (err) {
   failures++;
