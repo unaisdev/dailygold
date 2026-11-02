@@ -1,7 +1,6 @@
-// Website controller: the daily title card (Gold, your stats, Play), the
-// emulator, and the toolbar and touch controls. All game behaviour lives in the
-// ROM; this file starts it with the day's seed, watches for the result, and
-// keeps the stats (see daily.js).
+// Control de la web: tarjeta diaria (ORO y estadísticas), emulador, barra de
+// herramientas y controles táctiles. El juego se ejecuta en la ROM; este archivo
+// lo inicia con la semilla del día, espera el resultado y guarda las estadísticas.
 import { Nostalgist } from './vendor/nostalgist.js';
 import { loadGameFiles } from './game-files.js';
 import { injectConfig, parseSeed } from './rom-config.js';
@@ -33,14 +32,14 @@ const ui = {
   errorText: $('error-text'),
 };
 
-// sessionStorage can throw when storage is blocked; the site works without it.
+// sessionStorage puede fallar si el navegador bloquea el almacenamiento; la web funciona sin él.
 const session = {
   get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
   set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* not remembered */ } },
 };
 
-// ?seed=123 starts a practice run with that team, for testing: results
-// aren't saved, there's no daily limit, and the game keeps dealing new teams.
+// ?seed=123 inicia una partida de práctica: no se guardan resultados, no hay
+// límite diario y el juego genera nuevos equipos después de cada combate.
 const practiceSeed = parseSeed(new URLSearchParams(location.search).get('seed'));
 
 let stats = settleAbandonedGame(loadStats());
@@ -53,9 +52,8 @@ let muted = session.get('dailyred-muted') === '1';
 let starting = false;
 let titleDate = null;
 
-// RetroArch opens a Web Audio context for each emulator and never closes it,
-// so a restart would leave one running (and browsers cap how many a page can
-// have). Track the contexts the emulator creates and close them on exit.
+// RetroArch abre un contexto Web Audio por emulador y no lo cierra. Guardamos
+// los contextos para cerrarlos al salir y evitar el límite del navegador.
 const audioContexts = [];
 const NativeAudioContext = window.AudioContext;
 if (NativeAudioContext) {
@@ -74,7 +72,7 @@ function setState(state) {
   ui.fullscreen.disabled = !playing || !document.fullscreenEnabled;
 }
 
-// --- Title card ------------------------------------------------------------------
+// --- Tarjeta inicial --------------------------------------------------------------
 
 function renderTitle() {
   titleDate = today();
@@ -88,7 +86,7 @@ function renderTitle() {
   ui.play.hidden = Boolean(result);
   ui.played.hidden = !result;
   ui.practiceNote.hidden = !practiceSeed;
-  if (result) ui.playedResult.textContent = result === 'won' ? 'You beat Gold today!' : 'Gold won today.';
+  if (result) ui.playedResult.textContent = result === 'won' ? '¡Hoy has derrotado a ORO!' : 'ORO ha ganado hoy.';
   updateCountdown();
 }
 
@@ -99,24 +97,24 @@ function formatTime(ms) {
 }
 
 function updateCountdown() {
-  // At midnight a new battle unlocks: redraw the card.
+// A medianoche se desbloquea el siguiente combate: actualiza la tarjeta.
   if (titleDate !== today()) {
     renderTitle();
     return;
   }
-  if (!ui.played.hidden) ui.playedNext.textContent = `Next battle in ${formatTime(msUntilTomorrow())}`;
+  if (!ui.played.hidden) ui.playedNext.textContent = `Próximo combate en ${formatTime(msUntilTomorrow())}`;
 }
 setInterval(() => {
   if (app.dataset.state === 'title') updateCountdown();
 }, 1000);
 
-// --- Running the game --------------------------------------------------------------
+// --- Ejecución del juego -----------------------------------------------------------
 
 const megabytes = (n) => (n / 1048576).toFixed(1);
 
 function checkBrowser() {
   if (typeof WebAssembly !== 'object' || typeof DecompressionStream !== 'function') {
-    throw new Error("This browser can't run the game. Use a recent version of Chrome, Edge, Firefox or Safari.");
+    throw new Error('Este navegador no puede ejecutar el juego. Usa una versión reciente de Chrome, Edge, Firefox o Safari.');
   }
 }
 
@@ -142,7 +140,7 @@ async function startRun() {
     checkBrowser();
     stopEmulator();
     setState('loading');
-    ui.loadingText.textContent = 'Downloading the game';
+    ui.loadingText.textContent = 'Descargando el juego';
     ui.loadingDetail.textContent = '';
     const files = await loadGameFiles((loaded, total) => {
       ui.meter.style.width = total ? `${Math.min(100, (loaded / total) * 100)}%` : '50%';
@@ -161,7 +159,7 @@ async function startRun() {
       ? injectConfig(files.rom, { seed })
       : injectConfig(files.rom, { seed, wins: stats.wins, battles: stats.wins + stats.losses, daily: true });
 
-    ui.loadingText.textContent = 'Starting the emulator';
+    ui.loadingText.textContent = 'Iniciando el emulador';
     ui.loadingDetail.textContent = '';
     ui.meter.style.width = '100%';
 
@@ -192,7 +190,7 @@ async function startRun() {
     console.error(err);
     stopEmulator();
     // fetch() rejects with a TypeError when the network itself fails.
-    const hint = err instanceof TypeError ? ' Check your connection and try again.' : '';
+    const hint = err instanceof TypeError ? ' Comprueba tu conexión e inténtalo de nuevo.' : '';
     ui.errorText.textContent = `${err?.message || err}${hint}`;
     setState('error');
   } finally {
@@ -200,9 +198,8 @@ async function startRun() {
   }
 }
 
-// Follows the daily battle: once it starts the day counts as played, the
-// result goes into the stats as soon as it's known, and when the game has
-// finished its closing messages we go back to the title card.
+// Sigue el combate diario: al empezar cuenta como jugado, guarda el resultado
+// en cuanto se conoce y vuelve a la tarjeta inicial al terminar.
 function watchGame() {
   let status;
   try {
@@ -215,7 +212,7 @@ function watchGame() {
     battleSeen = true;
     markBattleStarted(stats, runDate);
   } else if (battleSeen && status.result === RESULT.NONE) {
-    // The game restarted mid-battle: that's a loss, like leaving the page.
+// Si el juego se reinicia durante el combate, cuenta como derrota, igual que al salir de la página.
     recordResult(stats, runDate, false);
     endDailyGame(0);
     return;
@@ -234,10 +231,10 @@ function endDailyGame(delayMs) {
   }, delayMs);
 }
 
-// --- Toolbar ---------------------------------------------------------------------
+// --- Barra de herramientas --------------------------------------------------------
 
-// Buttons keep focus after a click, and Enter is the game's Start button, so
-// hand focus back to the page to avoid triggering the button again.
+// Los botones conservan el foco tras pulsarlos y Enter equivale a Start en el
+// juego. Devolvemos el foco a la página para evitar activar el botón otra vez.
 function onClick(button, handler) {
   button.addEventListener('click', () => {
     button.blur();
@@ -257,7 +254,7 @@ onClick(ui.sound, () => {
 });
 
 function showMuted() {
-  ui.sound.textContent = muted ? 'Unmute' : 'Mute';
+  ui.sound.textContent = muted ? 'Activar sonido' : 'Silenciar';
   ui.sound.setAttribute('aria-pressed', String(muted));
 }
 
@@ -267,25 +264,25 @@ onClick(ui.fullscreen, () => {
 });
 
 document.addEventListener('fullscreenchange', () => {
-  ui.fullscreen.textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+  ui.fullscreen.textContent = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa';
 });
 
-// Don't let arrow keys and space scroll the page while playing.
+// Evita que las flechas y la barra espaciadora desplacen la página durante el juego.
 window.addEventListener('keydown', (event) => {
   if (app.dataset.state === 'playing' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
     event.preventDefault();
   }
 });
 
-// Pause when the tab is hidden.
+// Pausa el juego cuando la pestaña deja de estar visible.
 document.addEventListener('visibilitychange', () => {
   if (!emu) return;
   if (document.hidden) emu.pause();
   else emu.resume();
 });
 
-// Browsers start audio suspended unless it begins during a click; the
-// emulator starts after the download, so resume it on the next interaction.
+// El navegador suspende el audio si no se inicia durante un clic. El emulador
+// arranca después de la descarga, así que reanudamos el audio al interactuar.
 function resumeAudio() {
   for (const ctx of audioContexts) {
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
@@ -294,7 +291,7 @@ function resumeAudio() {
 window.addEventListener('pointerdown', resumeAudio);
 window.addEventListener('keydown', resumeAudio);
 
-// --- Touch controls ------------------------------------------------------------
+// --- Controles táctiles -----------------------------------------------------------
 
 for (const button of document.querySelectorAll('[data-button]')) {
   const release = () => {
@@ -313,7 +310,7 @@ for (const button of document.querySelectorAll('[data-button]')) {
   button.addEventListener('lostpointercapture', release);
 }
 
-// The d-pad follows the finger, so sliding from one direction to another works.
+// La cruceta sigue el dedo para poder deslizarse de una dirección a otra.
 const dpad = document.querySelector('.dpad');
 let heldDirection = null;
 
@@ -345,7 +342,7 @@ dpad.addEventListener('pointermove', (event) => {
 dpad.addEventListener('pointerup', () => setDirection(null));
 dpad.addEventListener('pointercancel', () => setDirection(null));
 
-// For debugging from the console and for the automated tests.
+// Acceso desde la consola para depuración y pruebas automatizadas.
 window.dailyRed = {
   get emulator() { return emu; },
   get stats() { return { ...stats }; },

@@ -6,6 +6,7 @@
 // Screenshots are written to tests/output/ for a visual check.
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   GAME_DIR, startServer, launchBrowser, bootGame, sleep, press, screenshot,
   getStatus, waitFor, walkTo, face, patchMemory, readVar, symbol, u16,
@@ -13,7 +14,7 @@ import {
 } from './lib.mjs';
 import { readParty, formatMon, validateTeam } from './party.mjs';
 
-const OUT = new URL('./output/', import.meta.url).pathname;
+const OUT = fileURLToPath(new URL('./output/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 function define(file, name) {
@@ -31,7 +32,7 @@ const DIR_SOUTH = define('include/constants/global.h', 'DIR_SOUTH');
 const SPECIES_PIKACHU = define('include/constants/species.h', 'SPECIES_PIKACHU');
 const MOVE_SEISMIC_TOSS = define('include/constants/moves.h', 'MOVE_SEISMIC_TOSS');
 const START = [define('include/constants/dailyred.h', 'DAILYRED_START_X'), define('include/constants/dailyred.h', 'DAILYRED_START_Y')];
-const RED_FRONT = [6, 9]; // the tile south of Gold in the Champion's room
+const RED_FRONT = [6, 6]; // the tile south of ORO in Lorelei's room
 
 const MON_SIZE = 100, MON_HP = 86;          // struct Pokemon
 const BMON_SIZE = 0x58, BMON_MOVES = 0x0C, BMON_PP = 0x24, BMON_HP = 0x28, BMON_MAXHP = 0x2C; // struct BattlePokemon
@@ -125,7 +126,7 @@ try {
   await bootGame(page, server.url, { seed: 424242 });
   let s = await waitFor(page, (st) => st.inOverworld, { what: 'overworld' });
   check(s.x === START[0] && s.y === START[1], `player starts at ${START} (got ${s.x},${s.y})`);
-  check(redFacing(s.mem) === DIR_SOUTH, "Gold faces the player from the Champion's spot");
+  check(redFacing(s.mem) === DIR_SOUTH, "ORO faces the player from Lorelei's spot");
   check(optionsBattleStyle(s.mem) === STYLE_SET, 'battle style starts as SET');
   await sleep(1500);
   await screenshot(page, `${OUT}/01-start.png`);
@@ -163,13 +164,17 @@ try {
   // 3. Climb to RED -> trainer battle on the peak. Force a win.
   s = await talkToRed(page);
   check(s.inBattle, 'talking to RED starts a battle');
-  check(s.mem.read(symbol('gBattleTerrain'), 1)[0] === TERRAIN_BUILDING, 'battle uses the building background');
+  check(s.mem.read(symbol('gBattleTerrain'), 1)[0] === TERRAIN_BUILDING, 'battle mechanics retain indoor terrain');
   check(s.mem.read(symbol('gBattleScripting') + BATTLE_STYLE_OFFSET, 1)[0] === STYLE_SET, 'the battle runs in SET style');
   check(s.mem.read(symbol('gTrainerBattleOpponent_A'), 2).readUInt16LE(0) === define('include/constants/opponents.h', 'TRAINER_DAILYRED_RED'), 'opponent is TRAINER_DAILYRED_RED');
   const red = readParty(s.mem, 'Enemy');
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
-  check(red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,TOGETIC,HO_OH,TYPHLOSION', "Gold's team is Gyarados, Ampharos, Heracross, Togetic, Ho-Oh, Typhlosion");
-  check(red.party.filter(Boolean).length === 6 && red.party[0]?.shiny, "Gold's lead Gyarados is present and shiny");
+  check(red.party.filter(Boolean).length === 6 && red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,UMBREON,HO_OH,TYPHLOSION', "ORO's party contains six valid Pokemon, including Umbreon in slot 4");
+  check(red.party[0]?.shiny && red.party[0]?.nature === 'Adamant' && red.party[0]?.friendship === 255, "ORO's lead Gyarados is shiny, Adamant, and at max friendship");
+  check(red.party.map((m) => m?.nature).join(',') === 'Adamant,Modest,Jolly,Careful,Adamant,Timid', "ORO's configured natures are applied in battle");
+  check(red.party.map((m) => m?.abilityNum).join(',') === '0,0,1,0,0,1', "ORO's configured ability slots are applied in battle");
+  check(red.party[3]?.evs.join(',') === '252,0,252,0,0,4', 'Umbreon has its configured defensive EV spread');
+  check(red.party.map((m) => m?.moveNames.join('+')).join(',') === 'DRAGON_DANCE+EARTHQUAKE+ROCK_SLIDE+RETURN,THUNDERBOLT+ICE_PUNCH+THUNDER_WAVE+LIGHT_SCREEN,SWORDS_DANCE+MEGAHORN+BRICK_BREAK+ROCK_SLIDE,WISH+PROTECT+TOXIC+FAINT_ATTACK,SACRED_FIRE+AERIAL_ACE+EARTHQUAKE+RECOVER,ERUPTION+FIRE_BLAST+THUNDER_PUNCH+EXTRASENSORY', "ORO's configured moves are applied in battle");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");
   await waitForActionMenu(page);
@@ -208,7 +213,7 @@ try {
   const team2 = readParty(s.mem);
   checkTeam('team after a win', team2);
   check(teamKey(team2.party) !== teamKey(team1.party), 'a new team is generated after the win');
-  check(redFacing(s.mem) === DIR_SOUTH, 'Gold faces south again for the next run');
+  check(redFacing(s.mem) === DIR_SOUTH, 'ORO faces south again for the next run');
   await screenshot(page, `${OUT}/11-after-win.png`);
 
   // 4. Battle again and force a loss.

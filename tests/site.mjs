@@ -3,12 +3,13 @@
 // abandoned battles, streaks, practice runs, the phone layout and the error
 // screen. Screenshots go to tests/output/site-*.png.
 import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   startServer, launchBrowser, sleep, press, getStatus, waitFor, startRedBattle, forceWin, forceLoss,
 } from './lib.mjs';
 import { readParty } from './party.mjs';
 
-const OUT = new URL('./output/', import.meta.url).pathname;
+const OUT = fileURLToPath(new URL('./output/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 let failures = 0;
@@ -71,7 +72,7 @@ try {
   const leftovers = await page.evaluate(() => ['.tagline', '.steps', '#seed', '#new-run'].filter((sel) => document.querySelector(sel)));
   check(leftovers.length === 0, `removed: tagline, how-it-works, seed, New run (${leftovers.join(', ') || 'none left'})`);
   const footer = await page.evaluate(() => document.querySelector('.footer')?.textContent || '');
-  check(/unofficial fan project/.test(footer) && /not affiliated|isn't affiliated/.test(footer), 'footer shows the fan-project disclaimer');
+  check(/proyecto de fans gratuito y no oficial/.test(footer) && /No está afiliado/.test(footer), 'footer shows the fan-project disclaimer');
   const licenses = await page.evaluate(async () => {
     const link = document.querySelector('.footer a[href="licenses.txt"]');
     return link ? (await fetch(link.href)).status : 0;

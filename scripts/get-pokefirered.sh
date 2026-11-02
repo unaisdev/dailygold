@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Recreates pokefirered/ from a clean checkout: fetches pret/pokefirered at the
-# pinned commit and applies the Daily Red changes from patches/.
+# commit fijado y aplica los cambios de Daily Gold desde patches/.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

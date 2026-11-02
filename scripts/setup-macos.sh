@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs everything needed to build the Daily Red ROM on macOS, into
+# Instala todo lo necesario para compilar la ROM de Daily Gold en macOS dentro de
 # ./.toolchain (no sudo, no Homebrew, nothing written outside this project):
 #
 #   - xPack GNU Arm Embedded GCC (arm-none-eabi-gcc + binutils + newlib),

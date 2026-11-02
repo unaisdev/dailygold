@@ -133,7 +133,7 @@ a { color: inherit; text-underline-offset: 3px; }
   color: #b9c8d5;
 }
 
-/* Title card: Gold, the player's stats, then Play (or today's result). */
+/* Tarjeta inicial: ORO, su equipo, las estadísticas y el botón Jugar o el resultado del día. */
 .card-title { gap: 4.5cqh; padding: 4cqh; }
 
 .red-sprite {
@@ -142,6 +142,22 @@ a { color: inherit; text-underline-offset: 3px; }
   width: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 1cqh 0 rgba(0, 0, 0, 0.35));
+}
+
+.boss-team {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 1.2cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.boss-team img {
+  width: auto;
+  height: 11cqh;
+  image-rendering: pixelated;
 }
 
 .stats {
@@ -364,7 +380,7 @@ a { color: inherit; text-underline-offset: 3px; }
   touch-action: none;
 }
 
-/* Full screen: the console fills the display, screen as large as fits. */
+/* Pantalla completa: la consola ocupa toda la pantalla, con el juego al mayor tamaño posible. */
 .console:fullscreen {
   display: flex;
   flex-direction: column;

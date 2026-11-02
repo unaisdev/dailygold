@@ -1,10 +1,10 @@
-// Writes the run settings into the Daily Red ROM image before it is booted.
+// Escribe la configuración de la partida en la ROM de Daily Gold antes de iniciarla.
 //
-// The game keeps a small struct in ROM (gDailyRedRomConfig in
-// pokefirered/src/dailyred.c): the 16-byte magic "DAILYRED-CONF-V2", then
-// little-endian u32 seed, u16 wins, u16 battles and u8 daily. Finding it by its
-// magic means no addresses are hard-coded here. A non-zero seed makes the game
-// skip the title screen and generate its team from that seed.
+// El juego conserva una estructura pequeña en la ROM (gDailyRedRomConfig en
+// pokefirered/src/dailyred.c): la marca de 16 bytes «DAILYRED-CONF-V2», seguida
+// de semilla u32, victorias u16, combates u16 y modo diario u8 en little-endian.
+// La marca evita fijar direcciones. Una semilla distinta de cero omite el título
+// y genera el equipo a partir de ella.
 
 const MAGIC = new TextEncoder().encode('DAILYRED-CONF-V2');
 
@@ -19,11 +19,11 @@ export function findConfigOffset(rom) {
   return -1;
 }
 
-// Returns a patched copy of `rom` (a Uint8Array); the original is untouched.
-//   seed     non-zero team seed
-//   wins     the player's record before this game (shown in the game's
-//   battles  record message)
-//   daily    true for the daily game: one battle, then the game ends
+// Devuelve una copia modificada de `rom` (Uint8Array); no altera el original.
+//   seed     semilla del equipo distinta de cero
+//   wins     victorias previas del jugador (aparecen en el récord del juego)
+//   battles  combates previos
+//   daily    true para el modo diario: un combate y fin de la partida
 export function injectConfig(rom, { seed, wins = 0, battles = 0, daily = false }) {
   const offset = findConfigOffset(rom);
   if (offset < 0) throw new Error('Esta ROM no contiene la configuración de Daily Gold. Vuelve a compilarla con scripts/build-rom.sh.');
@@ -36,7 +36,8 @@ export function injectConfig(rom, { seed, wins = 0, battles = 0, daily = false }
   return patched;
 }
 
-// Parses a seed typed by a person, e.g. from ?seed=1234. Returns null if invalid.
+// Interpreta una semilla introducida por el jugador, por ejemplo ?seed=1234.
+// Devuelve null si no es válida.
 export function parseSeed(text) {
   if (text == null || !/^\d{1,10}$/.test(String(text).trim())) return null;
   const seed = Number(text);

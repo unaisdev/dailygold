@@ -1,5 +1,5 @@
-// Downloads the ROM and the emulator core once per visit and keeps them in
-// memory, so starting a new run only has to restart the emulator.
+// Descarga la ROM y el núcleo del emulador una vez por visita y los conserva
+// en memoria; las partidas siguientes solo tienen que reiniciar el emulador.
 
 const FILES = {
   rom: 'game/dailyred.gba.gz',
@@ -9,10 +9,10 @@ const FILES = {
 
 let cached = null;
 
-// onProgress(loadedBytes, totalBytes) — totalBytes is 0 when unknown.
+// onProgress(bytesDescargados, bytesTotales); el total es 0 si se desconoce.
 export function loadGameFiles(onProgress = () => {}) {
   cached ??= download(onProgress).catch((err) => {
-    cached = null; // allow a retry
+    cached = null; // permite reintentar
     throw err;
   });
   return cached;
@@ -25,7 +25,7 @@ async function download(onProgress) {
     return res;
   }));
 
-  // Content-Length is only meaningful when the host didn't re-encode the file.
+  // Content-Length solo es válido si el servidor no volvió a codificar el archivo.
   const sizes = responses.map((r) => (r.headers.get('Content-Encoding') ? 0 : Number(r.headers.get('Content-Length')) || 0));
   const total = sizes.every(Boolean) ? sizes.reduce((a, b) => a + b, 0) : 0;
   let loaded = 0;
@@ -60,8 +60,8 @@ async function readAll(res, report) {
 }
 
 async function gunzip(bytes) {
-  // Some hosts send .gz files with Content-Encoding: gzip, in which case the
-  // browser has already unpacked it.
+  // Algunos servidores envían .gz con Content-Encoding: gzip; en ese caso el
+  // navegador ya lo ha descomprimido.
   if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return bytes;
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
   return new Uint8Array(await new Response(stream).arrayBuffer());

@@ -1,11 +1,11 @@
-// The daily game and the player's stats, saved in this browser (localStorage).
+// La partida diaria y las estadísticas se guardan en este navegador (localStorage).
 //
-// Everyone gets the same team on the same calendar day (in their own time
-// zone, like Wordle), and each browser gets one battle with Gold per day.
+// Todo el mundo recibe el mismo equipo cada día natural en su zona horaria, y
+// cada navegador permite un combate diario contra ORO.
 
 const STORAGE_KEY = 'dailyred-stats';
 
-// A date in the player's time zone, e.g. "2026-10-11".
+// Fecha en la zona horaria del jugador, por ejemplo «2026-10-11».
 export function today(now = new Date()) {
   const pad = (n) => String(n).padStart(2, '0');
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
@@ -17,7 +17,7 @@ export function addDays(date, days) {
   return today(d);
 }
 
-// The day's team seed: a hash (FNV-1a) of the date, never 0.
+// Semilla del equipo del día: hash FNV-1a de la fecha, nunca es 0.
 export function dailySeed(date) {
   let hash = 0x811c9dc5;
   for (const ch of `dailyoro:${date}`) {
@@ -33,7 +33,7 @@ export function msUntilTomorrow(now = new Date()) {
   return midnight - now;
 }
 
-// --- Stats ------------------------------------------------------------------
+// --- Estadísticas ------------------------------------------------------------
 //   wins, losses     all-time
 //   winStreak        daily wins in a row
 //   dayStreak        days played in a row
@@ -62,7 +62,7 @@ function save(stats) {
   }
 }
 
-// Today's result ('won' / 'lost'), or null if today's battle isn't done.
+// Resultado de hoy ('won' / 'lost') o null si aún no se ha completado el combate.
 export function resultFor(stats, date) {
   return stats.lastPlayed === date ? stats.lastResult : null;
 }
@@ -73,8 +73,8 @@ export function currentStreaks(stats, date) {
   return { winStreak: alive ? stats.winStreak : 0, dayStreak: alive ? stats.dayStreak : 0 };
 }
 
-// From the moment Gold's battle starts the day counts as played, so leaving
-// mid-battle counts as a loss (see settleAbandonedGame).
+// El día cuenta como jugado desde que empieza el combate de ORO; salir a mitad
+// de la batalla cuenta como derrota (véase settleAbandonedGame).
 export function markBattleStarted(stats, date) {
   if (stats.pending === date || resultFor(stats, date)) return;
   stats.pending = date;
@@ -98,7 +98,7 @@ export function recordResult(stats, date, won) {
   save(stats);
 }
 
-// A battle that started but never finished (tab closed, page reloaded) is a loss.
+// Un combate iniciado que no llega a terminar (pestaña cerrada o página recargada) cuenta como derrota.
 export function settleAbandonedGame(stats) {
   if (stats.pending && stats.pending !== stats.lastPlayed) {
     recordResult(stats, stats.pending, false);

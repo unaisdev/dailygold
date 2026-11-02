@@ -264,7 +264,7 @@ export async function forceLoss(page) {
 
 // From the start tile: climb to RED, talk, and wait for the battle's turn menu.
 export async function startRedBattle(page) {
-  await walkTo(page, [[6, 9]]);
+  await walkTo(page, [[6, 6]]);
   await face(page, 'up');
   await press(page, 'a');
   for (let i = 0; i < 20 && !(await getStatus(page)).inBattle; i++) {
