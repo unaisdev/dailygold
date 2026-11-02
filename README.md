@@ -1,227 +1,247 @@
-# Daily Oro
+# Daily Gold
 
-Fork of [Daily Red](https://github.com/amoi-builds/dailyred): a daily Pokémon
-battle in the browser, like Wordle. Once a day you press **Play**, get the
-day's six random level 100 Pokémon from Generations 1–3 (everyone gets the
-same team that day), and face **ORO** (Ethan) in the Champion's room. You
-get one battle per day. Your wins, losses, win streak and daily play streak
-are kept in your browser.
+Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
+recibes el mismo equipo aleatorio de seis Pokémon de nivel 100 y te enfrentas a
+**ORO (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
+victorias, derrotas y rachas se guardan en tu navegador.
 
-Every battle runs on the original Pokémon FireRed engine: the game is the
-[pret/pokefirered](https://github.com/pret/pokefirered) decompilation with a
-small set of source changes, built into a GBA ROM and played in the browser
-through the mGBA emulator compiled to WebAssembly. Nothing about battles is
-reimplemented in JavaScript.
+Cada combate se ejecuta en el motor original de Pokémon FireRed: el juego parte
+de la decompilación [pret/pokefirered](https://github.com/pret/pokefirered),
+con algunos cambios propios, se compila como ROM de GBA y se ejecuta en el
+navegador mediante el emulador mGBA compilado para WebAssembly. JavaScript no
+simula los combates.
 
-- [Quick start (macOS)](#quick-start-macos)
-- [How it works](#how-it-works)
-- [Team generation](#team-generation)
-- [ORO's team](#oros-team)
-- [Development workflow](#development-workflow)
-- [Testing and debugging](#testing-and-debugging)
-- [Running it locally](#running-it-locally)
-- [Copyright and licenses](#copyright-and-licenses)
-- [Known limitations](#known-limitations)
+Daily Gold es una adaptación de [Daily Red](https://github.com/amoi-builds/dailyred).
 
-## Quick start (macOS)
+- [Inicio rápido (macOS)](#inicio-rapido-macos)
+- [Cómo funciona](#como-funciona)
+- [Generación de equipos](#generacion-de-equipos)
+- [Equipo de ORO](#equipo-de-oro)
+- [Flujo de desarrollo](#flujo-de-desarrollo)
+- [Pruebas y depuración](#pruebas-y-depuracion)
+- [Ejecución local](#ejecucion-local)
+- [Derechos de autor y licencias](#derechos-de-autor-y-licencias)
+- [Limitaciones conocidas](#limitaciones-conocidas)
+- [Estructura del proyecto](#estructura-del-proyecto)
 
-You need the Xcode Command Line Tools (`xcode-select --install`), Node.js 18+
-and git. No Homebrew, no `sudo`, and **no ROM**: the decompilation builds the
-whole game from source.
+## Inicio rápido (macOS)
+
+Necesitas las herramientas de línea de comandos de Xcode (`xcode-select --install`),
+Node.js 18 o posterior y Git. No necesitas Homebrew, permisos de administrador
+ni una ROM: el juego se compila desde el código fuente.
 
 ```sh
-scripts/setup-macos.sh      # ARM cross-compiler + libpng into .toolchain/ (~1 GB, one time)
-scripts/get-pokefirered.sh  # pret/pokefirered at a pinned commit + patches/
-scripts/fetch-vendor.sh     # emulator, emulator core and font into web/vendor/
-scripts/build-rom.sh        # builds the ROM, writes web/game/dailyred.gba.gz
-node scripts/serve.mjs      # open http://localhost:8080
+scripts/setup-macos.sh      # Instala el compilador ARM y libpng en .toolchain/ (aprox. 1 GB, una vez)
+scripts/get-pokefirered.sh  # Descarga pret/pokefirered en el commit fijado y aplica patches/
+scripts/fetch-vendor.sh     # Descarga el emulador, su núcleo y la fuente en web/vendor/
+scripts/build-rom.sh        # Compila la ROM y genera web/game/dailyred.gba.gz
+node scripts/serve.mjs      # Abre http://localhost:8080
 ```
 
-`setup-macos.sh` picks the right compiler for Intel or Apple Silicon Macs.
+`setup-macos.sh` elige el compilador adecuado para Mac Intel o Apple Silicon.
 
-## How it works
+## Cómo funciona
 
 ```
 pret/pokefirered @ 037335f + patches/  ──make modern──▶  pokefirered_modern.gba
-                                                              │ gzip (16 MB → 5.5 MB)
-web/ (static files)                                           ▼
+                                                              │ gzip (16 MB → 5,5 MB)
+web/ (archivos estáticos)                                     ▼
   index.html + app.js ── fetch ──▶ game/dailyred.gba.gz, vendor/mgba_libretro.wasm
-        │  writes the day's seed + your record into the ROM bytes (rom-config.js)
+        │  escribe la semilla del día y el récord en la ROM (rom-config.js)
         ▼
-  Nostalgist.js ──▶ RetroArch + mGBA core (WebAssembly) ──▶ <canvas>
+  Nostalgist.js ──▶ RetroArch + núcleo mGBA (WebAssembly) ──▶ <canvas>
         ▲
-        └─ game-link.js reads the battle's status from the game's RAM
-           → daily.js updates your stats in localStorage
+        └─ game-link.js lee el estado del combate desde la RAM del juego
+           → daily.js actualiza las estadísticas en localStorage
 ```
 
-**Why an emulator instead of compiling the C to WebAssembly:** the decomp is
-written for GBA hardware (video, DMA, interrupts, the m4a sound engine,
-ARM/Thumb assembly). Running the real ROM in mGBA keeps the battle engine,
-animations and sound exactly as shipped, with no porting work. mGBA has a
-built-in BIOS replacement, so no BIOS file is needed either.
+**Por qué se usa un emulador en vez de compilar C a WebAssembly:** la
+decompilación está escrita para el hardware de GBA (vídeo, DMA, interrupciones,
+el motor de sonido m4a y ensamblador ARM/Thumb). Ejecutar la ROM real en mGBA
+conserva el motor de combate, las animaciones y el sonido originales, sin
+portarlos. mGBA incluye una sustitución del BIOS, así que no hace falta un
+archivo BIOS.
 
-**Why Nostalgist + RetroArch's mGBA core:** it accepts the ROM as raw bytes
-(needed for the config below), exposes button presses and the emulator's
-memory to JavaScript, and doesn't need `SharedArrayBuffer`, so a plain static
-file server works without special headers. Everything loads from `web/vendor/`.
+**Por qué se usan Nostalgist y el núcleo mGBA de RetroArch:** aceptan la ROM
+como bytes (necesario para escribir la configuración), permiten enviar botones
+y acceder desde JavaScript a la memoria del emulador, y no requieren
+`SharedArrayBuffer`. Por eso basta con un servidor estático sin cabeceras
+especiales. Todo se carga desde `web/vendor/`.
 
-### The daily game
+### La partida diaria
 
-- **The day's team:** the seed is a hash of today's date in the player's own
-  time zone (`dailySeed` in `web/daily.js`), so everyone gets the same team
-  on the same calendar day, like Wordle.
-- **Site → game:** the ROM contains a small struct, `gDailyRedRomConfig`: the
-  magic bytes `DAILYRED-CONF-V2`, then the seed, the player's wins and battles
-  so far, and a "daily" flag. Before booting, `web/rom-config.js` finds the
-  magic bytes in the downloaded ROM and fills them in; no addresses are
-  hard-coded on either side. The game uses the record for its "Record: x
-  win(s) in x battle(s)" message.
-- **Game → site:** the game keeps a status block in RAM (`sStatus` in
-  `src/dailyred.c`): the magic `DAILYRED-STATUS1`, the seed, a phase (exploring
-  / battle / result / finished) and a result (won / lost). `web/game-link.js`
-  finds it in the emulator's WebAssembly memory (the magic followed by the
-  seed it injected) and reads it twice a second.
-- **One battle a day:** the day counts as played as soon as RED's battle
-  starts; closing or reloading the page mid-battle counts as a loss. The
-  result is saved the moment it's known. After the closing messages the game
-  fades to black and holds; the site then closes it and shows today's result
-  and a countdown to the next battle. Before the battle you can reload freely:
-  it's the same team all day.
-- **Stats** (`web/daily.js`, localStorage key `dailyred-stats`): wins, losses,
-  win streak (daily wins in a row) and day streak (days played in a row).
-  Missing a day resets both streaks.
-- **Without the website** (seed 0, e.g. the ROM in a desktop emulator): the
-  normal intro and title screen appear, pressing Start seeds the game the way
-  vanilla FireRed does, and after each battle a new team arrives.
-- **`?seed=1234`** in the URL starts a practice run for testing: that seed's
-  team, no daily limit, nothing saved, and a new team after each battle. It
-  isn't shown anywhere in the UI.
+- **Equipo del día:** la semilla es un hash de la fecha local del jugador
+  (`dailySeed` en `web/daily.js`). Así, todos reciben el mismo equipo durante
+  el mismo día natural, como en Wordle.
+- **De la web al juego:** la ROM contiene una estructura pequeña,
+  `gDailyRedRomConfig`: la marca `DAILYRED-CONF-V2`, la semilla, las victorias
+  y los combates anteriores, y un indicador de partida diaria. Antes de iniciar
+  el juego, `web/rom-config.js` busca la marca en la ROM descargada y escribe
+  los valores; no hay direcciones fijadas a mano. El juego utiliza el récord
+  para mostrar el número de victorias y combates.
+- **Del juego a la web:** el juego mantiene un bloque de estado en la RAM
+  (`sStatus` en `src/dailyred.c)): la marca `DAILYRED-STATUS1`, la semilla,
+  una fase (exploración, combate, resultado o fin) y el resultado (victoria o
+  derrota). `web/game-link.js` lo localiza en la memoria WebAssembly del
+  emulador mediante la marca y la semilla, y lo lee dos veces por segundo.
+- **Un combate al día:** el día cuenta como jugado en cuanto empieza el combate
+  contra RED. Cerrar o recargar la página durante el combate cuenta como
+  derrota. El resultado se guarda en cuanto se conoce. Tras los mensajes
+  finales, el juego funde a negro y se queda esperando; la web lo cierra y
+  muestra el resultado y la cuenta atrás para el siguiente combate. Antes de
+  empezar puedes recargar sin problema: el equipo no cambia durante el día.
+- **Estadísticas** (`web/daily.js`, clave de `localStorage`:
+  `dailyred-stats`): victorias, derrotas, racha de victorias diarias y racha de
+  días jugados. Si pasa un día sin jugar, se reinician las rachas.
+- **Sin la web** (semilla 0, por ejemplo, en un emulador de escritorio): aparece
+  la introducción y la pantalla de título normales. Al pulsar Start, FireRed
+  prepara la partida como de costumbre y genera un equipo nuevo después de cada
+  combate.
+- **`?seed=1234`** en la URL inicia una partida de práctica para probar un
+  equipo concreto. No tiene límite diario ni guarda resultados; al terminar se
+  genera otro equipo. El parámetro no aparece en la interfaz.
 
-### Game flow and the files involved
+### Flujo del juego y archivos
 
-| Step | Code |
+| Paso | Código |
 |---|---|
-| Copyright screen → straight in (seed set) | `src/intro.c` → `CB2_DailyRed_StartFromCopyright` (`src/dailyred.c`) |
-| Title screen → straight in (no seed) | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
-| New game data: LEAF (FireRed's female player), fast text | `StartNewGame` in `src/dailyred.c`, then vanilla `CB2_NewGame` |
-| Team + warp to the Champion's room instead of the bedroom | `src/new_game.c` → `DailyRed_InitNewGame` |
-| Champion's room: no exits; ORO (Ethan) faces south at (6, 8) | `data/maps/DailyRed_Summit/` (layout `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
-| Talking to ORO → battle → "You defeated ORO!" / "Your team was wiped out…" → record → "Play again tomorrow!" / "Try again tomorrow." → fade out | `data/maps/DailyRed_Summit/scripts.inc` and `text.inc`; the `DailyRed_On*` specials in `src/dailyred.c` |
-| Building battle background in the League | `BattleSetup_GetTerrainId` in `src/battle_setup.c` |
-| No free switch when ORO's Pokémon faints: Battle Style starts on SET and is locked in Options | `StartNewGame` in `src/dailyred.c`, `src/option_menu.c` |
-| ORO as a trainer (Ethan sprites from Hall of Legends) | `TRAINER_DAILYRED_RED` in `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
-| Menus: POKéMON / OPTION / EXIT; party: SUMMARY / SWITCH / CANCEL | `src/start_menu.c`, `src/party_menu.c`; window height for short menus in `src/new_menu_helpers.c` |
-| Player HORTE: bald overworld, VS front, battle back | `src/dailyred.c`, `horte_*` trainer pics, `RedNormal` → BaldingMan |
-| ORO's overworld sprite, in its own palette slot so it doesn't clash with HORTE's | `OBJ_EVENT_GFX_DAILYRED_RED` in `include/constants/event_objects.h`, `src/data/object_events/` |
+| Pantalla de copyright → inicio directo con semilla | `src/intro.c` → `CB2_DailyRed_StartFromCopyright` (`src/dailyred.c`) |
+| Pantalla de título → inicio directo sin semilla | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
+| Datos de partida: LEAF (jugadora de FireRed), texto rápido | `StartNewGame` en `src/dailyred.c`, después el `CB2_NewGame` original |
+| Equipo y traslado a la sala del Campeón en lugar de la habitación | `src/new_game.c` → `DailyRed_InitNewGame` |
+| Sala del Campeón sin salidas; ORO mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
+| Hablar con ORO → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
+| Fondo de combate de la Liga | `BattleSetup_GetTerrainId` en `src/battle_setup.c` |
+| Sin cambio gratis de Pokémon al debilitar a uno de ORO: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
+| ORO como entrenador (sprites de Ethan, de Hall of Legends) | `TRAINER_DAILYRED_RED` en `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
+| Menús: POKéMON / OPTION / EXIT; equipo: SUMMARY / SWITCH / CANCEL | `src/start_menu.c`, `src/party_menu.c`; altura de las ventanas en `src/new_menu_helpers.c` |
+| Jugador HORTE: sprite calvo del mapa, frontal VS y espalda de combate | `src/dailyred.c`, sprites `horte_*`, `RedNormal` → BaldingMan |
+| Sprite de ORO en su propia paleta para no interferir con HORTE | `OBJ_EVENT_GFX_DAILYRED_RED` en `include/constants/event_objects.h`, `src/data/object_events/` |
 
-The battle itself is a standard FireRed trainer battle. The map script uses
-`trainerbattle_earlyrival` with `RIVAL_BATTLE_HEAL_AFTER`, the mode FireRed
-uses for the rival fight in Oak's lab, so losing doesn't white out. The script
-then reads `VAR_RESULT`, updates a win/battle counter, calls the
-`DailyRed_StartNextRun` special (new team) and warps back to the start tile,
-which also resets RED.
+El combate es un combate normal contra un entrenador de FireRed. El guion del
+mapa usa `trainerbattle_earlyrival` con `RIVAL_BATTLE_HEAL_AFTER`, el modo de la
+batalla contra el rival en el laboratorio de Oak; perder no provoca un
+«blanco». Después lee `VAR_RESULT`, actualiza el contador de victorias y
+combates, llama al especial `DailyRed_StartNextRun` para generar otro equipo y
+vuelve al punto inicial, donde también reinicia a RED.
 
-Every vanilla file that was changed has a `Daily Red:` comment at the change:
+Los archivos originales modificados llevan un comentario `Daily Red:` junto al
+cambio:
 
 ```sh
 grep -rn "Daily Red" pokefirered/src pokefirered/include pokefirered/data
 ```
 
-The map reuses the Pokémon League Champion's room layout (same venue as in
-Hall of Legends). ORO stands at (6, 8) facing south; you start at (6, 12).
-The project uses pokefirered's `modern` target (GCC 14), not the
-byte-matching `agbcc` build, so it doesn't reproduce the retail ROM.
+El mapa reutiliza el diseño de la sala del Campeón de la Liga Pokémon (el mismo
+lugar que Hall of Legends). ORO está en (6, 8), mirando al sur; empiezas en
+(6, 12). El proyecto usa el objetivo `modern` de pokefirered (GCC 14), no la
+compilación `agbcc` idéntica byte a byte, por lo que no reproduce la ROM
+comercial.
 
-## Team generation
+## Generación de equipos
 
-`pokefirered/src/dailyred_team.c` builds each team with the decomp's own data
-(`gLevelUpLearnsets`, `CanMonLearnTMHM`, the TM/HM move table,
-`CreateMon`, `CalculateMonStats`):
+`pokefirered/src/dailyred_team.c` genera cada equipo con los datos de la
+decompilación (`gLevelUpLearnsets`, `CanMonLearnTMHM`, la tabla de movimientos
+MT/MO, `CreateMon` y `CalculateMonStats`):
 
-- **Species:** 6 different Pokémon from all 386 of Generations 1–3 whose
-  **base stat totals add up to at least 2700** (`MIN_TEAM_BASE_STAT_TOTAL`).
-  **Legendaries are a 1-in-8 roll** (`LEGENDARY_TEAM_ODDS`): 1 team in 8 gets
-  exactly one legendary or mythical Pokémon, in a random party slot, and the
-  other 7 get none. The generator then redraws the rest of the team until it
-  meets the minimum, so every qualifying team is equally likely. Per-species
-  rules live in `IsEligibleSpecies`, e.g. add "fully evolved only" there.
+- **Especies:** seis Pokémon distintos de las 386 especies de las generaciones
+  1 a 3. La suma de sus estadísticas base debe ser al menos 2700
+  (`MIN_TEAM_BASE_STAT_TOTAL`). Hay una probabilidad de 1 entre 8
+  (`LEGENDARY_TEAM_ODDS`) de que un equipo tenga exactamente un Pokémon
+  legendario o singular, en una posición aleatoria; los otros siete equipos de
+  cada ocho no tienen ninguno. El generador vuelve a elegir el resto del equipo
+  hasta alcanzar el mínimo, de modo que todos los equipos válidos tengan la
+  misma probabilidad. Las reglas de elegibilidad por especie están en
+  `IsEligibleSpecies`; por ejemplo, ahí se puede exigir que solo haya especies
+  totalmente evolucionadas.
 
-  Why a minimum: RED's team totals 2954 (see below). A fully random team
-  averages about 2430, and two thirds of them include a Pokémon under 300,
-  which made most runs hopeless. A team can still include one weak Pokémon if
-  the rest make up for it.
+  **Por qué hay un mínimo:** el equipo de RED suma 2954 puntos (véase abajo).
+  Un equipo totalmente aleatorio promedia unos 2430 y dos tercios incluyen un
+  Pokémon con menos de 300 puntos, lo que hacía que la mayoría de partidas
+  fueran casi imposibles. Aun así, un equipo puede tener un Pokémon débil si
+  los demás compensan sus estadísticas.
 
-  Why legendaries are a separate roll: they average 613 against 393 for
-  everything else, so a stat minimum on its own mostly gets met by drawing
-  one. With a 2750 minimum alone, 70% of teams had a legendary and 20% had two
-  or more.
+  **Por qué los legendarios tienen una probabilidad independiente:** promedian
+  613 puntos frente a 393 del resto, así que un mínimo de estadísticas por sí
+  solo suele cumplirse al obtener uno. Con un mínimo de 2750, el 70 % de los
+  equipos tenía un legendario y el 20 % tenía dos o más.
 
-  How the minimum sets the difficulty: with the IVs and EVs below, a team's
-  actual in-battle stat total is almost exactly 2 × its base stat total +
-  2580, and RED's is 8555. So each minimum gives:
+  **Cómo influye el mínimo en la dificultad:** con los IV y EV descritos abajo,
+  la suma real de estadísticas en combate de un equipo es casi exactamente el
+  doble de la suma de estadísticas base más 2580; la de RED es 8555. Estos son
+  los resultados aproximados:
 
-  | Minimum | Typical team vs RED | Weakest possible | Teams stronger than RED |
+  | Mínimo | Equipo típico frente a RED | Equipo más débil posible | Equipos más fuertes que RED |
   |---|---|---|---|
-  | 2600 | 94% | 91% | about 1 in 45 |
-  | 2650 | 95% | 92% | about 1 in 34 |
-  | **2700** | **96%** | **93%** | **about 1 in 25** |
-  | 2750 | 97% | 94% | about 1 in 17 |
+  | 2600 | 94 % | 91 % | 1 de cada 45 |
+  | 2650 | 95 % | 92 % | 1 de cada 34 |
+  | **2700** | **96 %** | **93 %** | **1 de cada 25** |
+  | 2750 | 97 % | 94 % | 1 de cada 17 |
 
-  (Odds from simulating 80,000 teams.) Measured in the real ROM at 2700 over
-  80 runs: typical team 95% of RED's stats, range 93–101%, 1 team stronger
-  than RED. RED also has hand-picked moves, chosen held items (his Pikachu's
-  Light Ball doubles its Sp. Atk) and the strongest trainer AI, so he stays
-  the favourite.
+  Las probabilidades se calcularon simulando 80 000 equipos. En 80 partidas
+  con la ROM real y el mínimo de 2700, el equipo típico alcanzó el 95 % de las
+  estadísticas de RED; el rango fue del 93 al 101 %, y un equipo fue más
+  fuerte. RED conserva la ventaja: tiene movimientos elegidos a mano, objetos
+  útiles (la Bola Luminosa de Pikachu duplica su At. Esp.) y la IA de entrenador
+  más fuerte.
 
-- **Moves:** up to 4 different moves picked uniformly from everything the
-  species can learn **by level-up (any level) or TM/HM**. One rule on top: if
-  none of the four can deal damage and the species has any damaging move, one
-  pick is swapped for a damaging move. Species with fewer than 4 learnable moves
-  (Ditto, Unown, Magikarp, Smeargle…) get all of them.
-- **Stats:** level 100, random personality (so random nature, gender, ability
-  and the usual 1/8192 shiny chance), and trained close to RED's level:
-  - **IVs** random from 25 to 31 in every stat (`MIN_TEAM_IV`); RED's are all 31.
-  - **EVs** 252 into each of its two highest base stats and the last 6 into
-    HP, or into its third-best stat if HP is one of the two
-    (`AssignFocusedEVs`). Attack and Sp. Atk only count if one of its attacks
-    uses them (in Gen 3 a move's type decides which), so a Gyarados with only
-    Surf and Ice Beam doesn't waste points on Attack. Fast Pokémon end up as
-    fast as RED's; slow walls put their points into bulk instead.
+- **Movimientos:** se eligen uniformemente hasta cuatro movimientos distintos
+  entre todos los que una especie puede aprender por nivel (a cualquier nivel)
+  o por MT/MO. Si ninguno de los cuatro causa daño y la especie conoce alguno
+  que sí lo haga, se sustituye uno por un ataque. Las especies con menos de
+  cuatro movimientos disponibles (Ditto, Unown, Magikarp, Smeargle…) reciben
+  todos los que puedan aprender.
+- **Estadísticas:** nivel 100 y personalidad aleatoria (naturaleza, género,
+  habilidad y la probabilidad habitual de 1 entre 8192 de ser variocolor). Su
+  entrenamiento se aproxima al nivel de RED:
+  - **IV:** aleatorios entre 25 y 31 para cada estadística (`MIN_TEAM_IV`); RED
+    tiene 31 en todas.
+  - **EV:** 252 en cada una de las dos estadísticas base más altas y los 6
+    restantes en PS, o en la tercera más alta si PS está entre las dos
+    primeras (`AssignFocusedEVs`). Ataque y At. Esp. solo se cuentan si algún
+    movimiento usa esa estadística; en la tercera generación el tipo del
+    movimiento determina cuál se usa. Por ejemplo, un Gyarados que solo tenga
+    Surf y Rayo Hielo no desperdicia EV en Ataque. Los Pokémon rápidos igualan
+    la velocidad de RED; los muros lentos invierten más en resistencia.
 
-  The player is the original trainer, so everything obeys, and Pokémon are
-  marked as event Pokémon so Mew and Deoxys obey too.
-- **Held items:** each Pokémon holds one, picked uniformly from a pool of
-  generally useful battle items (`sBattleItems`: Leftovers, Choice Band,
-  Quick Claw, Lum Berry, pinch berries…) plus the 10% type booster for each
-  type it actually attacks with (Charcoal only if it has a Fire attack, and
-  so on). There are still no bag items.
-- **Safety:** each Pokémon is validated (level, HP, at least one move, no
-  duplicate moves, PP). If a Pokémon somehow failed 10 times, the game would
-  use FireRed's own default level-100 moveset for it rather than hand over
-  something broken.
+  El jugador es el entrenador original, así que todos los Pokémon obedecen.
+  Además, se marcan como Pokémon de evento para que Mew y Deoxys también
+  obedezcan.
+- **Objetos equipados:** cada Pokémon lleva uno, elegido uniformemente de una
+  lista de objetos útiles para el combate (`sBattleItems`: Restos, Cinta
+  Elegida, Garra Rápida, Baya Ziuela, bayas que se activan con pocos PS, etc.)
+  y de los potenciadores de tipo del 10 % para cada tipo de ataque que conozca
+  (Carbón solo si tiene un ataque de tipo Fuego, por ejemplo). No hay objetos
+  de la mochila.
+- **Validación:** se comprueban nivel, PS, al menos un movimiento, ausencia de
+  movimientos duplicados y PP. Si una especie fallara diez veces, el juego
+  usaría su repertorio predeterminado de nivel 100 de FireRed para evitar un
+  Pokémon defectuoso.
 
-Trade-offs in this first version: the move picker ignores move tutors and egg
-moves (add them in `GetLearnableMoves`), and it's deliberately not
-competitive. Splash, Water Sport or three status moves plus one attack are all
-possible. Items are picked without looking at the moveset beyond type
-boosters, so a Choice Band can land on a Pokémon that mostly uses status
-moves, and species-specific items (Light Ball, Thick Club…) aren't in the pool.
-The generator uses its own RNG state, separate from the game's `Random()`, so
-teams depend only on the seed.
+En esta primera versión, el selector de movimientos no incluye movimientos de
+tutor ni movimientos huevo (se pueden añadir en `GetLearnableMoves`) y no
+busca crear equipos competitivos. Pueden salir Salpicadura, Agua Lodosa o tres
+movimientos de estado y un único ataque. Los objetos se eligen sin mirar el
+repertorio salvo para los potenciadores de tipo; por eso una Cinta Elegida puede
+acabar en un Pokémon que use sobre todo movimientos de estado. Tampoco se
+incluyen objetos específicos de especie como Bola Luminosa o Hueso Grueso. El
+generador usa su propio estado aleatorio, independiente de `Random()`, por lo
+que los equipos dependen solo de la semilla.
 
-## ORO's team
+## Equipo de ORO
 
-Edit **`pokefirered/src/dailyred_boss.c`**: species, level, IVs, held item and
-moves use FireRed's normal `TrainerMonItemCustomMoves` format, plus an EV
-table next to it. The lineup follows Ethan's team from
-[Hall of Legends](https://github.com/amoi-builds/halloflegends)
-(Gyarados, Ampharos, Heracross, Togekiss, Ho-Oh, Typhlosion) at level 100
-with perfect IVs, held items and full EV spreads. His lead Gyarados is shiny,
-as in Hall of Legends. Togekiss and several Gen 4 moves don't exist in
-FireRed, so Togetic stands in and movesets are adapted to Gen 3. You fight
-him in the Champion's room (same venue as in Hall of Legends).
+Edita **`pokefirered/src/dailyred_boss.c`** para cambiar especies, nivel, IV,
+objeto y movimientos, usando el formato normal de FireRed
+`TrainerMonItemCustomMoves` y una tabla de EV junto a él. El equipo sigue al de
+Ethan en [Hall of Legends](https://github.com/amoi-builds/halloflegends):
+Gyarados, Ampharos, Heracross, Togekiss, Ho-Oh y Typhlosion. Todos están al
+nivel 100, con IV perfectos, objetos equipados y EV completos. El Gyarados
+inicial es variocolor, igual que en Hall of Legends. Togekiss y varios
+movimientos de cuarta generación no existen en FireRed; Togetic ocupa su lugar
+y los movimientos se adaptan a la tercera generación. El combate tiene lugar
+en la sala del Campeón.
 
-| Pokémon | HP | Atk | Def | Spe | SpA | SpD | Total |
+| Pokémon | PS | Atq | Def | Vel | At. Esp. | Def. Esp. | Total |
 |---|---|---|---|---|---|---|---|
 | Gyarados | 95 | 125 | 79 | 81 | 60 | 100 | 540 |
 | Ampharos | 90 | 75 | 85 | 55 | 115 | 90 | 510 |
@@ -229,164 +249,175 @@ him in the Champion's room (same venue as in Hall of Legends).
 | Togetic | 55 | 40 | 85 | 40 | 80 | 105 | 405 |
 | Ho-Oh | 106 | 130 | 90 | 90 | 110 | 154 | 680 |
 | Typhlosion | 78 | 84 | 78 | 100 | 109 | 85 | 534 |
-| **Team** | | | | | | | **3169** |
+| **Equipo** | | | | | | | **3169** |
 
-These are Gen 3 base stats from `src/data/pokemon/species_info.h`. Daily team
-generation difficulty (minimum BST, IVs, legendary odds, etc.) is unchanged
-from Daily Red.
+Son estadísticas base de la tercera generación, tomadas de
+`src/data/pokemon/species_info.h`. La dificultad de generación del equipo
+diario (mínimo de estadísticas base, IV, probabilidad de legendario, etc.) no
+cambia con respecto a Daily Red.
 
-ORO's name, Champion trainer class, battle sprite (Ethan from Hall of
-Legends) and AI flags are in `[TRAINER_DAILYRED_RED]` in
-`pokefirered/src/data/trainers.h`. He keeps the Champion battle music
-(`src/pokemon.c`). The player is **HORTE** (bald overworld, VS front and
-battle back sprites). FireRed trainers have no EVs, so a 3-line hook in
-`CreateNPCTrainerParty` (`src/battle_main.c`) applies the EV table. Natures
-come from FireRed's usual name-based formula and aren't configurable.
+El nombre de ORO, su clase de entrenador Campeón, su sprite de combate (Ethan,
+de Hall of Legends) y sus indicadores de IA están en
+`[TRAINER_DAILYRED_RED]` dentro de `pokefirered/src/data/trainers.h`. Conserva
+la música de combate de Campeón (`src/pokemon.c`). El jugador es **HORTE**
+(sprites calvo en el mapa, frontal VS y espalda de combate). FireRed no asigna
+EV a los entrenadores; un enganche de tres líneas en `CreateNPCTrainerParty`
+(`src/battle_main.c`) aplica la tabla de EV. Las naturalezas se obtienen con
+la fórmula habitual de FireRed basada en el nombre y no se pueden configurar.
 
-## Development workflow
+## Flujo de desarrollo
 
-1. Edit files in `pokefirered/` (a git checkout of pret's repo).
-2. `scripts/build-rom.sh` (incremental builds take a few seconds).
-3. Reload the page. `scripts/serve.mjs` sends `Cache-Control: no-cache`.
-4. When you're happy, run `scripts/save-patch.sh` and commit
-   `patches/pokefirered-dailyred.patch`.
+1. Edita los archivos de `pokefirered/`, un clon local del repositorio de pret.
+2. Ejecuta `scripts/build-rom.sh`; las compilaciones incrementales tardan unos
+   segundos.
+3. Recarga la página. `scripts/serve.mjs` envía `Cache-Control: no-cache`.
+4. Cuando los cambios estén listos, ejecuta `scripts/save-patch.sh` y guarda
+   `patches/pokefirered-dailyred.patch` en Git.
 
-`pokefirered/`, `.toolchain/` and `web/vendor/` are not tracked (see
-`.gitignore`); a clean checkout recreates them with the scripts above.
-Sprites under `web/game/` (ORO + his team) are tracked; only the built ROM
-(`.gba` / `.gba.gz`) is ignored.
-`git -C pokefirered diff` shows all game changes against upstream.
+`pokefirered/`, `.toolchain/` y `web/vendor/` no están versionados (véase
+`.gitignore`); en una copia limpia se vuelven a crear con los scripts. Los
+sprites de `web/game/` (ORO y su equipo) sí están versionados; solo se ignora
+la ROM compilada (`.gba` / `.gba.gz`). `git -C pokefirered diff` muestra
+todos los cambios respecto al código original.
 
-To play the ROM outside the browser, open
-`pokefirered/pokefirered_modern.gba` in mGBA or any GBA emulator. Without an
-injected seed it boots to the title screen; press Start.
+Para jugar la ROM fuera del navegador, abre
+`pokefirered/pokefirered_modern.gba` en mGBA u otro emulador de GBA. Sin una
+semilla inyectada, empieza en la pantalla de título; pulsa Start.
 
-The website has no build step: plain HTML, CSS and ES modules in `web/`.
+La web no necesita compilarse: usa HTML, CSS y módulos ES en `web/`.
 
-## Testing and debugging
+## Pruebas y depuración
 
-The tests boot the real ROM in headless Chrome through the same emulator the
-website uses, press buttons, and read game RAM out of emulator save states
-(mGBA's state contains a raw copy of RAM).
+Las pruebas ejecutan la ROM real en Chrome sin interfaz gráfica, mediante el
+mismo emulador que usa la web. Simulan pulsaciones y leen la RAM del juego desde
+los estados guardados por el emulador (los estados de mGBA incluyen una copia
+sin comprimir de la RAM).
 
 ```sh
 cd tests
-npm install        # playwright-core only; it drives your installed Google Chrome
-npm run smoke      # the game loop (~3 min)
-npm run site       # the website on desktop and phone (~1 min)
-npm run teams -- 1 2 3            # print + validate the teams for these seeds
-npm run teams -- --random 40      # 40 random seeds
+npm install        # Solo instala playwright-core; controla el Chrome instalado
+npm run smoke      # Ciclo del juego (unos 3 minutos)
+npm run site       # Web en escritorio y móvil (aprox. 1 minuto)
+npm run teams -- 1 2 3            # Muestra y valida los equipos de estas semillas
+npm run teams -- --random 40      # Genera 40 semillas aleatorias
 ```
 
-`npm run smoke` checks that:
-- each seed's team is valid: 6 different real Gen 1–3 species with a combined
-  base stat total of at least 2700 and at most one legendary, level 100, full
-  HP, IVs 25–31, EVs exactly as `AssignFocusedEVs` would place them (checked
-  by an independent JavaScript copy of the rule), an item from the pool (type boosters only with a
-  matching attack), and every move learnable by the species. The
-  learnable-move check parses the decomp's data files in JavaScript, so it's
-  independent of the C generator.
-- the same seed gives the same team, and different seeds give different ones.
-- the player starts at the foot of the stairs, RED faces away from them (and
-  again after every run), and talking to RED starts a trainer battle on the
-  mountain background.
-- battle style is SET from the start, the Options menu can't change it, and
-  when one of RED's Pokémon is knocked out he sends the next one with no
-  "Will LEAF change POKéMON?" prompt.
-- RED's in-battle party is the configured team with IVs, items and EVs.
-- a win and a loss are each handled: no white-out, counters updated, and a new
-  valid team afterwards.
-- the daily game starts from the website's record, reports the battle start,
-  the result and the end, counts the battle in its record message, and
-  ignores input once it's over (no second battle).
-- without a seed, the title screen appears and Start leads into the game.
+`npm run smoke` comprueba que:
+- cada equipo tiene seis especies reales distintas de las generaciones 1 a 3,
+  suma al menos 2700 puntos de estadísticas base, como máximo un legendario,
+  nivel 100, PS completos, IV entre 25 y 31, EV colocados exactamente según
+  `AssignFocusedEVs` (con una implementación JavaScript independiente), un
+  objeto de la lista (los potenciadores de tipo solo aparecen si hay un ataque
+  de ese tipo) y movimientos que la especie puede aprender. La comprobación de
+  movimientos analiza los archivos de datos de la decompilación desde
+  JavaScript, por separado del generador en C.
+- una misma semilla produce el mismo equipo y semillas diferentes producen
+  equipos distintos.
+- el jugador empieza al pie de las escaleras, RED mira hacia el lado contrario
+  (también después de cada partida) y hablar con RED inicia un combate de
+  entrenador con el fondo de montaña.
+- el estilo de combate está en SET desde el inicio, el menú Opciones no permite
+  cambiarlo y, cuando debilitas a un Pokémon de RED, este envía al siguiente
+  sin preguntar «¿Cambiará LEAF de POKéMON?».
+- el equipo de RED en combate coincide con su configuración de IV, objetos y EV.
+- se procesan tanto la victoria como la derrota: no hay derrota total, se
+  actualizan los contadores y después aparece un equipo nuevo.
+- el modo diario recibe el récord de la web, informa del inicio, resultado y
+  fin del combate, incluye la batalla en el mensaje del récord e ignora las
+  pulsaciones cuando termina (no se inicia un segundo combate).
+- sin semilla aparece la pantalla de título y Start inicia la partida.
 
-The win and loss are forced by editing HP values in a save state, which makes
-them quick and deterministic. Screenshots of every step are saved in
-`tests/output/`.
+Las victorias y derrotas se fuerzan modificando los PS en un estado guardado;
+así las pruebas son rápidas y deterministas. Se guardan capturas de cada paso
+en `tests/output/`.
 
-`npm run site` plays the daily game over five faked days (Playwright's clock):
-a fresh visitor, a win (stats, locked until tomorrow, countdown, survives a
-reload), the same team in a second browser that day, a loss the next day,
-leaving mid-battle (counts as a loss), a missed day (streaks reset), and a
-practice run (`?seed=`, not recorded). It also checks the 3× (720×480)
-screen, RED's sprite, the phone layout and touch d-pad, and the download-error
-screen with "Try again".
+`npm run site` recorre cinco días simulados con el reloj de Playwright: una
+visita nueva, una victoria (estadísticas, bloqueo hasta mañana, cuenta atrás y
+persistencia tras recargar), el mismo equipo en un segundo navegador ese día,
+una derrota al día siguiente, abandonar durante el combate (cuenta como
+derrota), saltarse un día (se reinician las rachas) y una partida de práctica
+(`?seed=`, no se registra). También comprueba la pantalla 3× (720×480), el
+sprite de RED, la vista móvil, la cruceta táctil y la pantalla de error de
+descarga con la opción «Reintentar».
 
-**Checking by hand:** open `http://localhost:8080/?seed=42` for a practice run
-(nothing saved, no daily limit). To reset your daily stats, run
-`localStorage.removeItem('dailyred-stats')` in the browser console.
+**Comprobación manual:** abre `http://localhost:8080/?seed=42` para una
+partida de práctica (no se guarda nada ni hay límite diario). Para borrar las
+estadísticas diarias, ejecuta
+`localStorage.removeItem('dailyred-stats')` en la consola del navegador.
 
-**In the browser console:** `dailyRed.emulator` is the running Nostalgist
-instance and `dailyRed.stats` shows your saved stats.
+**Consola del navegador:** `dailyRed.emulator` es la instancia activa de
+Nostalgist y `dailyRed.stats` muestra las estadísticas guardadas.
 
-## Running it locally
+## Ejecución local
 
-Daily Red is meant to be played on your own computer. After the quick start,
-`web/` holds the whole site (about 9 MB), and `node scripts/serve.mjs` serves
-it at http://localhost:8080:
-
-```
-web/index.html  app.js  daily.js  game-link.js  game-files.js  rom-config.js  style.css  favicon.svg  licenses.txt
-web/vendor/     emulator (3.4 MB) + font
-web/game/       dailyred.gba.gz (5.5 MB), built on your machine
-```
-
-To use another port, pass it: `node scripts/serve.mjs 3000`. Your stats are
-saved in the browser for that address, so keep using the same port to keep
-your streaks. After rebuilding the ROM (`scripts/build-rom.sh`), reload the
-page.
-
-## Copyright and licenses
-
-Daily Red is a free, unofficial fan project. It isn't affiliated with or
-endorsed by Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company.
-Pokémon and all related names, characters and game content are © Nintendo,
-Creatures Inc. and GAME FREAK inc.
-
-This repository contains Daily Red's own work: the changes in `patches/`, the
-website and the tests. It doesn't include pret/pokefirered or a built ROM; the
-scripts fetch the decompilation from pret's repository and build locally.
-
-The emulator core is GPL-3.0 (RetroArch) and MPL-2.0 (mGBA). `web/licenses.txt`
-lists all third-party components with links to their source, and the page
-footer links to it.
-
-## Known limitations
-
-- **Movement:** running shoes and the bike are off on the summit; it's only
-  a few steps to the top.
-- **Stats live in the browser:** clearing site data resets them, they don't
-  follow you to another device or browser, and anyone can edit their own
-  localStorage. That's fine for a casual daily game; there's no server.
-- **Time zones:** the day changes at local midnight, so players in different
-  time zones get each team at different times (as with Wordle).
-- **Soft reset** (A+B+Start+Select) is turned off in the daily game, so a
-  losing battle can't be restarted. (If the game ever restarts mid-battle
-  anyway, the site counts it as a loss.)
-- **Audio** can't be checked by the headless tests. Browsers start audio
-  suspended unless it begins during a click, so the game resumes it on the
-  next key press or tap.
-- **Tested environment:** macOS with Google Chrome (headless, desktop and
-  phone emulation). Not yet tried on Safari, Firefox or real phones.
-- The L/R buttons still open FireRed's built-in help, which describes the
-  normal game.
-
-## Project layout
+Daily Gold está pensado para jugarse en tu ordenador. Tras el inicio rápido,
+`web/` contiene todo el sitio (unos 9 MB) y `node scripts/serve.mjs` lo sirve
+en http://localhost:8080:
 
 ```
-patches/pokefirered-dailyred.patch   all changes to pret/pokefirered
-scripts/setup-macos.sh               toolchain (xPack arm-none-eabi-gcc 14.2.1 + libpng)
-scripts/get-pokefirered.sh           pinned upstream checkout + patch
-scripts/save-patch.sh                pokefirered/ changes → patches/
+web/         index.html, app.js, daily.js, game-link.js, game-files.js,
+             rom-config.js, style.css, favicon.svg y licenses.txt
+web/vendor/  emulador (3,4 MB) y fuente
+web/game/    dailyred.gba.gz (5,5 MB), compilado en tu máquina
+```
+
+Para usar otro puerto, indícalo, por ejemplo:
+`node scripts/serve.mjs 3000`. Las estadísticas se guardan para esa dirección
+del navegador; utiliza siempre el mismo puerto para conservar las rachas.
+Después de recompilar la ROM con `scripts/build-rom.sh`, recarga la página.
+
+## Derechos de autor y licencias
+
+Daily Gold es un proyecto de fans gratuito y no oficial. No está afiliado ni
+cuenta con el respaldo de Nintendo, Creatures Inc., GAME FREAK inc. ni The
+Pokémon Company. Pokémon y los nombres, personajes y contenido relacionados
+son © Nintendo, Creatures Inc. y GAME FREAK inc.
+
+Este repositorio contiene el trabajo propio de Daily Gold: los cambios de
+`patches/`, la web y las pruebas. No incluye pret/pokefirered ni una ROM
+compilada; los scripts descargan la decompilación del repositorio de pret y la
+compilan localmente.
+
+El núcleo del emulador se distribuye bajo GPL-3.0 (RetroArch) y MPL-2.0 (mGBA).
+`web/licenses.txt` enumera los componentes de terceros y enlaza a su código
+fuente; el pie de la página también lleva a esa lista.
+
+## Limitaciones conocidas
+
+- **Movimiento:** las zapatillas para correr y la bicicleta están desactivadas
+  en la cima; solo hay unos pasos hasta arriba.
+- **Estadísticas en el navegador:** borrar los datos del sitio reinicia el
+  récord. No se comparte entre dispositivos o navegadores y cualquiera puede
+  editar su propio `localStorage`. El juego es informal y no tiene servidor.
+- **Zonas horarias:** el día cambia a medianoche local, así que el equipo diario
+  aparece a distintas horas según la zona horaria, como en Wordle.
+- **Reinicio rápido:** la combinación A+B+Start+Select está desactivada en el
+  modo diario para que no se pueda reiniciar una derrota. Si el juego se
+  reinicia durante un combate de todos modos, la web lo cuenta como derrota.
+- **Audio:** las pruebas sin interfaz no pueden comprobarlo. Los navegadores
+  suelen suspender el sonido hasta que el jugador pulsa una tecla o toca la
+  pantalla; el juego lo reanuda entonces.
+- **Entorno probado:** macOS con Google Chrome, en modo sin interfaz, escritorio
+  y emulación móvil. Aún no se ha probado en Safari, Firefox ni teléfonos reales.
+- Los botones L/R todavía abren la ayuda integrada de FireRed, que describe el
+  juego original.
+
+## Estructura del proyecto
+
+```
+patches/pokefirered-dailyred.patch   cambios a pret/pokefirered
+scripts/setup-macos.sh               herramientas de compilación y libpng
+scripts/get-pokefirered.sh           descarga fijada del código original y parches
+scripts/save-patch.sh                cambios de pokefirered/ → patches/
 scripts/build-rom.sh                 make modern → web/game/dailyred.gba.gz
-scripts/fetch-vendor.sh              Nostalgist, mGBA core, font (pinned, checksummed)
-scripts/serve.mjs                    local static server
-web/                                 the website
-tests/                               headless browser tests and the teams tool
+scripts/fetch-vendor.sh              Nostalgist, núcleo mGBA y fuente (versiones verificadas)
+scripts/serve.mjs                    servidor estático local
+web/                                 sitio web
+tests/                               pruebas de navegador y herramienta de equipos
 ```
 
-Inside `pokefirered/`, the Daily Red code is `include/dailyred.h`,
-`include/constants/dailyred.h`, `src/dailyred.c` (game flow and seed),
-`src/dailyred_team.c` (team generator), `src/dailyred_boss.c` (ORO's team), and
-`data/maps/DailyRed_Summit/` plus `data/layouts/DailyRed_Summit/` (the map).
+Dentro de `pokefirered/`, el código de Daily Gold está en `include/dailyred.h`,
+`include/constants/dailyred.h`, `src/dailyred.c` (flujo y semilla),
+`src/dailyred_team.c` (generador de equipos), `src/dailyred_boss.c` (equipo
+de ORO), `data/maps/DailyRed_Summit/` y `data/layouts/DailyRed_Summit/`
+(el mapa).
