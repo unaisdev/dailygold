@@ -208,7 +208,7 @@ index 0000000..b1b9d9e
 +DailyRed_Summit_Text_RedIntro::
 +    .string "Te estaba esperando HORTELANO.\p"
 +    .string "Así que finalmente has podido\n"
-+    .string "derrotar a Red.\p"
++    .string "derrotar a RED.\p"
 +    .string "Pero bueno, siento decirte que\n"
 +    .string "hasta aquí has llegado.\p"
 +    .string "Te voy a derrotar igual que le\n"
