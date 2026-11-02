@@ -4,7 +4,7 @@ Fork de [Daily Red](https://github.com/amoi-builds/dailyred).
 
 Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
 recibes el mismo equipo aleatorio de seis Pokémon de nivel 100 y te enfrentas a
-**Gold (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
+**Gold (Ethan)**. Puedes jugar una vez al día. Las
 victorias, derrotas y rachas se guardan en tu navegador.
 
 Cada combate se ejecuta en el motor original de Pokémon FireRed: el juego parte
@@ -108,8 +108,8 @@ especiales. Todo se carga desde `web/vendor/`.
 | Pantalla de copyright → inicio directo con semilla | `src/intro.c` → `CB2_DailyRed_StartFromCopyright` (`src/dailyred.c`) |
 | Pantalla de título → inicio directo sin semilla | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
 | Datos de partida: LEAF (jugadora de FireRed), texto rápido | `StartNewGame` en `src/dailyred.c`, después el `CB2_NewGame` original |
-| Equipo y traslado a la sala del Campeón en lugar de la habitación | `src/new_game.c` → `DailyRed_InitNewGame` |
-| Sala del Campeón sin salidas; Gold mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
+| Equipo y traslado al mapa de combate en lugar de la habitación | `src/new_game.c` → `DailyRed_InitNewGame` |
+| Mapa sin salidas; Gold mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
 | Hablar con Gold → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
 | Fondo de combate de la Liga | `BattleSetup_GetTerrainId` en `src/battle_setup.c` |
 | Sin cambio gratis de Pokémon al debilitar a uno de Gold: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
@@ -132,11 +132,9 @@ cambio:
 grep -rn "Daily Red" pokefirered/src pokefirered/include pokefirered/data
 ```
 
-El mapa reutiliza el diseño de la sala del Campeón de la Liga Pokémon (el mismo
-lugar que Hall of Legends). Gold está en (6, 8), mirando al sur; empiezas en
-(6, 12). El proyecto usa el objetivo `modern` de pokefirered (GCC 14), no la
-compilación `agbcc` idéntica byte a byte, por lo que no reproduce la ROM
-comercial.
+Gold está en (6, 8), mirando al sur; empiezas en (6, 12). El proyecto usa el
+objetivo `modern` de pokefirered (GCC 14), no la compilación `agbcc` idéntica
+byte a byte, por lo que no reproduce la ROM comercial.
 
 ## Generación de equipos
 
@@ -236,8 +234,7 @@ objeto y movimientos, usando el formato normal de FireRed
 Gyarados, Ampharos, Heracross, Umbreon, Ho-Oh y Typhlosion (basado en el de
 Ethan en [Hall of Legends](https://github.com/amoi-builds/halloflegends), con
 Umbreon en el cuarto puesto). Todos están al nivel 100, con IV perfectos,
-objetos equipados y EV completos. El Gyarados inicial es variocolor. El combate
-tiene lugar en la sala del Campeón.
+objetos equipados y EV completos. El Gyarados inicial es variocolor.
 
 | Pokémon | PS | Atq | Def | Vel | At. Esp. | Def. Esp. | Total |
 |---|---|---|---|---|---|---|---|
