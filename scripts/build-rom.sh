@@ -40,7 +40,7 @@ gzip -9 -n -c "$ROM" > "$ROOT/web/game/dailyred.gba.gz"
 cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" "$ROOT/web/game/oro.png"
 cp "$ROOT/web/game/oro.png" "$ROOT/web/game/red.png"
 # Team icons for the title card.
-for mon in gyarados ampharos heracross togetic ho_oh typhlosion; do
+for mon in gyarados ampharos heracross umbreon ho_oh typhlosion; do
   src="$GAME/graphics/pokemon/$mon/icon.png"
   dst_name="$mon"
   [ "$mon" = "ho_oh" ] && dst_name="ho-oh"

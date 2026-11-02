@@ -16,9 +16,14 @@ fi
 
 git init -q "$GAME"
 git -C "$GAME" remote add origin "$PRET_URL"
+git -C "$GAME" config core.autocrlf false
 echo ">> Fetching pret/pokefirered @ ${PRET_COMMIT:0:10}"
 git -C "$GAME" fetch -q --depth 1 origin "$PRET_COMMIT"
 git -C "$GAME" checkout -q FETCH_HEAD
 echo ">> Applying $(basename "$PATCH")"
-git -C "$GAME" apply --whitespace=nowarn "$PATCH"
+NORMALIZED_PATCH="$(mktemp)"
+trap 'rm -f "$NORMALIZED_PATCH"' EXIT
+PYTHON="$(command -v python || command -v python3)"
+"$PYTHON" "$ROOT/scripts/normalize-binary-patch.py" < "$PATCH" > "$NORMALIZED_PATCH"
+git -C "$GAME" apply --binary --ignore-space-change --ignore-whitespace --whitespace=nowarn "$NORMALIZED_PATCH"
 echo "Done. Build with: scripts/build-rom.sh"

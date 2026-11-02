@@ -21,7 +21,7 @@ export function loadGameFiles(onProgress = () => {}) {
 async function download(onProgress) {
   const responses = await Promise.all(Object.values(FILES).map(async (url) => {
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`Couldn't download ${url} (HTTP ${res.status}).`);
+    if (!res.ok) throw new Error(`No se pudo descargar ${url} (HTTP ${res.status}).`);
     return res;
   }));
 

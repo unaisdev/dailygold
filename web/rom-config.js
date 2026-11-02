@@ -26,7 +26,7 @@ export function findConfigOffset(rom) {
 //   daily    true for the daily game: one battle, then the game ends
 export function injectConfig(rom, { seed, wins = 0, battles = 0, daily = false }) {
   const offset = findConfigOffset(rom);
-  if (offset < 0) throw new Error('This ROM has no Daily Red config. Rebuild it with scripts/build-rom.sh.');
+  if (offset < 0) throw new Error('Esta ROM no contiene la configuración de Daily Gold. Vuelve a compilarla con scripts/build-rom.sh.');
   const patched = rom.slice();
   const view = new DataView(patched.buffer);
   view.setUint32(offset, seed >>> 0, true);

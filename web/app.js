@@ -88,7 +88,7 @@ function renderTitle() {
   ui.play.hidden = Boolean(result);
   ui.played.hidden = !result;
   ui.practiceNote.hidden = !practiceSeed;
-  if (result) ui.playedResult.textContent = result === 'won' ? 'You beat ORO today!' : 'ORO won today.';
+  if (result) ui.playedResult.textContent = result === 'won' ? '¡Hoy has derrotado a ORO!' : 'ORO ha ganado hoy.';
   updateCountdown();
 }
 
@@ -104,7 +104,7 @@ function updateCountdown() {
     renderTitle();
     return;
   }
-  if (!ui.played.hidden) ui.playedNext.textContent = `Next battle in ${formatTime(msUntilTomorrow())}`;
+  if (!ui.played.hidden) ui.playedNext.textContent = `Próximo combate en ${formatTime(msUntilTomorrow())}`;
 }
 setInterval(() => {
   if (app.dataset.state === 'title') updateCountdown();
@@ -116,7 +116,7 @@ const megabytes = (n) => (n / 1048576).toFixed(1);
 
 function checkBrowser() {
   if (typeof WebAssembly !== 'object' || typeof DecompressionStream !== 'function') {
-    throw new Error("This browser can't run the game. Use a recent version of Chrome, Edge, Firefox or Safari.");
+    throw new Error('Este navegador no puede ejecutar el juego. Usa una versión reciente de Chrome, Edge, Firefox o Safari.');
   }
 }
 
@@ -142,7 +142,7 @@ async function startRun() {
     checkBrowser();
     stopEmulator();
     setState('loading');
-    ui.loadingText.textContent = 'Downloading the game';
+    ui.loadingText.textContent = 'Descargando el juego';
     ui.loadingDetail.textContent = '';
     const files = await loadGameFiles((loaded, total) => {
       ui.meter.style.width = total ? `${Math.min(100, (loaded / total) * 100)}%` : '50%';
@@ -161,7 +161,7 @@ async function startRun() {
       ? injectConfig(files.rom, { seed })
       : injectConfig(files.rom, { seed, wins: stats.wins, battles: stats.wins + stats.losses, daily: true });
 
-    ui.loadingText.textContent = 'Starting the emulator';
+    ui.loadingText.textContent = 'Iniciando el emulador';
     ui.loadingDetail.textContent = '';
     ui.meter.style.width = '100%';
 
@@ -192,7 +192,7 @@ async function startRun() {
     console.error(err);
     stopEmulator();
     // fetch() rejects with a TypeError when the network itself fails.
-    const hint = err instanceof TypeError ? ' Check your connection and try again.' : '';
+    const hint = err instanceof TypeError ? ' Comprueba tu conexión e inténtalo de nuevo.' : '';
     ui.errorText.textContent = `${err?.message || err}${hint}`;
     setState('error');
   } finally {
@@ -257,7 +257,7 @@ onClick(ui.sound, () => {
 });
 
 function showMuted() {
-  ui.sound.textContent = muted ? 'Unmute' : 'Mute';
+  ui.sound.textContent = muted ? 'Activar sonido' : 'Silenciar';
   ui.sound.setAttribute('aria-pressed', String(muted));
 }
 
@@ -267,7 +267,7 @@ onClick(ui.fullscreen, () => {
 });
 
 document.addEventListener('fullscreenchange', () => {
-  ui.fullscreen.textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+  ui.fullscreen.textContent = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa';
 });
 
 // Don't let arrow keys and space scroll the page while playing.
