@@ -1979,7 +1979,7 @@ diff --git a/src/battle_message.c b/src/battle_message.c
  #include "constants/weather.h"
 @@ -388,3 +389,4 @@
  static const u8 sText_Trainer1WantsToBattle[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME}\nwould like to battle!\p");
-+static const u8 sText_DailyGoldWantsToBattle[] = _("¡El CAMPEÓN {B_TRAINER1_NAME}\nquiere luchar!\p");
++static const u8 sText_DailyGoldWantsToBattle[] = _("Gold de la ELITE FOUR\nde CAMPEONES quiere luchar\p");
  static const u8 sText_LinkTrainerWantsToBattle[] = _("{B_LINK_OPPONENT1_NAME}\nwants to battle!");
  static const u8 sText_TwoLinkTrainersWantToBattle[] = _("{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME}\nwant to battle!");
 @@ -1566,5 +1568,8 @@
