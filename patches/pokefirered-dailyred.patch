@@ -1967,9 +1967,10 @@ index 75f0e67..7ddf419 100644
          }
          break;
 diff --git a/src/battle_message.c b/src/battle_message.c
+index a6392be..d594a57 100644
 --- a/src/battle_message.c
 +++ b/src/battle_message.c
-@@ -16,7 +16,8 @@
+@@ -16,6 +16,7 @@
  #include "battle_controllers.h"
  #include "graphics.h"
  #include "battle_ai_switch_items.h"
@@ -1977,13 +1978,22 @@ diff --git a/src/battle_message.c b/src/battle_message.c
  #include "constants/moves.h"
  #include "constants/items.h"
  #include "constants/trainers.h"
- #include "constants/weather.h"
-@@ -388,3 +389,4 @@
+@@ -386,11 +387,14 @@ static const u8 sText_TheGhostAppeared[] = _("The GHOST appeared!\p");
+ static const u8 sText_SilphScopeUnveil[] = _("SILPH SCOPE unveiled the GHOST's\nidentity!");
+ static const u8 sText_TheGhostWas[] = _("The GHOST was MAROWAK!\p\n");
  static const u8 sText_Trainer1WantsToBattle[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME}\nwould like to battle!\p");
 +static const u8 sText_DailyGoldWantsToBattle[] = _("GOLD de la ELITE FOUR\nde CAMPEONES quiere combatir\p");
  static const u8 sText_LinkTrainerWantsToBattle[] = _("{B_LINK_OPPONENT1_NAME}\nwants to battle!");
  static const u8 sText_TwoLinkTrainersWantToBattle[] = _("{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME}\nwant to battle!");
-@@ -1566,5 +1568,8 @@
+ static const u8 sText_Trainer1SentOutPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
++static const u8 sText_DailyGoldSentOutPkmn[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutTwoPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutPkmn2[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_BUFF1}!");
++static const u8 sText_DailyGoldSentOutPkmn2[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_BUFF1}!");
+ static const u8 sText_LinkTrainerSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME}!");
+ static const u8 sText_LinkTrainerSentOutTwoPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!");
+ static const u8 sText_TwoLinkTrainersSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out {B_LINK_OPPONENT_MON1_NAME}!\n{B_LINK_OPPONENT2_NAME} sent out {B_LINK_OPPONENT_MON2_NAME}!");
+@@ -1566,7 +1570,10 @@ void BufferStringBattle(u16 stringId)
              }
              else
              {
@@ -1993,3 +2003,31 @@ diff --git a/src/battle_message.c b/src/battle_message.c
 +                else
 +                    stringPtr = sText_Trainer1WantsToBattle;
              }
+         }
+         else
+@@ -1617,7 +1624,12 @@ void BufferStringBattle(u16 stringId)
+             else
+             {
+                 if (!(gBattleTypeFlags & BATTLE_TYPE_LINK))
+-                    stringPtr = sText_Trainer1SentOutPkmn;
++                {
++                    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                        stringPtr = sText_DailyGoldSentOutPkmn;
++                    else
++                        stringPtr = sText_Trainer1SentOutPkmn;
++                }
+                 else if (gTrainerBattleOpponent_A == TRAINER_UNION_ROOM)
+                     stringPtr = sText_Trainer1SentOutPkmn;
+                 else
+@@ -1677,7 +1689,10 @@ void BufferStringBattle(u16 stringId)
+             }
+             else
+             {
+-                stringPtr = sText_Trainer1SentOutPkmn2;
++                if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                    stringPtr = sText_DailyGoldSentOutPkmn2;
++                else
++                    stringPtr = sText_Trainer1SentOutPkmn2;
+             }
+         }
+         break;
