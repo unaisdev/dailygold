@@ -206,7 +206,7 @@ index 0000000..b1b9d9e
 +++ b/data/maps/DailyRed_Summit/text.inc
 @@ -0,0 +1,37 @@
 +DailyRed_Summit_Text_RedIntro::
-+    .string "Te estaba esperando Hortelano.\p"
++    .string "Te estaba esperando HORTELANO.\p"
 +    .string "Así que finalmente has podido\n"
 +    .string "derrotar a Red.\p"
 +    .string "Pero bueno, siento decirte que\n"
