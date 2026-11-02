@@ -204,40 +204,45 @@ new file mode 100644
 index 0000000..b1b9d9e
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/text.inc
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,38 @@
 +DailyRed_Summit_Text_RedIntro::
-+    .string "…\p"
-+    .string "…………$"
++    .string "Te estaba esperando HORTELANO.\p"
++    .string "Así que finalmente has podido\n"
++    .string "derrotar a RED.\p"
++    .string "Pero bueno, siento decirte que\n"
++    .string "hasta aquí has llegado.\p"
++    .string "Te voy a derrotar igual que le\n"
++    .string "derroté a él en su momento.$"
 +
-+@ Shown in battle when ORO loses.
++@ Shown in battle when Gold loses.
 +DailyRed_Summit_Text_RedDefeat::
-+    .string "…$"
++    .string "¡Has derrotado a GOLD de la\n"
++    .string "ELITE FOUR de CAMPEONES!$"
 +
-+@ Shown in battle when ORO wins.
++@ Shown in battle when Gold wins.
 +DailyRed_Summit_Text_RedVictory::
 +    .string "…$"
 +
 +DailyRed_Summit_Text_PlayerWon::
-+    .string "You defeated ORO!$"
++    .string "¡Has derrotado a Gold!$"
 +
 +DailyRed_Summit_Text_PlayerLost::
-+    .string "Your team was wiped out…$"
++    .string "¡Han derrotado a todo tu equipo!$"
 +
 +DailyRed_Summit_Text_RecordWin::
-+    .string "Record: {STR_VAR_1} win(s) in\n"
-+    .string "{STR_VAR_2} battle(s).\p"
-+    .string "Play again tomorrow!$"
++    .string "Récord\pVictorias: {STR_VAR_1}\n"
++    .string "Combates: {STR_VAR_2}.\p"
++    .string "¡Vuelve mañana!$"
 +
 +DailyRed_Summit_Text_RecordLoss::
-+    .string "Record: {STR_VAR_1} win(s) in\n"
-+    .string "{STR_VAR_2} battle(s).\p"
-+    .string "Try again tomorrow.$"
++    .string "Récord\pVictorias: {STR_VAR_1}\n"
++    .string "Combates: {STR_VAR_2}.\p"
++    .string "¡Inténtalo mañana!$"
 +
 +DailyRed_Summit_Text_NextRun::
-+    .string "Record: {STR_VAR_1} win(s) in\n"
-+    .string "{STR_VAR_2} battle(s).\p"
-+    .string "A new team of six is ready.\n"
-+    .string "Walk up and face ORO!$"
++    .string "Récord\pVictorias: {STR_VAR_1}\n"
++    .string "Combates: {STR_VAR_2}.\pNuevo equipo listo.\n"
++    .string "¡Sube y enfréntate a Gold!$"
 diff --git a/data/maps/map_groups.json b/data/maps/map_groups.json
 index 8c382f5..cae2f25 100644
 --- a/data/maps/map_groups.json
@@ -497,9 +502,9 @@ index 0000000..62ea5d2
 +#ifndef GUARD_CONSTANTS_DAILYRED_H
 +#define GUARD_CONSTANTS_DAILYRED_H
 +
-+// Daily Oro constants shared by C code and map scripts.
++// Daily Gold constants shared by C code and map scripts.
 +
-+// Player starts in the Champion's room, south of ORO at (6, 8).
++// Player starts in the Champion's room, south of Gold at (6, 8).
 +#define DAILYRED_START_X 6
 +#define DAILYRED_START_Y 12
 +
@@ -512,7 +517,7 @@ index 9d8c514..231e4ab 100644
  #define OBJ_EVENT_GFX_DEOXYS_A 149
  #define OBJ_EVENT_GFX_DEOXYS_N 150
  #define OBJ_EVENT_GFX_SS_ANNE 151
-+// Daily Oro: ORO (Ethan) in the Champion's room (see gObjectEventGraphicsInfo_DailyRedRed).
++// Daily Gold: Gold (Ethan) in the Champion's room (see gObjectEventGraphicsInfo_DailyRedRed).
 +#define OBJ_EVENT_GFX_DAILYRED_RED 152
  
 -#define NUM_OBJ_EVENT_GFX     152
@@ -634,7 +639,7 @@ index d8e1fe7..54d86b3 100644
      else
      {
 -        trainerPicId = gSaveBlock2Ptr->playerGender;
-+        // Daily Oro: Gentleman has no back pic in FireRed; Old Man is the
++        // Daily Gold: Gentleman has no back pic in FireRed; Old Man is the
 +        // bald-ish back that matches HORTE closest in battle.
 +        trainerPicId = TRAINER_BACK_PIC_OLD_MAN;
      }
@@ -645,7 +650,7 @@ index d8e1fe7..54d86b3 100644
      else
      {
 -        trainerPicId = gSaveBlock2Ptr->playerGender + 0;
-+        // Daily Oro: Gentleman has no back pic in FireRed; Old Man is the
++        // Daily Gold: Gentleman has no back pic in FireRed; Old Man is the
 +        // bald-ish back that matches HORTE closest in battle.
 +        trainerPicId = TRAINER_BACK_PIC_OLD_MAN;
      }
@@ -691,7 +696,7 @@ index 6d62084..281c856 100644
  
      if (gTrainerBattleOpponent_A == TRAINER_SECRET_BASE)
          return B_TRANSITION_BLUE;
-+    // Daily Oro: ORO uses Lance's mugshot transition (Ethan front pic remapped).
++    // Daily Gold: Gold uses Lance's mugshot transition (Ethan front pic remapped).
 +    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
 +        return B_TRANSITION_LANCE;
      if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_ELITE_FOUR)
@@ -725,7 +730,7 @@ index 8a23dfe..e7fa9fe 100644
                                                    sMugshotsOpponentCoords[mugshotId][1] + 42,
                                                    0, gDecompressionBuffer);
 -    task->tPlayerSpriteId = CreateTrainerSprite(PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender, TRUE),
-+    // Daily Oro: bald HORTE front (TRAINER_PIC_RED remapped).
++    // Daily Gold: bald HORTE front (TRAINER_PIC_RED remapped).
 +    task->tPlayerSpriteId = CreateTrainerSprite(TRAINER_PIC_RED,
                                                  DISPLAY_WIDTH + 32,
                                                  106,
@@ -814,7 +819,7 @@ index 0000000..62677cf
 +extern u16 gTrainerId; // main.c: low half of the player's trainer ID
 +
 +static const u8 sText_PlayerName[] = _("HORTE");
-+static const u8 sText_RivalName[] = _("ORO");
++static const u8 sText_RivalName[] = _("Gold");
 +
 +// The config is read through volatile pointers: the compiler would otherwise
 +// assume the values are still the zeros the ROM was built with.
@@ -849,7 +854,7 @@ index 0000000..62677cf
 +    Sav2_ClearSetDefault();
 +    SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
 +    gSaveBlock2Ptr->optionsTextSpeed = OPTIONS_TEXT_SPEED_FAST;
-+    // No "Will HORTE change POKeMON?" when ORO's Pokemon faints. The
++    // No "Will HORTE change POKeMON?" when Gold's Pokemon faints. The
 +    // Options menu keeps this locked (option_menu.c).
 +    gSaveBlock2Ptr->optionsBattleStyle = OPTIONS_BATTLE_STYLE_SET;
 +    gSaveBlock2Ptr->playerGender = MALE; // bald overworld via RedNormal -> BaldingMan
@@ -944,7 +949,7 @@ index 0000000..62677cf
 +    return IsDailyGame();
 +}
 +
-+// Vanilla trainer parties have no EVs; give ORO his spreads from
++// Vanilla trainer parties have no EVs; give Gold his spreads from
 +// gDailyRedBossEVs. Also force his lead Gyarados shiny (Hall of Legends).
 +// Called from CreateNPCTrainerParty.
 +void DailyRed_ApplyBossEVs(struct Pokemon *party, u8 partySize)
@@ -988,7 +993,7 @@ index 0000000..f129dac
 +#include "constants/moves.h"
 +#include "constants/species.h"
 +
-+// ORO's (Ethan's) team for Daily Oro. This file is the one place to edit it.
++// Gold's (Ethan's) team for Daily Gold. This file is the one place to edit it.
 +//
 +// Species and order follow Ethan's team from Hall of Legends
 +// (https://github.com/amoi-builds/halloflegends): Gyarados, Ampharos,
@@ -1581,8 +1586,8 @@ index 0b4a21e..4f5a104 100644
  
 -const u32 gTrainerFrontPic_EliteFourLance[] = INCBIN_U32("graphics/trainers/front_pics/elite_four_lance_front_pic.4bpp.lz");
 -const u32 gTrainerPalette_EliteFourLance[] = INCBIN_U32("graphics/trainers/palettes/elite_four_lance.gbapal.lz");
-+const u32 gTrainerFrontPic_EliteFourLance[] = INCBIN_U32("graphics/trainers/front_pics/ethan_front_pic.4bpp.lz"); // Daily Oro: Ethan/ORO
-+const u32 gTrainerPalette_EliteFourLance[] = INCBIN_U32("graphics/trainers/palettes/ethan_front_pic.gbapal.lz"); // Daily Oro: Ethan/ORO
++const u32 gTrainerFrontPic_EliteFourLance[] = INCBIN_U32("graphics/trainers/front_pics/ethan_front_pic.4bpp.lz"); // Daily Gold: Ethan/Gold
++const u32 gTrainerPalette_EliteFourLance[] = INCBIN_U32("graphics/trainers/palettes/ethan_front_pic.gbapal.lz"); // Daily Gold: Ethan/Gold
  
  const u32 gTrainerFrontPic_LeaderBrock[] = INCBIN_U32("graphics/trainers/front_pics/leader_brock_front_pic.4bpp.lz");
  const u32 gTrainerPalette_LeaderBrock[] = INCBIN_U32("graphics/trainers/palettes/leader_brock.gbapal.lz");
@@ -1592,8 +1597,8 @@ index 0b4a21e..4f5a104 100644
  
 -const u32 gTrainerFrontPic_Red[] = INCBIN_U32("graphics/trainers/front_pics/red_front_pic.4bpp.lz");
 -const u32 gTrainerPalette_Red[] = INCBIN_U32("graphics/trainers/palettes/red.gbapal.lz");
-+const u32 gTrainerFrontPic_Red[] = INCBIN_U32("graphics/trainers/front_pics/horte_front_pic.4bpp.lz"); // Daily Oro: bald HORTE
-+const u32 gTrainerPalette_Red[] = INCBIN_U32("graphics/trainers/palettes/horte_front_pic.gbapal.lz"); // Daily Oro: bald HORTE
++const u32 gTrainerFrontPic_Red[] = INCBIN_U32("graphics/trainers/front_pics/horte_front_pic.4bpp.lz"); // Daily Gold: bald HORTE
++const u32 gTrainerPalette_Red[] = INCBIN_U32("graphics/trainers/palettes/horte_front_pic.gbapal.lz"); // Daily Gold: bald HORTE
  
  const u32 gTrainerFrontPic_Leaf[] = INCBIN_U32("graphics/trainers/front_pics/leaf_front_pic.4bpp.lz");
  const u32 gTrainerPalette_Leaf[] = INCBIN_U32("graphics/trainers/palettes/leaf.gbapal.lz");
@@ -1602,7 +1607,7 @@ index 0b4a21e..4f5a104 100644
  const u8 gTrainerBackPic_Leaf[] = INCBIN_U8("graphics/trainers/back_pics/leaf_back_pic.4bpp");
  const u8 gTrainerBackPic_Pokedude[] = INCBIN_U8("graphics/trainers/back_pics/pokedude_back_pic.4bpp");
 -const u8 gTrainerBackPic_OldMan[] = INCBIN_U8("graphics/trainers/back_pics/old_man_back_pic.4bpp");
-+const u8 gTrainerBackPic_OldMan[] = INCBIN_U8("graphics/trainers/back_pics/horte_back_pic.4bpp"); // Daily Oro: HORTE
++const u8 gTrainerBackPic_OldMan[] = INCBIN_U8("graphics/trainers/back_pics/horte_back_pic.4bpp"); // Daily Gold: HORTE
  
  const u8 gTrainerBackPic_RSBrendan[] = INCBIN_U8("graphics/trainers/back_pics/ruby_sapphire_brendan_back_pic.4bpp");
  const u8 gTrainerBackPic_RSMay[] = INCBIN_U8("graphics/trainers/back_pics/ruby_sapphire_may_back_pic.4bpp");
@@ -1611,7 +1616,7 @@ index 0b4a21e..4f5a104 100644
  const u32 gTrainerPalette_LeafBackPic[] = INCBIN_U32("graphics/trainers/palettes/leaf_back_pic.gbapal.lz");
  const u32 gTrainerPalette_PokedudeBackPic[] = INCBIN_U32("graphics/trainers/palettes/pokedude_back_pic.gbapal.lz");
 -const u32 gTrainerPalette_OldManBackPic[] = INCBIN_U32("graphics/trainers/palettes/old_man_back_pic.gbapal.lz");
-+const u32 gTrainerPalette_OldManBackPic[] = INCBIN_U32("graphics/trainers/palettes/horte_back_pic.gbapal.lz"); // Daily Oro: HORTE
++const u32 gTrainerPalette_OldManBackPic[] = INCBIN_U32("graphics/trainers/palettes/horte_back_pic.gbapal.lz"); // Daily Gold: HORTE
 diff --git a/src/data/object_events/object_event_graphics.h b/src/data/object_events/object_event_graphics.h
 index 4e229cb..fbe6510 100644
 --- a/src/data/object_events/object_event_graphics.h
@@ -1620,8 +1625,8 @@ index 4e229cb..fbe6510 100644
  const u16 gObjectEventPic_Agatha[] = INCBIN_U16("graphics/object_events/pics/people/agatha.4bpp");
  const u16 gObjectEventPic_Misty[] = INCBIN_U16("graphics/object_events/pics/people/misty.4bpp");
  const u16 gObjectEventPic_Lance[] = INCBIN_U16("graphics/object_events/pics/people/lance.4bpp");
-+const u16 gObjectEventPic_Ethan[] = INCBIN_U16("graphics/object_events/pics/people/ethan.4bpp"); // Daily Oro
-+const u16 gObjectEventPal_Ethan[] = INCBIN_U16("graphics/object_events/palettes/ethan.gbapal"); // Daily Oro
++const u16 gObjectEventPic_Ethan[] = INCBIN_U16("graphics/object_events/pics/people/ethan.4bpp"); // Daily Gold
++const u16 gObjectEventPal_Ethan[] = INCBIN_U16("graphics/object_events/palettes/ethan.gbapal"); // Daily Gold
  const u16 gObjectEventPic_GBAKid[] = INCBIN_U16("graphics/object_events/pics/people/gba_kid.4bpp");
  const u16 gObjectEventPic_Mom[] = INCBIN_U16("graphics/object_events/pics/people/mom.4bpp");
  const u16 gObjectEventPic_Pidgeot[] = INCBIN_U16("graphics/object_events/pics/pokemon/pidgeot.4bpp");
@@ -1630,7 +1635,7 @@ index 78ee95a..72ac0bb 100644
 --- a/src/data/object_events/object_event_graphics_info.h
 +++ b/src/data/object_events/object_event_graphics_info.h
 @@ -1,8 +1,10 @@
-+// Daily Oro: player (HORTE) is the balding-man overworld sprite. VS/front
++// Daily Gold: player (HORTE) is the balding-man overworld sprite. VS/front
 +// uses custom bald horte_front_pic; battle back uses bald horte_back_pic.
  const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RedNormal = {
      .tileTag = TAG_NONE,
@@ -1659,7 +1664,7 @@ index 78ee95a..72ac0bb 100644
      .affineAnims = gDummySpriteAffineAnimTable,
  };
 +
-+// Daily Oro: ORO (Ethan) in the Champion's room. Overworld sprite/palette from
++// Daily Gold: Gold (Ethan) in the Champion's room. Overworld sprite/palette from
 +// Hall of Legends; special NPC palette slot so it doesn't clash with HORTE.
 +const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_DailyRedRed = {
 +    .tileTag = TAG_NONE,
@@ -1705,7 +1710,7 @@ index 70889d7..41fe057 100644
      overworld_frame(gObjectEventPic_Lance, 2, 4, 2),
  };
  
-+// Daily Oro: Ethan overworld (from Hall of Legends), same frame layout as Blue.
++// Daily Gold: Ethan overworld (from Hall of Legends), same frame layout as Blue.
 +static const struct SpriteFrameImage sPicTable_Ethan[] = {
 +    overworld_frame(gObjectEventPic_Ethan, 2, 4, 0),
 +    overworld_frame(gObjectEventPic_Ethan, 2, 4, 1),
@@ -1729,12 +1734,12 @@ index 02afbfd..28bbba2 100644
          .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE,
          .party = NO_ITEM_DEFAULT_MOVES(sParty_CueBallPaxton),
      },
-+    // Daily Oro: the boss. His team and EVs are in src/dailyred_boss.c.
++    // Daily Gold: the boss. His team and EVs are in src/dailyred_boss.c.
 +    [TRAINER_DAILYRED_RED] = {
 +        .trainerClass = TRAINER_CLASS_CHAMPION,
 +        .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
 +        .trainerPic = TRAINER_PIC_ELITE_FOUR_LANCE, // remapped to Ethan front pic
-+        .trainerName = _("ORO"),
++        .trainerName = _("Gold"),
 +        .items = {},
 +        .doubleBattle = FALSE,
 +        .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY,
@@ -1749,7 +1754,7 @@ index 8e82824..b3fef30 100644
  #define OBJ_EVENT_PAL_TAG_RS_GROUDON                  0x1119
  #define OBJ_EVENT_PAL_TAG_RS_GROUDON_REFLECTION       0x111A
  #define OBJ_EVENT_PAL_TAG_RS_SUBMARINE_SHADOW         0x111B
-+#define OBJ_EVENT_PAL_TAG_ETHAN                       0x111C // Daily Oro: Ethan's overworld palette
++#define OBJ_EVENT_PAL_TAG_ETHAN                       0x111C // Daily Gold: Ethan's overworld palette
  #define OBJ_EVENT_PAL_TAG_NONE                        0x11FF
  
  #include "data/object_events/object_event_graphics_info_pointers.h"
@@ -1757,7 +1762,7 @@ index 8e82824..b3fef30 100644
      {gObjectEventPal_Meteorite,               OBJ_EVENT_PAL_TAG_METEORITE},
      {gObjectEventPal_SSAnne,                  OBJ_EVENT_PAL_TAG_SS_ANNE},
      {gObjectEventPal_Seagallop,               OBJ_EVENT_PAL_TAG_SEAGALLOP},
-+    {gObjectEventPal_Ethan,                   OBJ_EVENT_PAL_TAG_ETHAN}, // Daily Oro
++    {gObjectEventPal_Ethan,                   OBJ_EVENT_PAL_TAG_ETHAN}, // Daily Gold
      {},
  };
  
@@ -1912,7 +1917,7 @@ index 66a5c3d..a7891d2 100644
          return MUS_RS_VS_TRAINER;
      if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
      {
-+        // Daily Oro: ORO keeps the champion battle theme.
++        // Daily Gold: Gold keeps the champion battle theme.
 +        if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
 +            return MUS_VS_CHAMPION;
          switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)
@@ -1959,5 +1964,70 @@ index 75f0e67..7ddf419 100644
 +            // Daily Red: no main menu or saves; every boot is a new run.
 +            SetMainCallback2(CB2_DailyRed_StartFromTitle);
              DestroyTask(FindTaskIdByFunc(Task_TitleScreenMain));
+         }
+         break;
+diff --git a/src/battle_message.c b/src/battle_message.c
+index a6392be..d594a57 100644
+--- a/src/battle_message.c
++++ b/src/battle_message.c
+@@ -16,6 +16,7 @@
+ #include "battle_controllers.h"
+ #include "graphics.h"
+ #include "battle_ai_switch_items.h"
++#include "constants/opponents.h"
+ #include "constants/moves.h"
+ #include "constants/items.h"
+ #include "constants/trainers.h"
+@@ -386,11 +387,14 @@ static const u8 sText_TheGhostAppeared[] = _("The GHOST appeared!\p");
+ static const u8 sText_SilphScopeUnveil[] = _("SILPH SCOPE unveiled the GHOST's\nidentity!");
+ static const u8 sText_TheGhostWas[] = _("The GHOST was MAROWAK!\p\n");
+ static const u8 sText_Trainer1WantsToBattle[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME}\nwould like to battle!\p");
++static const u8 sText_DailyGoldWantsToBattle[] = _("GOLD de la ELITE FOUR\nde CAMPEONES quiere combatir\p");
+ static const u8 sText_LinkTrainerWantsToBattle[] = _("{B_LINK_OPPONENT1_NAME}\nwants to battle!");
+ static const u8 sText_TwoLinkTrainersWantToBattle[] = _("{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME}\nwant to battle!");
+ static const u8 sText_Trainer1SentOutPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
++static const u8 sText_DailyGoldSentOutPkmn[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutTwoPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutPkmn2[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_BUFF1}!");
++static const u8 sText_DailyGoldSentOutPkmn2[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_BUFF1}!");
+ static const u8 sText_LinkTrainerSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME}!");
+ static const u8 sText_LinkTrainerSentOutTwoPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!");
+ static const u8 sText_TwoLinkTrainersSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out {B_LINK_OPPONENT_MON1_NAME}!\n{B_LINK_OPPONENT2_NAME} sent out {B_LINK_OPPONENT_MON2_NAME}!");
+@@ -1566,7 +1570,10 @@ void BufferStringBattle(u16 stringId)
+             }
+             else
+             {
+-                stringPtr = sText_Trainer1WantsToBattle;
++                if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                    stringPtr = sText_DailyGoldWantsToBattle;
++                else
++                    stringPtr = sText_Trainer1WantsToBattle;
+             }
+         }
+         else
+@@ -1617,7 +1624,12 @@ void BufferStringBattle(u16 stringId)
+             else
+             {
+                 if (!(gBattleTypeFlags & BATTLE_TYPE_LINK))
+-                    stringPtr = sText_Trainer1SentOutPkmn;
++                {
++                    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                        stringPtr = sText_DailyGoldSentOutPkmn;
++                    else
++                        stringPtr = sText_Trainer1SentOutPkmn;
++                }
+                 else if (gTrainerBattleOpponent_A == TRAINER_UNION_ROOM)
+                     stringPtr = sText_Trainer1SentOutPkmn;
+                 else
+@@ -1677,7 +1689,10 @@ void BufferStringBattle(u16 stringId)
+             }
+             else
+             {
+-                stringPtr = sText_Trainer1SentOutPkmn2;
++                if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                    stringPtr = sText_DailyGoldSentOutPkmn2;
++                else
++                    stringPtr = sText_Trainer1SentOutPkmn2;
+             }
          }
          break;
