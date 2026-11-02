@@ -44,6 +44,7 @@ export function decodeMon(bytes) {
     species,
     speciesName: SPECIES.get(species) ?? `#${species}`,
     heldItem: g.readUInt16LE(2),
+    friendship: g[9],
     moves: [0, 2, 4, 6].map((o) => a.readUInt16LE(o)),
     moveNames: [0, 2, 4, 6].map((o) => a.readUInt16LE(o)).filter(Boolean).map((id) => MOVES.get(id) ?? `#${id}`),
     pp: [8, 9, 10, 11].map((o) => a[o]),
