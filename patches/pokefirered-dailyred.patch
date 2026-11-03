@@ -183,7 +183,7 @@ index 0000000..033ded0
 +	end
 diff --git a/data/maps/DailyRed_Summit/text.inc b/data/maps/DailyRed_Summit/text.inc
 new file mode 100644
-index 0000000..e8a371b
+index 0000000..5103585
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/text.inc
 @@ -0,0 +1,39 @@
@@ -666,6 +666,105 @@ index 50cfd49..a6026cf 100644
 +
  $(OBJEVENTGFXDIR)/people/fat_man.4bpp: %.4bpp: %.png
  	$(GFX) $< $@ -mwidth 2 -mheight 4
+ 
+diff --git a/src/battle_ai_script_commands.c b/src/battle_ai_script_commands.c
+index 4df9977..e51035f 100644
+--- a/src/battle_ai_script_commands.c
++++ b/src/battle_ai_script_commands.c
+@@ -9,6 +9,8 @@
+ #include "constants/battle_ai.h"
+ #include "constants/battle_move_effects.h"
+ #include "constants/moves.h"
++#include "constants/opponents.h"
++#include "constants/species.h"
+ 
+ #define AI_ACTION_DONE          0x0001
+ #define AI_ACTION_FLEE          0x0002
+@@ -365,6 +367,7 @@ u8 BattleAI_ChooseMoveOrAction(void)
+     u8 currentMoveArray[MAX_MON_MOVES];
+     u8 consideredMoveArray[MAX_MON_MOVES];
+     u8 numOfBestMoves;
++    bool8 hasOtherMove;
+     s32 i;
+ 
+     RecordLastUsedMoveByTarget();
+@@ -386,12 +389,63 @@ u8 BattleAI_ChooseMoveOrAction(void)
+     if (AI_THINKING_STRUCT->aiAction & AI_ACTION_WATCH)
+         return AI_CHOICE_WATCH;
+ 
+-    numOfBestMoves = 1;
+-    currentMoveArray[0] = AI_THINKING_STRUCT->score[0];
+-    consideredMoveArray[0] = 0;
++    // Toxic is part of Daily Gold Umbreon's intended strategy. The vanilla
++    // viability script only rewards Toxic when the user also knows Protect
++    // or a Sp. Def-raising move, neither of which Umbreon has in this roster.
++    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
++     && gBattleMons[gBattlerAttacker].species == SPECIES_UMBREON
++     && gBattleMons[gBattlerTarget].status1 == STATUS1_NONE
++     && !(gBattleMons[gBattlerTarget].status2 & STATUS2_SUBSTITUTE)
++     && !(gSideStatuses[GetBattlerSide(gBattlerTarget)] & SIDE_STATUS_SAFEGUARD)
++     && gBattleMons[gBattlerTarget].ability != ABILITY_IMMUNITY
++     && gBattleMons[gBattlerTarget].type1 != TYPE_STEEL
++     && gBattleMons[gBattlerTarget].type1 != TYPE_POISON
++     && gBattleMons[gBattlerTarget].type2 != TYPE_STEEL
++     && gBattleMons[gBattlerTarget].type2 != TYPE_POISON
++     && gBattleMons[gBattlerTarget].hp * 4 > gBattleMons[gBattlerTarget].maxHP)
++    {
++        for (i = 0; i < MAX_MON_MOVES; i++)
++        {
++            if (gBattleMons[gBattlerAttacker].moves[i] == MOVE_TOXIC
++             && gBattleMons[gBattlerAttacker].pp[i] != 0)
++            {
++                // Scores are signed 8-bit values; 150 overflowed and made Toxic undesirable.
++                AI_THINKING_STRUCT->score[i] = 127;
++                break;
++            }
++        }
++    }
++
++    // Wish fails while a previous Wish is still pending. Avoid choosing it
++    // again when the battler has another move with PP available.
++    hasOtherMove = FALSE;
++    if (gWishFutureKnock.wishCounter[gBattlerAttacker] != 0)
++    {
++        for (i = 0; i < MAX_MON_MOVES; i++)
++        {
++            if (gBattleMons[gBattlerAttacker].pp[i] != 0
++             && gBattleMons[gBattlerAttacker].moves[i] != MOVE_WISH)
++            {
++                hasOtherMove = TRUE;
++                break;
++            }
++        }
++    }
+ 
+-    for (i = 1; i < MAX_MON_MOVES; i++)
++    numOfBestMoves = 0;
++    for (i = 0; i < MAX_MON_MOVES; i++)
+     {
++        if (hasOtherMove && gBattleMons[gBattlerAttacker].moves[i] == MOVE_WISH)
++            continue;
++
++        if (numOfBestMoves == 0)
++        {
++            currentMoveArray[0] = AI_THINKING_STRUCT->score[i];
++            consideredMoveArray[0] = i;
++            numOfBestMoves = 1;
++            continue;
++        }
++
+         if (currentMoveArray[0] < AI_THINKING_STRUCT->score[i])
+         {
+             numOfBestMoves = 1;
+@@ -405,6 +459,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
+         }
+     }
+ 
++    if (numOfBestMoves == 0)
++        return 0;
++
+     return consideredMoveArray[Random() % numOfBestMoves]; // break any ties that exist.
+ }
  
 diff --git a/src/battle_bg.c b/src/battle_bg.c
 index 3bcc500..46841a1 100644
@@ -1245,7 +1344,7 @@ index 0000000..a8a5b83
 +}
 diff --git a/src/dailyred_boss.c b/src/dailyred_boss.c
 new file mode 100644
-index 0000000..05be01c
+index 0000000..06c42d4
 --- /dev/null
 +++ b/src/dailyred_boss.c
 @@ -0,0 +1,92 @@
@@ -1319,7 +1418,7 @@ index 0000000..05be01c
 +const u8 gDailyRedBossEVs[DAILYRED_BOSS_PARTY_SIZE][NUM_STATS] =
 +{
 +    {  4, 252,   0, 252,   0,   0}, // Gyarados
-+    {252,   0,   0,   6, 252,   0}, // Ampharos
++    {252,   0,   0,   0, 252,   6}, // Ampharos
 +    {  4, 252,   0, 252,   0,   0}, // Heracross
 +    {252,   0, 252,   0,   0,   4}, // Umbreon
 +    {252, 252,   0,   6,   0,   0}, // Ho-Oh
@@ -1343,10 +1442,10 @@ index 0000000..05be01c
 +};
 diff --git a/src/dailyred_team.c b/src/dailyred_team.c
 new file mode 100644
-index 0000000..b537f7c
+index 0000000..67cfe13
 --- /dev/null
 +++ b/src/dailyred_team.c
-@@ -0,0 +1,515 @@
+@@ -0,0 +1,513 @@
 +#include "global.h"
 +#include "dailyred.h"
 +#include "party_menu.h"
@@ -1369,12 +1468,12 @@ index 0000000..b537f7c
 +//   - Level 100 with a random personality (so random nature, gender, ability
 +//     and the normal 1/8192 shiny chance), random IVs from MIN_TEAM_IV to 31,
 +//     and EVs focused on its two best stats (see AssignFocusedEVs), close to
-+//     RED's perfect IVs and hand-picked EV spreads.
++//     GOLD's perfect IVs and hand-picked EV spreads.
 +//   - Up to 4 different moves picked uniformly from everything the species can
 +//     learn by level-up (at any level) or by TM/HM. If the species has any
 +//     damaging move, at least one of the 4 is damaging.
 +//   - One held item, picked uniformly from sBattleItems plus the type-boosting
-+//     items for the types of its own attacking moves (RED's team holds items
++//     items for the types of its own attacking moves (GOLD's team holds items
 +//     too).
 +//
 +// It draws from its own RNG state instead of the game's Random(), so a given
@@ -1384,19 +1483,17 @@ index 0000000..b537f7c
 +#define MAX_CANDIDATE_MOVES  128 // Mew, the largest pool, has under 100
 +#define MAX_TOTAL_EVS        510
 +#define MAX_STAT_EVS         252
-+#define MIN_TEAM_IV          25  // IVs are random from this to 31 (RED's are all 31)
++#define MIN_TEAM_IV          25  // IVs are random from this to 31 (GOLD's are all 31)
 +#define MAX_SPECIES_ATTEMPTS 1000
 +#define MAX_MON_ATTEMPTS     10
 +#define MAX_TEAM_ATTEMPTS    1000
 +
 +// Minimum combined base stat total (HP + Atk + Def + Speed + Sp. Atk +
-+// Sp. Def) for the player's six. RED's team adds up to 2954 (Pikachu 300,
-+// Espeon 525, Snorlax 540, Venusaur 525, Charizard 534, Blastoise 530), while
-+// a fully random team averages about 2430. At 2700, a typical team's actual
-+// in-battle stats come to about 96% of RED's and roughly 1 team in 25 is
-+// stronger than his. Raise it to make the game easier, lower it for harder.
-+// Set to 0 to turn the rule off.
-+#define MIN_TEAM_BASE_STAT_TOTAL 2700
++// Sp. Def) for the player's six. GOLD's current team adds up to 3289. A fully
++// random team averages about 2430; 2850 raises the floor while keeping the
++// generator's retry limit practical. Raise it to make the game easier, lower
++// it for harder. Set to 0 to turn the rule off.
++#define MIN_TEAM_BASE_STAT_TOTAL 2850
 +
 +// Legendary and mythical Pokemon average a base stat total of 613, against
 +// 393 for everything else, so the minimum above would put one in most teams
@@ -1535,9 +1632,9 @@ index 0000000..b537f7c
 +}
 +
 +// Decides whether this team gets a legendary, then draws the other Pokemon
-+// until the team meets MIN_TEAM_BASE_STAT_TOTAL (about 1 in 20 draws do), so
-+// every qualifying team is equally likely. In the practically impossible case
-+// that none does, the strongest team drawn is used.
++// until the team meets MIN_TEAM_BASE_STAT_TOTAL, so every qualifying team is
++// equally likely. In the rare case that none does within MAX_TEAM_ATTEMPTS,
++// the strongest team drawn is used.
 +static void PickTeamSpecies(u16 *species, u32 *rng)
 +{
 +    u16 best[PARTY_SIZE];
@@ -1712,7 +1809,7 @@ index 0000000..b537f7c
 +// When two stats have the same base value, the one listed first wins.
 +static const u8 sEVStatPriority[NUM_STATS] = {STAT_ATK, STAT_SPATK, STAT_SPEED, STAT_HP, STAT_DEF, STAT_SPDEF};
 +
-+// Trains the Pokemon like RED's: 252 EVs into each of its two highest base
++// Trains the Pokemon like GOLD's: 252 EVs into each of its two highest base
 +// stats and the last 6 into HP (or its third-best stat if HP is one of the
 +// two). Attack and Sp. Atk only count if one of its attacks uses them; in
 +// Gen 3 a move's type decides which (IS_TYPE_PHYSICAL). Needs the moves set.
@@ -2322,102 +2419,3 @@ index 75f0e67..ad94f15 100644
              DestroyTask(FindTaskIdByFunc(Task_TitleScreenMain));
          }
          break;
-diff --git a/src/battle_ai_script_commands.c b/src/battle_ai_script_commands.c
-index 4df9977..ac4063d 100644
---- a/src/battle_ai_script_commands.c
-+++ b/src/battle_ai_script_commands.c
-@@ -9,6 +9,8 @@
- #include "constants/battle_ai.h"
- #include "constants/battle_move_effects.h"
- #include "constants/moves.h"
-+#include "constants/opponents.h"
-+#include "constants/species.h"
- 
- #define AI_ACTION_DONE          0x0001
- #define AI_ACTION_FLEE          0x0002
-@@ -365,6 +367,7 @@ u8 BattleAI_ChooseMoveOrAction(void)
-     u8 currentMoveArray[MAX_MON_MOVES];
-     u8 consideredMoveArray[MAX_MON_MOVES];
-     u8 numOfBestMoves;
-+    bool8 hasOtherMove;
-     s32 i;
- 
-     RecordLastUsedMoveByTarget();
-@@ -386,12 +389,62 @@ u8 BattleAI_ChooseMoveOrAction(void)
-     if (AI_THINKING_STRUCT->aiAction & AI_ACTION_WATCH)
-         return AI_CHOICE_WATCH;
- 
--    numOfBestMoves = 1;
--    currentMoveArray[0] = AI_THINKING_STRUCT->score[0];
--    consideredMoveArray[0] = 0;
-+    // Toxic is part of Daily Gold Umbreon's intended strategy. The vanilla
-+    // viability script only rewards Toxic when the user also knows Protect
-+    // or a Sp. Def-raising move, neither of which Umbreon has in this roster.
-+    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
-+     && gBattleMons[gBattlerAttacker].species == SPECIES_UMBREON
-+     && gBattleMons[gBattlerTarget].status1 == STATUS1_NONE
-+     && !(gBattleMons[gBattlerTarget].status2 & STATUS2_SUBSTITUTE)
-+     && !(gSideStatuses[GetBattlerSide(gBattlerTarget)] & SIDE_STATUS_SAFEGUARD)
-+     && gBattleMons[gBattlerTarget].ability != ABILITY_IMMUNITY
-+     && gBattleMons[gBattlerTarget].type1 != TYPE_STEEL
-+     && gBattleMons[gBattlerTarget].type1 != TYPE_POISON
-+     && gBattleMons[gBattlerTarget].type2 != TYPE_STEEL
-+     && gBattleMons[gBattlerTarget].type2 != TYPE_POISON
-+     && gBattleMons[gBattlerTarget].hp * 4 > gBattleMons[gBattlerTarget].maxHP)
-+    {
-+        for (i = 0; i < MAX_MON_MOVES; i++)
-+        {
-+            if (gBattleMons[gBattlerAttacker].moves[i] == MOVE_TOXIC
-+             && gBattleMons[gBattlerAttacker].pp[i] != 0)
-+            {
-+                // Scores are signed 8-bit values; 150 overflowed and made Toxic undesirable.
-+                AI_THINKING_STRUCT->score[i] = 127;
-+                break;
-+            }
-+        }
-+    }
-+
-+    // Wish fails while a previous Wish is still pending. Avoid choosing it
-+    // again when the battler has another move with PP available.
-+    hasOtherMove = FALSE;
-+    if (gWishFutureKnock.wishCounter[gBattlerAttacker] != 0)
-+    {
-+        for (i = 0; i < MAX_MON_MOVES; i++)
-+        {
-+            if (gBattleMons[gBattlerAttacker].pp[i] != 0
-+             && gBattleMons[gBattlerAttacker].moves[i] != MOVE_WISH)
-+            {
-+                hasOtherMove = TRUE;
-+                break;
-+            }
-+        }
-+    }
- 
--    for (i = 1; i < MAX_MON_MOVES; i++)
-+    numOfBestMoves = 0;
-+    for (i = 0; i < MAX_MON_MOVES; i++)
-     {
-+        if (hasOtherMove && gBattleMons[gBattlerAttacker].moves[i] == MOVE_WISH)
-+            continue;
-+
-+        if (numOfBestMoves == 0)
-+        {
-+            currentMoveArray[0] = AI_THINKING_STRUCT->score[i];
-+            consideredMoveArray[0] = i;
-+            numOfBestMoves = 1;
-+            continue;
-+        }
-+
-         if (currentMoveArray[0] < AI_THINKING_STRUCT->score[i])
-         {
-             numOfBestMoves = 1;
-@@ -405,6 +458,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
-         }
-     }
- 
-+    if (numOfBestMoves == 0)
-+        return 0;
-+
-     return consideredMoveArray[Random() % numOfBestMoves]; // break any ties that exist.
- }
- 

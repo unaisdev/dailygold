@@ -146,7 +146,7 @@ decompilación (`gLevelUpLearnsets`, `CanMonLearnTMHM`, la tabla de movimientos
 MT/MO, `CreateMon` y `CalculateMonStats`):
 
 - **Especies:** seis Pokémon distintos de las 386 especies de las generaciones
-  1 a 3. La suma de sus estadísticas base debe ser al menos 2700
+  1 a 3. La suma de sus estadísticas base debe ser al menos 2850
   (`MIN_TEAM_BASE_STAT_TOTAL`). Hay una probabilidad de 1 entre 8
   (`LEGENDARY_TEAM_ODDS`) de que un equipo tenga exactamente un Pokémon
   legendario o singular, en una posición aleatoria; los otros siete equipos de
@@ -168,9 +168,9 @@ MT/MO, `CreateMon` y `CalculateMonStats`):
   equipo tendrá exactamente uno: la probabilidad es 1 entre 8 (12,5 %), y los
   otros siete de cada ocho equipos no tienen ninguno.
 
-  **Comparación con GOLD:** una simulación de dos millones de equipos, con las
-  especies actuales y el mínimo de 2700, estima que alrededor del **0,012 %**
-  (aproximadamente 1 de cada 8600 equipos) supera los **3289 puntos de
+  **Comparación con GOLD:** una simulación de 500 000 equipos, con las especies
+  actuales y el mínimo de 2850, estima que alrededor del **0,04 %**
+  (aproximadamente 1 de cada 2600 equipos) supera los **3289 puntos de
   estadísticas base** de GOLD. Esta comparación solo suma estadísticas base;
   no mide el efecto de movimientos, objetos, tipos ni estrategias.
 
@@ -303,7 +303,7 @@ npm run teams -- --random 40      # Genera 40 semillas aleatorias
 
 `npm run smoke` comprueba que:
 - cada equipo tiene seis especies reales distintas de las generaciones 1 a 3,
-  suma al menos 2700 puntos de estadísticas base, como máximo un legendario,
+  suma al menos 2850 puntos de estadísticas base, como máximo un legendario,
   nivel 100, PS completos, IV entre 25 y 31, EV colocados exactamente según
   `AssignFocusedEVs` (con una implementación JavaScript independiente), un
   objeto de la lista (los potenciadores de tipo solo aparecen si hay un ataque
