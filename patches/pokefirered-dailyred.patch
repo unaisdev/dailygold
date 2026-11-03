@@ -1295,7 +1295,7 @@ index 0000000..05be01c
 +        .lvl = 100,
 +        .species = SPECIES_UMBREON,
 +        .heldItem = ITEM_LEFTOVERS,
-+        .moves = {MOVE_WISH, MOVE_PURSUIT, MOVE_TOXIC, MOVE_FAINT_ATTACK},
++        .moves = {MOVE_WISH, MOVE_PROTECT, MOVE_TOXIC, MOVE_FAINT_ATTACK},
 +    },
 +    {
 +        .iv = 255,
@@ -2370,7 +2370,8 @@ index 4df9977..ac4063d 100644
 +            if (gBattleMons[gBattlerAttacker].moves[i] == MOVE_TOXIC
 +             && gBattleMons[gBattlerAttacker].pp[i] != 0)
 +            {
-+                AI_THINKING_STRUCT->score[i] = 150;
++                // Scores are signed 8-bit values; 150 overflowed and made Toxic undesirable.
++                AI_THINKING_STRUCT->score[i] = 127;
 +                break;
 +            }
 +        }

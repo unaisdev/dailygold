@@ -243,7 +243,7 @@ en la sala del Campeón.
 - **Gyarados** — Danza Dragón, Terremoto, Avalancha y Retribución; habilidad: **Intimidación**; objeto: **Baya Ziuela**.
 - **Ampharos** — Rayo, Puño Hielo, Onda Trueno y Pantalla Luz; habilidad: **Electricidad Estática**; objeto: **Imán**.
 - **Heracross** — Danza Espada, Megacuerno, Demolición y Avalancha; habilidad: **Agallas**; objeto: **Polvo Plata**.
-- **Umbreon** — Deseo, Persecución, Tóxico y Finta; habilidad: **Sincronía**; objeto: **Restos**.
+- **Umbreon** — Deseo, Protección, Tóxico y Finta; habilidad: **Sincronía**; objeto: **Restos**.
 - **Ho-Oh** — Fuego Sagrado, Golpe Aéreo, Terremoto y Recuperación; habilidad: **Presión**; objeto: **Pico Afilado**.
 - **Typhlosion** — Estallido, Llamarada, Puño Trueno y Paranormal; habilidad: **Absorbe Fuego**; objeto: **Carbón**.
 
