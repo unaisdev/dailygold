@@ -4,9 +4,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
-GAME="pokefirered"
-PATCH="patches/pokefirered-dailyred.patch"
+GAME="$ROOT/pokefirered"
+PATCH="$ROOT/patches/pokefirered-dailyred.patch"
 PRET_URL="https://github.com/pret/pokefirered.git"
 PRET_COMMIT="037335f4c725d7c9aecdac87066f2002b4bd7e14"
 

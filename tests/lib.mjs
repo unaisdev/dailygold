@@ -125,30 +125,12 @@ export async function readMemory(page) {
   };
 }
 
-// Symbol addresses from the built ELF. Prefer the toolchain installed in this
-// checkout; ARM_NM can point at an externally managed toolchain when needed.
+// Symbol addresses from the built ELF (needs the toolchain from setup-macos.sh).
 let symbolCache;
 export function symbols() {
   if (symbolCache) return symbolCache;
-  const localBin = join(ROOT, '.toolchain', 'arm-none-eabi', 'bin');
-  const candidates = [
-    process.env.ARM_NM,
-    join(localBin, 'arm-none-eabi-nm'),
-    join(localBin, 'arm-none-eabi-nm.exe'),
-    ...(process.platform === 'win32' ? ['arm-none-eabi-nm.exe', 'arm-none-eabi-nm'] : ['arm-none-eabi-nm']),
-  ].filter(Boolean);
-  const hasPath = (candidate) => /[\\/]/.test(candidate);
-  const nm = candidates.find((candidate) => hasPath(candidate) && existsSync(candidate))
-    ?? candidates.find((candidate) => !hasPath(candidate));
-  let out;
-  try {
-    out = execFileSync(nm, [ELF], { encoding: 'utf8', maxBuffer: 64 << 20 });
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error('arm-none-eabi-nm was not found. Run the platform setup script to install .toolchain/, add arm-none-eabi-nm to PATH, or set ARM_NM to its executable path.');
-    }
-    throw error;
-  }
+  const nm = join(ROOT, '.toolchain/arm-none-eabi/bin/arm-none-eabi-nm');
+  const out = execFileSync(existsSync(nm) ? nm : 'arm-none-eabi-nm', [ELF], { encoding: 'utf8', maxBuffer: 64 << 20 });
   symbolCache = new Map();
   for (const line of out.split('\n')) {
     const [addr, , name] = line.trim().split(/\s+/);

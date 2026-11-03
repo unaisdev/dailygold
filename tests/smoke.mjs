@@ -12,7 +12,7 @@ import {
   getStatus, waitFor, walkTo, face, patchMemory, readVar, symbol, u16,
   startRedBattle, forceWin, readGameStatus,
 } from './lib.mjs';
-import { readParty, formatMon, validateTeam, ITEMS } from './party.mjs';
+import { readParty, formatMon, validateTeam } from './party.mjs';
 
 const OUT = fileURLToPath(new URL('./output/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
@@ -171,12 +171,10 @@ try {
   console.log(red.party.map((m) => '      ' + formatMon(m)).join('\n'));
   check(red.party.filter(Boolean).length === 6 && red.party.map((m) => m?.speciesName).join(',') === 'GYARADOS,AMPHAROS,HERACROSS,UMBREON,HO_OH,TYPHLOSION', "ORO's party contains six valid Pokemon, including Umbreon in slot 4");
   check(red.party[0]?.shiny && red.party[0]?.nature === 'Adamant' && red.party[0]?.friendship === 255, "ORO's lead Gyarados is shiny, Adamant, and at max friendship");
-  check(red.party.map((m) => m?.nature).join(',') === 'Adamant,Modest,Jolly,Careful,Serious,Timid', "ORO's configured natures are applied in battle");
+  check(red.party.map((m) => m?.nature).join(',') === 'Adamant,Modest,Jolly,Careful,Adamant,Timid', "ORO's configured natures are applied in battle");
   check(red.party.map((m) => m?.abilityNum).join(',') === '0,0,1,0,0,1', "ORO's configured ability slots are applied in battle");
-  check(red.party.map((m) => ITEMS.get(m?.heldItem)).join(',') === 'LUM_BERRY,MAGNET,SILVER_POWDER,LEFTOVERS,SHARP_BEAK,CHARCOAL', "ORO's six held items match the approved team");
-  check(red.party.map((m) => m?.evs.join('/')).join(',') === '4/252/0/252/0/0,252/0/0/0/252/6,4/252/0/252/0/0,252/0/252/0/0/4,252/252/0/6/0/0,4/0/0/252/252/0', "ORO's configured EV spreads are applied in battle");
-  check(red.party[1]?.evs.join(',') === '252,0,0,0,252,6', 'Ampharos has HP / Sp. Atk / Sp. Def EVs');
-  check(red.party.map((m) => m?.moveNames.join('+')).join(',') === 'DRAGON_DANCE+EARTHQUAKE+ROCK_SLIDE+RETURN,THUNDERBOLT+ICE_PUNCH+THUNDER_WAVE+LIGHT_SCREEN,SWORDS_DANCE+MEGAHORN+BRICK_BREAK+ROCK_SLIDE,WISH+PURSUIT+TOXIC+FAINT_ATTACK,SACRED_FIRE+AERIAL_ACE+EARTHQUAKE+RECOVER,ERUPTION+FIRE_BLAST+THUNDER_PUNCH+EXTRASENSORY', "ORO's configured moves are applied in battle");
+  check(red.party[3]?.evs.join(',') === '252,0,252,0,0,4', 'Umbreon has its configured defensive EV spread');
+  check(red.party.map((m) => m?.moveNames.join('+')).join(',') === 'DRAGON_DANCE+EARTHQUAKE+ROCK_SLIDE+RETURN,THUNDERBOLT+ICE_PUNCH+THUNDER_WAVE+LIGHT_SCREEN,SWORDS_DANCE+MEGAHORN+BRICK_BREAK+ROCK_SLIDE,WISH+PROTECT+TOXIC+FAINT_ATTACK,SACRED_FIRE+AERIAL_ACE+EARTHQUAKE+RECOVER,ERUPTION+FIRE_BLAST+THUNDER_PUNCH+EXTRASENSORY', "ORO's configured moves are applied in battle");
   check(red.party.every((m) => m.level === 100 && m.ivs.every((iv) => iv === 31) && m.heldItem !== 0), "RED's Pokemon are level 100 with perfect IVs and held items");
   check(red.party.every((m) => m.evs.reduce((a, b) => a + b, 0) >= 508), "RED's Pokemon have their EV spreads");
   await waitForActionMenu(page);

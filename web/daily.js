@@ -3,7 +3,7 @@
 // Todo el mundo recibe el mismo equipo cada día natural en su zona horaria, y
 // cada navegador permite un combate diario contra ORO.
 
-const STORAGE_KEY = 'dailygold-stats';
+const STORAGE_KEY = 'dailyred-stats';
 
 // Fecha en la zona horaria del jugador, por ejemplo «2026-10-11».
 export function today(now = new Date()) {

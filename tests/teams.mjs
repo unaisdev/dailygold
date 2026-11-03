@@ -58,10 +58,10 @@ const unique = new Set(seeds.map((s) => results.get(s).party.map((m) => m?.speci
 console.log(`\n${seeds.length} seeds, ${unique} different teams, ${species.size} different species, ${invalid} invalid team(s).`);
 
 const speciesId = (name) => [...SPECIES].find(([, n]) => n === name)[0];
-const goldTotal = ['GYARADOS', 'AMPHAROS', 'HERACROSS', 'UMBREON', 'HO_OH', 'TYPHLOSION'].reduce((sum, n) => sum + baseStatTotal(speciesId(n)), 0);
+const redTotal = ['GYARADOS', 'AMPHAROS', 'HERACROSS', 'TOGETIC', 'HO_OH', 'TYPHLOSION'].reduce((sum, n) => sum + baseStatTotal(speciesId(n)), 0);
 const totals = seeds.map((s) => teamBaseStatTotal(results.get(s).party));
 console.log(`Team base stat totals: min ${Math.min(...totals)}, average ${Math.round(totals.reduce((a, b) => a + b, 0) / totals.length)}, max ${Math.max(...totals)} `
-  + `(minimum ${MIN_TEAM_BST}; Gold ${goldTotal}; ${totals.filter((t) => t > goldTotal).length} of ${totals.length} teams out-total Gold).`);
+  + `(minimum ${MIN_TEAM_BST}; Gold ${redTotal}; ${totals.filter((t) => t > redTotal).length} of ${totals.length} teams out-total Gold).`);
 const legendaryTeams = seeds.filter((s) => results.get(s).party.some((m) => m && isLegendary(m))).length;
 console.log(`Teams with a legendary: ${legendaryTeams} of ${seeds.length}.`);
 process.exit(invalid ? 1 : 0);
