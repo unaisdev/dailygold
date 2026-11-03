@@ -1,21 +1,35 @@
 # Daily Gold
 
+> **Aviso:** Daily Gold se basa en y se construye sobre el repositorio de
+> [DailyRed](https://github.com/amoi-builds/dailyred).
+
 Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
 recibes el mismo equipo aleatorio de seis Pokémon de nivel 100 y te enfrentas a
-ORO (Ethan) en la sala de Lorelei, la primera del Alto Mando. Puedes jugar una
-vez al día. Las victorias, derrotas y rachas se guardan en tu navegador.
+ORO (Ethan). Puedes jugar una vez al día. Las victorias, derrotas y rachas se
+guardan en tu navegador.
 
-El juego usa el motor original de Pokémon FireRed: una versión modificada de la
-decompilación [pret/pokefirered](https://github.com/pret/pokefirered), compilada
-como ROM de GBA y ejecutada en el navegador con el emulador mGBA para
-WebAssembly. Los combates se ejecutan dentro del juego, no se simulan en
+Los combates usan el motor original de Pokémon FireRed: una versión modificada
+de la decompilación [pret/pokefirered](https://github.com/pret/pokefirered),
+compilada como ROM de GBA y ejecutada en el navegador con el emulador mGBA para
+WebAssembly. Los combates se ejecutan dentro del juego; no se simulan en
 JavaScript.
+
+- [Inicio rápido en macOS](#inicio-rápido-en-macos)
+- [Cómo funciona](#cómo-funciona)
+- [Generación de equipos](#generación-de-equipos)
+- [Equipo de ORO](#equipo-de-oro)
+- [Desarrollo](#desarrollo)
+- [Pruebas y depuración](#pruebas-y-depuración)
+- [Ejecución local](#ejecución-local)
+- [Créditos y licencias](#créditos-y-licencias)
+- [Limitaciones conocidas](#limitaciones-conocidas)
 
 ## Inicio rápido en macOS
 
-Necesitas las herramientas de línea de comandos de Xcode (`xcode-select --install`),
-Node.js 18 o posterior y Git. No necesitas Homebrew, permisos de administrador
-ni una ROM: el juego se compila desde el código fuente.
+Necesitas las herramientas de línea de comandos de Xcode
+(`xcode-select --install`), Node.js 18 o posterior y Git. No necesitas
+Homebrew, permisos de administrador ni una ROM: el juego se compila desde el
+código fuente.
 
 ```sh
 scripts/setup-macos.sh      # Instala compilador ARM y libpng en .toolchain/ (aprox. 1 GB)
@@ -29,39 +43,63 @@ node scripts/serve.mjs      # Abre http://localhost:8080
 
 ## Cómo funciona
 
+```text
+pret/pokefirered + patches/ ──compilación──▶ pokefirered_modern.gba
+                                                    │ gzip
+web/ (archivos estáticos)                         ▼
+  index.html + app.js ── carga ──▶ game/dailyred.gba.gz y emulador mGBA
+        │ escribe semilla y récord en la ROM
+        ▼
+  Nostalgist.js ──▶ RetroArch + núcleo mGBA (WebAssembly) ──▶ pantalla
+        ▲
+        └── game-link.js lee el estado del combate en la memoria del juego
+              └── daily.js guarda los resultados en localStorage
+```
+
+El código de FireRed está escrito para el hardware de GBA (vídeo, DMA,
+interrupciones, sonido y ensamblador ARM/Thumb). Ejecutar la ROM real en mGBA
+conserva el motor de combate, las animaciones y el sonido. mGBA incluye una
+implementación de BIOS, por lo que no hace falta un archivo BIOS.
+
+Nostalgist y el núcleo mGBA de RetroArch permiten cargar la ROM como datos,
+leer la memoria del emulador desde JavaScript y servir la web como archivos
+estáticos sin cabeceras especiales. Los componentes se cargan desde
+`web/vendor/`.
+
+### La partida diaria
+
 - **Equipo del día:** `web/daily.js` obtiene la semilla a partir de la fecha
   local. Así, quienes juegan el mismo día reciben el mismo equipo.
-- **Web al juego:** antes de iniciar la ROM, `web/rom-config.js` escribe la
-  semilla y el récord en la configuración `gDailyRedRomConfig` de la ROM.
-- **Juego a la web:** `web/game-link.js` lee el estado de la partida desde la
-  memoria del emulador. La página guarda el resultado en `localStorage`.
+- **De la web al juego:** antes de iniciar la ROM, `web/rom-config.js` escribe
+  la semilla y el récord en la configuración `gDailyRedRomConfig` de la ROM.
+- **Del juego a la web:** `web/game-link.js` lee el estado de la partida desde
+  la memoria del emulador. La página guarda el resultado en `localStorage`.
 - **Una batalla diaria:** el día cuenta como jugado en cuanto empieza el
   combate. Si cierras o recargas la página durante la batalla, cuenta como una
   derrota. Antes de empezar puedes recargar: el equipo del día no cambia.
-- **Partida de práctica:** `?seed=1234` inicia una partida sin límite diario y
-  sin guardar resultados. Al terminar se genera otro equipo.
+- **Récords** (`web/daily.js`, clave `dailyred-stats`): se guardan las
+  victorias, derrotas y rachas. Si no juegas un día, se reinicia la racha diaria.
 - **ROM independiente:** sin una semilla inyectada, aparece la introducción
   normal de FireRed y el juego genera un equipo nuevo después de cada batalla.
+- **Partida de práctica:** `?seed=1234` inicia una partida sin límite diario y
+  sin guardar resultados. Al terminar se genera otro equipo.
 
 La web no requiere compilación: usa HTML, CSS y módulos JavaScript en `web/`.
-El emulador ejecuta la ROM original de GBA, incluidos el motor de combate, las
-animaciones y el sonido. No hace falta un archivo BIOS.
 
-## Flujo del juego y archivos
+### Flujo del juego y archivos
 
 | Parte | Código |
 |---|---|
 | Inicio directo al juego con semilla | `pokefirered/src/intro.c` y `src/dailyred.c` |
-| Equipo inicial y traslado a la sala de Lorelei | `pokefirered/src/new_game.c` |
-| Mapa, personaje rival y diálogos | `pokefirered/data/maps/DailyRed_Summit/` |
-| Inicio del combate, resultado y siguiente partida | `pokefirered/data/maps/DailyRed_Summit/scripts.inc` y `text.inc` |
+| Equipo inicial | `pokefirered/src/new_game.c` |
+| Inicio del combate, resultado y siguiente partida | Guiones de combate y `DailyRed_On*` en `pokefirered/src/dailyred.c` |
 | Generación de equipos | `pokefirered/src/dailyred_team.c` |
 | Equipo de ORO | `pokefirered/src/dailyred_boss.c` |
 | Estado diario y configuración de la ROM | `pokefirered/src/dailyred.c`, `web/daily.js`, `web/rom-config.js` |
 
-El guion del mapa inicia un combate normal de entrenador con el modo de rival
-temprano de FireRed. Si pierdes, no hay una derrota total del juego; el guion
-registra el resultado y prepara el siguiente equipo.
+El combate usa el sistema normal de entrenadores de FireRed y el modo de rival
+que evita terminar la partida si pierdes. El guion registra el resultado y
+prepara el siguiente equipo.
 
 ## Generación de equipos
 
@@ -70,15 +108,28 @@ seis especies distintas de las generaciones 1 a 3. La suma de sus estadísticas
 base debe ser al menos 2700. Hay una probabilidad de 1 entre 8 de que el equipo
 incluya exactamente un Pokémon legendario o singular.
 
+Los equipos son aleatorios, pero se valida su fuerza mínima para evitar que una
+composición demasiado débil haga la partida injusta. La generación usa un
+estado aleatorio propio, separado del generador del juego, de modo que cada
+semilla produce el mismo equipo.
+
 Los Pokémon son de nivel 100, tienen IV aleatorios entre 25 y 31 y EV
-concentrados en sus estadísticas más útiles. Sus movimientos se eligen entre
-los que aprenden por nivel o MT/MO, y cada uno lleva un objeto de combate. El
+concentrados en sus estadísticas más útiles. Para cada especie, el generador
+forma un repertorio con los movimientos que aprende por nivel (a cualquier
+nivel), por MT/MO, como tutor y como movimiento huevo. De ese repertorio elige
+hasta cuatro movimientos distintos al azar; no intenta crear combinaciones
+competitivas. Si hay algún movimiento de ataque disponible, garantiza que el
+set incluya al menos uno. Cada Pokémon recibe también un objeto de combate y el
 generador valida el equipo antes de entregarlo al jugador.
 
-El equipo de ORO está definido en `pokefirered/src/dailyred_boss.c`: Gyarados,
-Ampharos, Heracross, Togetic, Ho-Oh y Typhlosion, todos de nivel 100. Togetic
-sustituye a Togekiss, que no existe en FireRed. El rival conserva el sprite y
-la música de Campeón de Ethan.
+## Equipo de ORO
+
+El equipo está definido en `pokefirered/src/dailyred_boss.c` y sigue este
+orden: Gyarados, Ampharos, Heracross, Umbreon, Ho-Oh y Typhlosion. Todos son de
+nivel 100 y tienen IV perfectos (31). Cada Pokémon lleva un objeto y un set de
+cuatro movimientos definidos en el código. Umbreon ocupa el cuarto puesto en
+la formación actual. Gyarados aparece variocolor. ORO conserva el sprite y la
+música de Campeón de Ethan.
 
 ## Desarrollo
 
@@ -88,10 +139,16 @@ la música de Campeón de Ethan.
 4. Cuando los cambios estén listos, ejecuta `scripts/save-patch.sh` para
    actualizar `patches/pokefirered-dailyred.patch`.
 
-`pokefirered/`, `.toolchain/` y `web/vendor/` se generan localmente y no se
-incluyen en Git. Los scripts los descargan o crean cuando hacen falta.
+`pokefirered/`, `.toolchain/`, `web/vendor/` y `web/game/` se generan
+localmente y no se incluyen en Git. Los scripts los descargan o crean cuando
+hacen falta. `git -C pokefirered diff` muestra los cambios del juego sobre el
+código original.
 
-### Pruebas
+Para abrir la ROM fuera del navegador, carga
+`pokefirered/pokefirered_modern.gba` en mGBA u otro emulador de GBA. Sin una
+semilla inyectada, inicia en la pantalla de título de FireRed.
+
+## Pruebas y depuración
 
 Las pruebas usan Chrome sin interfaz gráfica y ejecutan la ROM con el mismo
 emulador que utiliza la web. Requieren Node.js y `playwright-core`:
@@ -105,10 +162,14 @@ npm run teams -- 1 2 3
 npm run teams -- --random 40
 ```
 
-`smoke` comprueba el ciclo del juego y los equipos; `site` comprueba la web en
-escritorio y móvil. Para jugar una partida de práctica, abre
-`http://localhost:8080/?seed=42`. Para borrar el récord local, ejecuta
+`smoke` comprueba el flujo del juego y los equipos; `site` comprueba la web en
+escritorio y móvil. Las victorias y derrotas se fuerzan en las pruebas para
+comprobar que se registran correctamente. Para jugar una partida de práctica,
+abre `http://localhost:8080/?seed=42`. Para borrar el récord local, ejecuta
 `localStorage.removeItem('dailyred-stats')` en la consola del navegador.
+
+En la consola, `dailyRed.emulator` permite acceder al emulador activo y
+`dailyRed.stats` muestra las estadísticas guardadas.
 
 ## Ejecución local
 
@@ -117,9 +178,6 @@ Después del inicio rápido, `node scripts/serve.mjs` sirve el contenido de
 `node scripts/serve.mjs 3000`. El récord se guarda para esa dirección concreta;
 usa el mismo puerto para conservar tus rachas. Después de recompilar la ROM,
 recarga la página.
-
-Para abrir la ROM fuera del navegador, carga
-`pokefirered/pokefirered_modern.gba` en mGBA u otro emulador de GBA.
 
 ## Créditos y licencias
 
@@ -136,8 +194,6 @@ se detallan en [web/licenses.txt](web/licenses.txt).
 
 ## Limitaciones conocidas
 
-- Las zapatillas y la bicicleta están desactivadas en la sala de Lorelei; solo hay que
-  caminar unos pasos.
 - El récord se guarda en el navegador. Borrar sus datos lo elimina y no se
   comparte entre navegadores o dispositivos.
 - El día cambia a medianoche local, por lo que la hora de cambio varía según
@@ -162,5 +218,4 @@ pokefirered/              Decompilación local, generada por los scripts
 ```
 
 El código propio del juego se encuentra en `pokefirered/src/dailyred.c`,
-`dailyred_team.c`, `dailyred_boss.c` y `pokefirered/data/maps/DailyRed_Summit/`.
-
+`dailyred_team.c`, `dailyred_boss.c` y los guiones de combate.
