@@ -57,7 +57,7 @@ index 41d0eb1..00b884c 100644
  }
 diff --git a/data/maps/DailyRed_Summit/map.json b/data/maps/DailyRed_Summit/map.json
 new file mode 100644
-index 0000000..0d6306a
+index 0000000..5e003ca
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/map.json
 @@ -0,0 +1,37 @@
@@ -183,24 +183,25 @@ index 0000000..033ded0
 +	end
 diff --git a/data/maps/DailyRed_Summit/text.inc b/data/maps/DailyRed_Summit/text.inc
 new file mode 100644
-index 0000000..4e9cb4a
+index 0000000..e8a371b
 --- /dev/null
 +++ b/data/maps/DailyRed_Summit/text.inc
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,38 @@
 +DailyRed_Summit_Text_RedIntro::
-+    .string "Te estaba esperando Hortelano.\p"
++    .string "Te estaba esperando HORTELANO.\p"
 +    .string "Así que finalmente has podido\n"
-+    .string "derrotar a Red.\p"
++    .string "derrotar a RED.\p"
 +    .string "Pero bueno, siento decirte que\n"
 +    .string "hasta aquí has llegado.\p"
 +    .string "Te voy a derrotar igual que le\n"
 +    .string "derroté a él en su momento.$"
 +
-+@ Shown in battle when ORO loses.
++@ Shown in battle when Gold loses.
 +DailyRed_Summit_Text_RedDefeat::
-+    .string "...$"
++    .string "¡Has derrotado a GOLD de la\n"
++    .string "ELITE FOUR de CAMPEONES!$"
 +
-+@ Shown in battle when ORO wins.
++@ Shown in battle when Gold wins.
 +DailyRed_Summit_Text_RedVictory::
 +    .string "...$"
 +
@@ -223,7 +224,7 @@ index 0000000..4e9cb4a
 +DailyRed_Summit_Text_NextRun::
 +    .string "Récord\pVictorias: {STR_VAR_1}\n"
 +    .string "Combates: {STR_VAR_2}.\pNuevo equipo listo.\n"
-+    .string "¡Sube y enfréntate a ORO!$"
++    .string "¡Sube y enfréntate a GOLD!$"
 diff --git a/data/maps/map_groups.json b/data/maps/map_groups.json
 index 8c382f5..cae2f25 100644
 --- a/data/maps/map_groups.json
@@ -535,7 +536,7 @@ index 0000000..1205b3e
 +0 0 0
 diff --git a/include/constants/dailyred.h b/include/constants/dailyred.h
 new file mode 100644
-index 0000000..05b1d80
+index 0000000..7853a4c
 --- /dev/null
 +++ b/include/constants/dailyred.h
 @@ -0,0 +1,10 @@
@@ -664,6 +665,51 @@ index 50cfd49..a6026cf 100644
  $(OBJEVENTGFXDIR)/people/fat_man.4bpp: %.4bpp: %.png
  	$(GFX) $< $@ -mwidth 2 -mheight 4
  
+diff --git a/src/battle_bg.c b/src/battle_bg.c
+index 3bcc500..46841a1 100644
+--- a/src/battle_bg.c
++++ b/src/battle_bg.c
+@@ -1022,15 +1022,13 @@ void DrawBattleEntryBackground(void)
+         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+         {
+             u8 trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
+-            if (trainerClass == TRAINER_CLASS_LEADER)
++            if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED)
+             {
+-                LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
+-                return;
+-            }
+-            else if (trainerClass == TRAINER_CLASS_CHAMPION)
+-            {
+-                LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
+-                return;
++                if (trainerClass == TRAINER_CLASS_LEADER || trainerClass == TRAINER_CLASS_CHAMPION)
++                {
++                    LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
++                    return;
++                }
+             }
+         }
+ 
+@@ -1059,10 +1057,14 @@ static u8 GetBattleTerrainOverride(void)
+     }
+     else if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+     {
+-        if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_LEADER)
+-            return BATTLE_TERRAIN_LEADER;
+-        else if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_CHAMPION)
+-            return BATTLE_TERRAIN_CHAMPION;
++        // Daily Gold uses the battle scene configured by its map.
++        if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED)
++        {
++            if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_LEADER)
++                return BATTLE_TERRAIN_LEADER;
++            else if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_CHAMPION)
++                return BATTLE_TERRAIN_CHAMPION;
++        }
+     }
+     battleScene = GetCurrentMapBattleScene();
+     if (battleScene == MAP_BATTLE_SCENE_NORMAL)
 diff --git a/src/battle_controller_player.c b/src/battle_controller_player.c
 index d8e1fe7..4a17134 100644
 --- a/src/battle_controller_player.c
@@ -789,6 +835,71 @@ index 64c9e59..fa03db2 100644
              hpOnSwitchout = &gBattleStruct->hpOnSwitchout[GetBattlerSide(gActiveBattler)];
              *hpOnSwitchout = gBattleMons[gActiveBattler].hp;
              for (i = 0; i < NUM_BATTLE_STATS; i++)
+diff --git a/src/battle_message.c b/src/battle_message.c
+index a6392be..d594a57 100644
+--- a/src/battle_message.c
++++ b/src/battle_message.c
+@@ -16,6 +16,7 @@
+ #include "battle_controllers.h"
+ #include "graphics.h"
+ #include "battle_ai_switch_items.h"
++#include "constants/opponents.h"
+ #include "constants/moves.h"
+ #include "constants/items.h"
+ #include "constants/trainers.h"
+@@ -386,11 +387,14 @@ static const u8 sText_TheGhostAppeared[] = _("The GHOST appeared!\p");
+ static const u8 sText_SilphScopeUnveil[] = _("SILPH SCOPE unveiled the GHOST's\nidentity!");
+ static const u8 sText_TheGhostWas[] = _("The GHOST was MAROWAK!\p\n");
+ static const u8 sText_Trainer1WantsToBattle[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME}\nwould like to battle!\p");
++static const u8 sText_DailyGoldWantsToBattle[] = _("GOLD de la ELITE FOUR\nde CAMPEONES quiere combatir\p");
+ static const u8 sText_LinkTrainerWantsToBattle[] = _("{B_LINK_OPPONENT1_NAME}\nwants to battle!");
+ static const u8 sText_TwoLinkTrainersWantToBattle[] = _("{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME}\nwant to battle!");
+ static const u8 sText_Trainer1SentOutPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
++static const u8 sText_DailyGoldSentOutPkmn[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_OPPONENT_MON1_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutTwoPkmn[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!{PAUSE 60}");
+ static const u8 sText_Trainer1SentOutPkmn2[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAME} sent\nout {B_BUFF1}!");
++static const u8 sText_DailyGoldSentOutPkmn2[] = _("ELITE FOUR CHAMPION GOLD sent\nout {B_BUFF1}!");
+ static const u8 sText_LinkTrainerSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME}!");
+ static const u8 sText_LinkTrainerSentOutTwoPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out\n{B_OPPONENT_MON1_NAME} and {B_OPPONENT_MON2_NAME}!");
+ static const u8 sText_TwoLinkTrainersSentOutPkmn[] = _("{B_LINK_OPPONENT1_NAME} sent out {B_LINK_OPPONENT_MON1_NAME}!\n{B_LINK_OPPONENT2_NAME} sent out {B_LINK_OPPONENT_MON2_NAME}!");
+@@ -1566,7 +1570,10 @@ void BufferStringBattle(u16 stringId)
+             }
+             else
+             {
+-                stringPtr = sText_Trainer1WantsToBattle;
++                if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                    stringPtr = sText_DailyGoldWantsToBattle;
++                else
++                    stringPtr = sText_Trainer1WantsToBattle;
+             }
+         }
+         else
+@@ -1617,7 +1624,12 @@ void BufferStringBattle(u16 stringId)
+             else
+             {
+                 if (!(gBattleTypeFlags & BATTLE_TYPE_LINK))
+-                    stringPtr = sText_Trainer1SentOutPkmn;
++                {
++                    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                        stringPtr = sText_DailyGoldSentOutPkmn;
++                    else
++                        stringPtr = sText_Trainer1SentOutPkmn;
++                }
+                 else if (gTrainerBattleOpponent_A == TRAINER_UNION_ROOM)
+                     stringPtr = sText_Trainer1SentOutPkmn;
+                 else
+@@ -1677,7 +1689,10 @@ void BufferStringBattle(u16 stringId)
+             }
+             else
+             {
+-                stringPtr = sText_Trainer1SentOutPkmn2;
++                if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++                    stringPtr = sText_DailyGoldSentOutPkmn2;
++                else
++                    stringPtr = sText_Trainer1SentOutPkmn2;
+             }
+         }
+         break;
 diff --git a/src/battle_setup.c b/src/battle_setup.c
 index 6d62084..fe80fb3 100644
 --- a/src/battle_setup.c
@@ -815,7 +926,7 @@ index 6d62084..fe80fb3 100644
      gMain.savedCallback = CB2_EndTrainerBattle;
      DoTrainerBattle();
 diff --git a/src/battle_transition.c b/src/battle_transition.c
-index 8a23dfe..cb5b88b 100644
+index 8a23dfe..b773a2c 100644
 --- a/src/battle_transition.c
 +++ b/src/battle_transition.c
 @@ -10,6 +10,7 @@
@@ -826,20 +937,21 @@ index 8a23dfe..cb5b88b 100644
  #include "field_effect.h"
  #include "field_weather.h"
  #include "field_camera.h"
-@@ -2157,7 +2158,8 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
+@@ -2157,8 +2158,9 @@ static void Mugshots_CreateTrainerPics(struct Task *task)
                                                    sMugshotsOpponentCoords[mugshotId][0] - 32,
                                                    sMugshotsOpponentCoords[mugshotId][1] + 42,
                                                    0, gDecompressionBuffer);
 -    task->tPlayerSpriteId = CreateTrainerSprite(PlayerGenderToFrontTrainerPicId(gSaveBlock2Ptr->playerGender, TRUE),
+-                                                DISPLAY_WIDTH + 32,
 +    // Daily Gold: bald HORTE front (TRAINER_PIC_RED remapped).
 +    task->tPlayerSpriteId = CreateTrainerSprite(TRAINER_PIC_RED,
--                                                DISPLAY_WIDTH + 32,
 +                                                DISPLAY_WIDTH + 80,
                                                  106,
                                                  0, gDecompressionBuffer);
+     gReservedSpritePaletteCount = 12;
 diff --git a/src/dailyred.c b/src/dailyred.c
 new file mode 100644
-index 0000000..fef54d3
+index 0000000..a8a5b83
 --- /dev/null
 +++ b/src/dailyred.c
 @@ -0,0 +1,269 @@
@@ -921,7 +1033,7 @@ index 0000000..fef54d3
 +extern u16 gTrainerId; // main.c: low half of the player's trainer ID
 +
 +static const u8 sText_PlayerName[] = _("HORTE");
-+static const u8 sText_RivalName[] = _("ORO");
++static const u8 sText_RivalName[] = _("Gold");
 +
 +// The config is read through volatile pointers: the compiler would otherwise
 +// assume the values are still the zeros the ROM was built with.
@@ -1886,7 +1998,7 @@ index 70889d7..83a3007 100644
      overworld_frame(gObjectEventPic_Blue, 2, 4, 0),
      overworld_frame(gObjectEventPic_Blue, 2, 4, 1),
 diff --git a/src/data/trainers.h b/src/data/trainers.h
-index 02afbfd..82d015c 100644
+index 02afbfd..9af622c 100644
 --- a/src/data/trainers.h
 +++ b/src/data/trainers.h
 @@ -7422,4 +7422,15 @@ const struct Trainer gTrainers[] = {
@@ -1898,7 +2010,7 @@ index 02afbfd..82d015c 100644
 +        .trainerClass = TRAINER_CLASS_CHAMPION,
 +        .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
 +        .trainerPic = TRAINER_PIC_ELITE_FOUR_LANCE, // remapped to Ethan front pic
-+        .trainerName = _("ORO"),
++        .trainerName = _("Gold"),
 +        .items = {},
 +        .doubleBattle = FALSE,
 +        .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY,
@@ -1969,7 +2081,7 @@ index bec0f31..7591ab3 100644
      }
      return TRUE;
 diff --git a/src/new_game.c b/src/new_game.c
-index 3768b3c..2cc2c1d 100644
+index 3768b3c..86faec3 100644
 --- a/src/new_game.c
 +++ b/src/new_game.c
 @@ -29,6 +29,7 @@
@@ -2127,47 +2239,3 @@ index 75f0e67..ad94f15 100644
              DestroyTask(FindTaskIdByFunc(Task_TitleScreenMain));
          }
          break;
-diff --git a/src/battle_bg.c b/src/battle_bg.c
-index 3bcc500..83fafae 100644
---- a/src/battle_bg.c
-+++ b/src/battle_bg.c
-@@ -1022,15 +1022,13 @@ void DrawBattleEntryBackground(void)
-         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
-         {
-             u8 trainerClass = gTrainers[gTrainerBattleOpponent_A].trainerClass;
--            if (trainerClass == TRAINER_CLASS_LEADER)
-+            if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED)
-             {
--                LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
--                return;
--            }
--            else if (trainerClass == TRAINER_CLASS_CHAMPION)
--            {
--                LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
--                return;
-+                if (trainerClass == TRAINER_CLASS_LEADER || trainerClass == TRAINER_CLASS_CHAMPION)
-+                {
-+                    LoadBattleTerrainEntryGfx(BATTLE_TERRAIN_BUILDING);
-+                    return;
-+                }
-             }
-         }
- 
-@@ -1059,9 +1057,13 @@ static u8 GetBattleTerrainOverride(void)
-     }
-     else if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
-     {
--        if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_LEADER)
--            return BATTLE_TERRAIN_LEADER;
--        else if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_CHAMPION)
--            return BATTLE_TERRAIN_CHAMPION;
-+        // Daily Gold uses the battle scene configured by its map.
-+        if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED)
-+        {
-+            if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_LEADER)
-+                return BATTLE_TERRAIN_LEADER;
-+            else if (gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_CHAMPION)
-+                return BATTLE_TERRAIN_CHAMPION;
-+        }
-     }
-     battleScene = GetCurrentMapBattleScene();

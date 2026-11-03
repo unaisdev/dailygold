@@ -1,4 +1,4 @@
-// Control de la web: tarjeta diaria (ORO y estadísticas), emulador, barra de
+// Control de la web: tarjeta diaria (Gold y estadísticas), emulador, barra de
 // herramientas y controles táctiles. El juego se ejecuta en la ROM; este archivo
 // lo inicia con la semilla del día, espera el resultado y guarda las estadísticas.
 import { Nostalgist } from './vendor/nostalgist.js';
@@ -86,7 +86,7 @@ function renderTitle() {
   ui.play.hidden = Boolean(result);
   ui.played.hidden = !result;
   ui.practiceNote.hidden = !practiceSeed;
-  if (result) ui.playedResult.textContent = result === 'won' ? '¡Hoy has derrotado a ORO!' : 'ORO ha ganado hoy.';
+  if (result) ui.playedResult.textContent = result === 'won' ? '¡Hoy has derrotado a Gold!' : 'Gold ha ganado hoy.';
   updateCountdown();
 }
 
