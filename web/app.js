@@ -48,7 +48,7 @@ let readGame = null;
 let pollTimer = null;
 let runDate = null;
 let battleSeen = false;
-let muted = session.get('dailyred-muted') === '1';
+let muted = session.get('dailygold-muted') === '1';
 let starting = false;
 let titleDate = null;
 
@@ -249,7 +249,7 @@ onClick(ui.sound, () => {
   if (!emu) return;
   emu.sendCommand('MUTE');
   muted = !muted;
-  session.set('dailyred-muted', muted ? '1' : '0');
+  session.set('dailygold-muted', muted ? '1' : '0');
   showMuted();
 });
 

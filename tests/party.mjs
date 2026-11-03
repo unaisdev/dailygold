@@ -126,13 +126,36 @@ function loadLearnsets() {
     const name = block.match(/^(\w+)\]/)[1];
     tmhm.set(name, [...block.matchAll(/TMHM\((TM|HM)(\d\d)_/g)].map((x) => tmMoves[(x[1] === 'HM' ? 50 : 0) + Number(x[2]) - 1]));
   }
-  return { levelUp, tmhm };
+  const tutorText = read('src/data/pokemon/tutor_learnsets.h');
+  const tutorMoves = new Map();
+  for (const m of tutorText.matchAll(/\[TUTOR_MOVE_(\w+)\]\s*=\s*MOVE_(\w+)/g)) {
+    tutorMoves.set(m[1], moveId.get(m[2]));
+  }
+  const tutor = new Map();
+  for (const block of tutorText.split(/\n\s*\[SPECIES_/).slice(1)) {
+    const name = block.match(/^(\w+)\]/)[1];
+    tutor.set(name, [...block.matchAll(/TUTOR\(MOVE_(\w+)\)/g)].map((m) => tutorMoves.get(m[1])).filter(Number.isInteger));
+  }
+  const egg = new Map();
+  for (const block of read('src/data/pokemon/egg_moves.h').matchAll(/egg_moves\((\w+),([\s\S]*?)\)/g)) {
+    egg.set(block[1], [...block[2].matchAll(/MOVE_(\w+)/g)].map((m) => moveId.get(m[1])).filter(Number.isInteger));
+  }
+  return { levelUp, tmhm, tutor, egg };
+}
+
+export function learnsetSources(species) {
+  learnsets ??= loadLearnsets();
+  const name = SPECIES.get(species);
+  return {
+    levelUp: new Set(learnsets.levelUp.get(name) ?? []),
+    tmhm: new Set(learnsets.tmhm.get(name) ?? []),
+    tutor: new Set(learnsets.tutor.get(name) ?? []),
+    egg: new Set(learnsets.egg.get(name) ?? []),
+  };
 }
 
 export function learnableMoves(species) {
-  learnsets ??= loadLearnsets();
-  const name = SPECIES.get(species);
-  return new Set([...(learnsets.levelUp.get(name) ?? []), ...(learnsets.tmhm.get(name) ?? [])]);
+  return new Set(Object.values(learnsetSources(species)).flatMap((moves) => [...moves]));
 }
 
 // --- Held items: the pools from dailyred_team.c, and move types ----------------
@@ -200,7 +223,7 @@ export function expectedEVs(mon) {
   const usable = [true, false, true, true, false, true];
   for (const id of mon.moves.filter(Boolean)) {
     const info = itemRules.moveInfo.get(id);
-    if (info.power > 1) usable[PHYSICAL_TYPES.has(info.type) ? 1 : 4] = true;
+    if (info?.power > 1) usable[PHYSICAL_TYPES.has(info.type) ? 1 : 4] = true;
   }
   const order = [1, 4, 3, 0, 2, 5].filter((stat) => usable[stat]).sort((a, b) => base[b] - base[a]); // sort is stable
   const evs = [0, 0, 0, 0, 0, 0];

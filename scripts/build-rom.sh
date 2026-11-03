@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Builds the modified FireRed ROM with the project-local toolchain
-# (see scripts/setup-macos.sh) and puts a gzipped copy in web/game/ for the website.
+# (see scripts/setup-macos.sh or setup-linux.sh) and puts a local gzipped copy
+# in web/game/ for the website. ROM files are ignored by Git.
 #
 #   scripts/build-rom.sh            # normal build
 #   scripts/build-rom.sh clean      # any extra args are passed to make
@@ -11,7 +12,7 @@ TC="$ROOT/.toolchain"
 GAME="$ROOT/pokefirered"
 
 if [ ! -x "$TC/arm-none-eabi/bin/arm-none-eabi-gcc" ]; then
-  echo "Toolchain missing. Run scripts/setup-macos.sh first."; exit 1
+  echo "Toolchain missing. Run scripts/setup-macos.sh (macOS) or setup-linux.sh (Linux/WSL) first."; exit 1
 fi
 
 # gbagfx asks pkg-config for libpng; clang also honours these variables,
@@ -33,18 +34,20 @@ make -C "$GAME" -j"$JOBS" TOOLCHAIN="$TC/arm-none-eabi" MODERN=1
 ROM="$GAME/pokefirered_modern.gba"
 # The website downloads a gzipped copy (16 MB -> ~5.5 MB, mostly 0xFF padding)
 # and unpacks it in the browser, so it stays small on any static host.
-mkdir -p "$ROOT/web/game"
-rm -f "$ROOT/web/game/dailyred.gba"
-gzip -9 -n -c "$ROM" > "$ROOT/web/game/dailyred.gba.gz"
+# Write generated artifacts from the repository root using relative paths so
+# output handling is consistent across Bash runtimes, including MSYS2.
+cd "$ROOT"
+rm -f web/game/dailyred.gba
+gzip -9 -n -c "$ROM" > web/game/dailyred.gba.gz
 # Gold's (Ethan) battle sprite for the site's title card (from the decomp, like the ROM).
-cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" "$ROOT/web/game/gold.png"
-cp "$ROOT/web/game/gold.png" "$ROOT/web/game/red.png"
+cp "$GAME/graphics/trainers/front_pics/ethan_front_pic.png" web/game/gold.png
+cp web/game/gold.png web/game/red.png
 # Team icons for the title card.
 for mon in gyarados ampharos heracross umbreon ho_oh typhlosion; do
   src="$GAME/graphics/pokemon/$mon/icon.png"
   dst_name="$mon"
   [ "$mon" = "ho_oh" ] && dst_name="ho-oh"
-  cp "$src" "$ROOT/web/game/team/${dst_name}.png"
+  cp "$src" "web/game/team/${dst_name}.png"
 done
 echo
 echo "Built $ROM"

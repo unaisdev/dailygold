@@ -9,7 +9,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VENDOR="$ROOT/web/vendor"
+cd "$ROOT"
+VENDOR="web/vendor"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -23,7 +24,11 @@ FONT_LICENSE_URL="https://raw.githubusercontent.com/google/fonts/main/ofl/pixeli
 
 check() { # file sha
   local actual
-  actual="$(shasum -a 256 "$1" | awk '{print $1}')"
+  if command -v shasum >/dev/null 2>&1; then
+    actual="$(shasum -a 256 "$1" | awk '{print $1}')"
+  else
+    actual="$(sha256sum "$1" | awk '{print $1}')"
+  fi
   [ "$actual" = "$2" ] || { echo "Checksum mismatch: $1 ($actual)"; exit 1; }
 }
 

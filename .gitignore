@@ -1,7 +1,15 @@
 # Everything below is recreated by the scripts in scripts/ (see README).
 
-# scripts/setup-macos.sh
+# Toolchain created by setup-macos.sh / setup-linux.sh
 /.toolchain/
+
+# Generated ROMs (including the browser's gzip copy); never commit these.
+/pokefirered/*.gba
+/pokefirered/*.elf
+/pokefirered/*.map
+/pokefirered/*.sym
+/web/game/*.gba
+/web/game/*.gba.gz
 
 # Wrangler's local cache (Cloudflare deploys)
 /.wrangler/

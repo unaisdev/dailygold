@@ -1,9 +1,11 @@
 Daily Gold: software y contenido de terceros
 ============================================
 
-Pokémon FireRed (the ROM in game/)
-  Built from pret/pokefirered (https://github.com/pret/pokefirered), a
-  decompilación comunitaria de Pokémon FireRed, con los cambios de Daily Gold.
+Pokémon FireRed / pret/pokefirered source
+  Daily Gold downloads the pret/pokefirered source (https://github.com/pret/pokefirered)
+  at a pinned revision and builds a local ROM. No compiled ROM is distributed
+  in this repository. Pokémon and all game content are © Nintendo, Creatures
+  Inc. and GAME FREAK inc. Daily Gold is an unofficial fan project.
   Pokémon and all game content are © Nintendo, Creatures Inc. and GAME FREAK
   inc. Este es un proyecto de fans gratuito y no oficial, sin afiliación ni
   respaldo de esas compañías ni de The Pokémon Company.

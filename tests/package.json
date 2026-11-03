@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Pruebas de navegador sin interfaz para Daily Gold (usa Google Chrome instalado)",
   "scripts": {
-    "test": "node smoke.mjs && node site.mjs",
+    "test": "node party-rules.mjs && node smoke.mjs && node site.mjs",
+    "rules": "node party-rules.mjs",
     "smoke": "node smoke.mjs",
     "site": "node site.mjs",
     "teams": "node teams.mjs"

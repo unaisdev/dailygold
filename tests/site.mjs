@@ -22,7 +22,7 @@ const DAY1 = '2026-10-11', DAY2 = '2026-10-12', DAY3 = '2026-10-13', DAY5 = '202
 const at = (date, time = '10:00:00') => new Date(`${date}T${time}`);
 
 const state = (page) => page.evaluate(() => document.querySelector('.app').dataset.state);
-const saved = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('dailyred-stats') || 'null'));
+const saved = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('dailygold-stats') || 'null'));
 const shown = (page) => page.evaluate(() => ({
   wins: document.getElementById('stat-wins').textContent,
   losses: document.getElementById('stat-losses').textContent,
@@ -58,6 +58,7 @@ const browser = await launchBrowser();
 try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem('dailyred-stats', JSON.stringify({ wins: 99 })));
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
 
@@ -68,6 +69,8 @@ try {
   await page.screenshot({ path: `${OUT}/site-title.png`, fullPage: true });
   let s = await shown(page);
   check(s.canPlay && s.wins === '0' && s.losses === '0' && s.winStreak === '0' && s.dayStreak === '0', `new visitor sees Play and zeroed stats (${statLine(s)})`);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('dailyred-stats') || 'null')?.wins === 99
+    && localStorage.getItem('dailygold-stats') === null), 'Daily Gold keeps legacy Daily Red stats separate and untouched');
   check(await page.evaluate(() => document.querySelector('.red-sprite').naturalWidth === 64), "Gold's sprite is shown on the title card");
   const leftovers = await page.evaluate(() => ['.tagline', '.steps', '#seed', '#new-run'].filter((sel) => document.querySelector(sel)));
   check(leftovers.length === 0, `removed: tagline, how-it-works, seed, New run (${leftovers.join(', ') || 'none left'})`);
@@ -79,6 +82,10 @@ try {
   });
   check(licenses === 200, `footer links to licenses.txt (status ${licenses})`);
   check(!(await page.locator('.pad').isVisible()), 'touch controls are hidden on desktop');
+  const uiText = await page.locator('body').innerText();
+  check(['Jugar', 'Silenciar', 'Pantalla completa', 'Teclado', 'Caminar y mover el cursor', 'Seleccionar'].every((s) => uiText.includes(s)), 'visible game controls are in Spanish');
+  check(await page.locator('.footer a[href="https://github.com/unaisdev/dailygold"]').count() === 1
+    && await page.locator('.footer a[href="https://github.com/amoi-builds/dailyred"]').count() === 1, 'footer links to Daily Gold and credits Daily Red');
 
   await page.click('#play');
   await attach(page);
@@ -93,7 +100,7 @@ try {
   check(await finishDailyGame(page, 'site-win'), 'after a win the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '0' && s.winStreak === '1' && s.dayStreak === '1', `win recorded (${statLine(s)})`);
-  check(!s.canPlay && s.played === 'You beat Gold today!' && /^Next battle in \d\d:\d\d:\d\d$/.test(s.next), `no Play button; shows "${s.played}" / "${s.next}"`);
+  check(!s.canPlay && s.played === '¡Hoy has derrotado a Gold!' && /^Próximo combate en \d\d:\d\d:\d\d$/.test(s.next), `no Play button; shows "${s.played}" / "${s.next}"`);
   await page.screenshot({ path: `${OUT}/site-played.png`, fullPage: true });
 
   await page.reload();
@@ -126,7 +133,7 @@ try {
   check(await finishDailyGame(page, 'site-loss'), 'after a loss the site closes the game and returns to the title card');
   s = await shown(page);
   check(s.wins === '1' && s.losses === '1' && s.winStreak === '0' && s.dayStreak === '2', `loss recorded (${statLine(s)})`);
-  check(s.played === 'Gold won today.', `shows "${s.played}"`);
+  check(s.played === 'Gold ha ganado hoy.', `shows "${s.played}"`);
 
   // Day 3: leave in the middle of the battle -> counts as a loss.
   await page.clock.setFixedTime(at(DAY3));
@@ -138,7 +145,7 @@ try {
   await page.reload();
   await sleep(1000);
   s = await shown(page);
-  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'Gold won today.', `leaving mid-battle counts as a loss (${statLine(s)})`);
+  check(s.losses === '2' && s.dayStreak === '3' && !s.canPlay && s.played === 'Gold ha ganado hoy.', `leaving mid-battle counts as a loss (${statLine(s)})`);
 
   // Day 5: a missed day resets the streaks.
   await page.clock.setFixedTime(at(DAY5));
