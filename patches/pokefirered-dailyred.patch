@@ -1244,7 +1244,7 @@ index 0000000..a8a5b83
 +}
 diff --git a/src/dailyred_boss.c b/src/dailyred_boss.c
 new file mode 100644
-index 0000000..5653790
+index 0000000..05be01c
 --- /dev/null
 +++ b/src/dailyred_boss.c
 @@ -0,0 +1,92 @@
@@ -1294,7 +1294,7 @@ index 0000000..5653790
 +        .lvl = 100,
 +        .species = SPECIES_UMBREON,
 +        .heldItem = ITEM_LEFTOVERS,
-+        .moves = {MOVE_WISH, MOVE_PROTECT, MOVE_TOXIC, MOVE_FAINT_ATTACK},
++        .moves = {MOVE_WISH, MOVE_PURSUIT, MOVE_TOXIC, MOVE_FAINT_ATTACK},
 +    },
 +    {
 +        .iv = 255,
@@ -1331,7 +1331,7 @@ index 0000000..5653790
 +const u8 gDailyRedBossNatures[DAILYRED_BOSS_PARTY_SIZE] =
 +{
 +    NATURE_ADAMANT, NATURE_MODEST, NATURE_JOLLY,
-+    NATURE_CAREFUL, NATURE_ADAMANT, NATURE_TIMID,
++    NATURE_CAREFUL, NATURE_SERIOUS, NATURE_TIMID,
 +};
 +
 +// Ability slots follow each species' Gen 3 ability table. Typhlosion's slot

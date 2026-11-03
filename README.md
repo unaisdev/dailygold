@@ -250,6 +250,15 @@ en la sala del Campeón.
 | Typhlosion | 78 | 84 | 78 | 100 | 109 | 85 | 534 |
 | **Equipo** | | | | | | | **3289** |
 
+### Pokémon, movimientos, habilidades y objetos
+
+- **Gyarados** — Danza Dragón, Terremoto, Avalancha y Retribución; habilidad: **Intimidación**; objeto: **Baya Ziuela**.
+- **Ampharos** — Rayo, Puño Hielo, Onda Trueno y Reflejo; habilidad: **Electricidad Estática**; objeto: **Imán**.
+- **Heracross** — Danza Espada, Megacuerno, Demolición y Avalancha; habilidad: **Agallas**; objeto: **Polvo Plata**.
+- **Umbreon** — Deseo, Persecución, Tóxico y Finta; habilidad: **Sincronía**; objeto: **Restos**.
+- **Ho-Oh** — Fuego Sagrado, Golpe Aéreo, Terremoto y Recuperación; habilidad: **Presión**; objeto: **Pico Afilado**.
+- **Typhlosion** — Estallido, Llamarada, Puño Trueno y Paranormal; habilidad: **Absorbe Fuego**; objeto: **Carbón**.
+
 Son estadísticas base de la tercera generación, tomadas de
 `src/data/pokemon/species_info.h`. La dificultad de generación del equipo
 diario (mínimo de estadísticas base, IV, probabilidad de legendario, etc.) no
