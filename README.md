@@ -5,7 +5,7 @@
 
 Una batalla diaria de Pokémon en el navegador, al estilo de Wordle. Cada día
 recibes el mismo equipo aleatorio de seis Pokémon de nivel 100 y te enfrentas a
-**ORO (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
+**GOLD (Ethan)** en la sala del Campeón. Puedes jugar una vez al día. Las
 victorias, derrotas y rachas se guardan en tu navegador.
 
 Cada combate se ejecuta en el motor original de Pokémon FireRed: el juego parte
@@ -17,7 +17,7 @@ simula los combates.
 - [Inicio rápido (macOS)](#inicio-rapido-macos)
 - [Cómo funciona](#como-funciona)
 - [Generación de equipos](#generacion-de-equipos)
-- [Equipo de ORO](#equipo-de-oro)
+- [Equipo de GOLD](#equipo-de-gold)
 - [Flujo de desarrollo](#flujo-de-desarrollo)
 - [Pruebas y depuración](#pruebas-y-depuracion)
 - [Ejecución local](#ejecucion-local)
@@ -86,7 +86,7 @@ especiales. Todo se carga desde `web/vendor/`.
   derrota). `web/game-link.js` lo localiza en la memoria WebAssembly del
   emulador mediante la marca y la semilla, y lo lee dos veces por segundo.
 - **Un combate al día:** el día cuenta como jugado en cuanto empieza el combate
-  contra RED. Cerrar o recargar la página durante el combate cuenta como
+  contra GOLD. Cerrar o recargar la página durante el combate cuenta como
   derrota. El resultado se guarda en cuanto se conoce. Tras los mensajes
   finales, el juego funde a negro y se queda esperando; la web lo cierra y
   muestra el resultado y la cuenta atrás para el siguiente combate. Antes de
@@ -110,21 +110,21 @@ especiales. Todo se carga desde `web/vendor/`.
 | Pantalla de título → inicio directo sin semilla | `src/title_screen.c` → `CB2_DailyRed_StartFromTitle` |
 | Datos de partida: LEAF (jugadora de FireRed), texto rápido | `StartNewGame` en `src/dailyred.c`, después el `CB2_NewGame` original |
 | Equipo y traslado a la sala del Campeón en lugar de la habitación | `src/new_game.c` → `DailyRed_InitNewGame` |
-| Sala del Campeón sin salidas; ORO mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
-| Hablar con ORO → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
+| Sala del Campeón sin salidas; GOLD mira al sur desde (6, 8) | `data/maps/DailyRed_Summit/` (diseño `LAYOUT_POKEMON_LEAGUE_CHAMPIONS_ROOM`) |
+| Hablar con GOLD → combate → resultado → récord → fundido a negro | `data/maps/DailyRed_Summit/scripts.inc`, `text.inc` y especiales `DailyRed_On*` en `src/dailyred.c` |
 | Fondo de combate de la Liga | `BattleSetup_GetTerrainId` en `src/battle_setup.c` |
-| Sin cambio gratis de Pokémon al debilitar a uno de ORO: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
-| ORO como entrenador (sprites de Ethan, de Hall of Legends) | `TRAINER_DAILYRED_RED` en `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
+| Sin cambio gratis de Pokémon al debilitar a uno de GOLD: estilo SET bloqueado en Opciones | `StartNewGame` en `src/dailyred.c`, `src/option_menu.c` |
+| GOLD como entrenador (sprites de Ethan, de Hall of Legends) | `TRAINER_DAILYRED_RED` (identificador interno heredado) en `include/constants/opponents.h`, `src/data/trainers.h`, `src/dailyred_boss.c` |
 | Menús: POKéMON / OPTION / EXIT; equipo: SUMMARY / SWITCH / CANCEL | `src/start_menu.c`, `src/party_menu.c`; altura de las ventanas en `src/new_menu_helpers.c` |
 | Jugador HORTE: sprite calvo del mapa, frontal VS y espalda de combate | `src/dailyred.c`, sprites `horte_*`, `RedNormal` → BaldingMan |
-| Sprite de ORO en su propia paleta para no interferir con HORTE | `OBJ_EVENT_GFX_DAILYRED_RED` en `include/constants/event_objects.h`, `src/data/object_events/` |
+| Sprite de GOLD en su propia paleta para no interferir con HORTE | `OBJ_EVENT_GFX_DAILYRED_RED` (identificador interno heredado) en `include/constants/event_objects.h`, `src/data/object_events/` |
 
 El combate es un combate normal contra un entrenador de FireRed. El guion del
 mapa usa `trainerbattle_earlyrival` con `RIVAL_BATTLE_HEAL_AFTER`, el modo de la
 batalla contra el rival en el laboratorio de Oak; perder no provoca un
 «blanco». Después lee `VAR_RESULT`, actualiza el contador de victorias y
 combates, llama al especial `DailyRed_StartNextRun` para generar otro equipo y
-vuelve al punto inicial, donde también reinicia a RED.
+vuelve al punto inicial, donde también reinicia a GOLD.
 
 Los archivos originales modificados llevan un comentario `Daily Red:` junto al
 cambio:
@@ -134,7 +134,7 @@ grep -rn "Daily Red" pokefirered/src pokefirered/include pokefirered/data
 ```
 
 El mapa reutiliza el diseño de la sala del Campeón de la Liga Pokémon (el mismo
-lugar que Hall of Legends). ORO está en (6, 8), mirando al sur; empiezas en
+lugar que Hall of Legends). GOLD está en (6, 8), mirando al sur; empiezas en
 (6, 12). El proyecto usa el objetivo `modern` de pokefirered (GCC 14), no la
 compilación `agbcc` idéntica byte a byte, por lo que no reproduce la ROM
 comercial.
@@ -156,35 +156,23 @@ MT/MO, `CreateMon` y `CalculateMonStats`):
   `IsEligibleSpecies`; por ejemplo, ahí se puede exigir que solo haya especies
   totalmente evolucionadas.
 
-  **Por qué hay un mínimo:** el equipo de RED suma 2954 puntos (véase abajo).
+  **Por qué hay un mínimo:** el equipo de GOLD suma 3289 puntos (véase abajo).
   Un equipo totalmente aleatorio promedia unos 2430 y dos tercios incluyen un
   Pokémon con menos de 300 puntos, lo que hacía que la mayoría de partidas
   fueran casi imposibles. Aun así, un equipo puede tener un Pokémon débil si
   los demás compensan sus estadísticas.
 
-  **Por qué los legendarios tienen una probabilidad independiente:** promedian
-  613 puntos frente a 393 del resto, así que un mínimo de estadísticas por sí
-  solo suele cumplirse al obtener uno. Con un mínimo de 2750, el 70 % de los
-  equipos tenía un legendario y el 20 % tenía dos o más.
+  **Por qué los legendarios tienen una probabilidad independiente:** como sus
+  estadísticas base son mucho más altas, el mínimo por sí solo haría que
+  aparecieran con demasiada frecuencia. Por eso el juego decide primero si el
+  equipo tendrá exactamente uno: la probabilidad es 1 entre 8 (12,5 %), y los
+  otros siete de cada ocho equipos no tienen ninguno.
 
-  **Cómo influye el mínimo en la dificultad:** con los IV y EV descritos abajo,
-  la suma real de estadísticas en combate de un equipo es casi exactamente el
-  doble de la suma de estadísticas base más 2580; la de RED es 8555. Estos son
-  los resultados aproximados:
-
-  | Mínimo | Equipo típico frente a RED | Equipo más débil posible | Equipos más fuertes que RED |
-  |---|---|---|---|
-  | 2600 | 94 % | 91 % | 1 de cada 45 |
-  | 2650 | 95 % | 92 % | 1 de cada 34 |
-  | **2700** | **96 %** | **93 %** | **1 de cada 25** |
-  | 2750 | 97 % | 94 % | 1 de cada 17 |
-
-  Las probabilidades se calcularon simulando 80 000 equipos. En 80 partidas
-  con la ROM real y el mínimo de 2700, el equipo típico alcanzó el 95 % de las
-  estadísticas de RED; el rango fue del 93 al 101 %, y un equipo fue más
-  fuerte. RED conserva la ventaja: tiene movimientos elegidos a mano, objetos
-  útiles (la Bola Luminosa de Pikachu duplica su At. Esp.) y la IA de entrenador
-  más fuerte.
+  **Comparación con GOLD:** una simulación de dos millones de equipos, con las
+  especies actuales y el mínimo de 2700, estima que alrededor del **0,012 %**
+  (aproximadamente 1 de cada 8600 equipos) supera los **3289 puntos de
+  estadísticas base** de GOLD. Esta comparación solo suma estadísticas base;
+  no mide el efecto de movimientos, objetos, tipos ni estrategias.
 
 - **Movimientos:** se eligen uniformemente hasta cuatro movimientos distintos
   entre todos los que una especie puede aprender por nivel (a cualquier nivel),
@@ -194,17 +182,17 @@ MT/MO, `CreateMon` y `CalculateMonStats`):
   cuatro movimientos disponibles (Ditto, Unown, Magikarp, Smeargle…) reciben
   todos los que puedan aprender.
 - **Estadísticas:** nivel 100 y personalidad aleatoria (naturaleza, género,
-  habilidad y la probabilidad habitual de 1 entre 8192 de ser variocolor). Su
-  entrenamiento se aproxima al nivel de RED:
-  - **IV:** aleatorios entre 25 y 31 para cada estadística (`MIN_TEAM_IV`); RED
+  habilidad y la probabilidad habitual de 1 entre 8192 de ser variocolor).
+  - **IV:** aleatorios entre 25 y 31 para cada estadística (`MIN_TEAM_IV`); GOLD
     tiene 31 en todas.
   - **EV:** 252 en cada una de las dos estadísticas base más altas y los 6
     restantes en PS, o en la tercera más alta si PS está entre las dos
     primeras (`AssignFocusedEVs`). Ataque y At. Esp. solo se cuentan si algún
     movimiento usa esa estadística; en la tercera generación el tipo del
     movimiento determina cuál se usa. Por ejemplo, un Gyarados que solo tenga
-    Surf y Rayo Hielo no desperdicia EV en Ataque. Los Pokémon rápidos igualan
-    la velocidad de RED; los muros lentos invierten más en resistencia.
+    Surf y Rayo Hielo no desperdicia EV en Ataque. El reparto se calcula según
+    las estadísticas base y los movimientos, no para igualar la velocidad de
+    GOLD.
 
   El jugador es el entrenador original, así que todos los Pokémon obedecen.
   Además, se marcan como Pokémon de evento para que Mew y Deoxys también
@@ -228,7 +216,7 @@ estado. Tampoco se incluyen objetos específicos de especie como Bola Luminosa
 o Hueso Grueso. El generador usa su propio estado aleatorio, independiente de
 `Random()`, por lo que los equipos dependen solo de la semilla.
 
-## Equipo de ORO
+## Equipo de GOLD
 
 Edita **`pokefirered/src/dailyred_boss.c`** para cambiar especies, nivel, IV,
 objeto y movimientos, usando el formato normal de FireRed
@@ -260,14 +248,17 @@ en la sala del Campeón.
 - **Typhlosion** — Estallido, Llamarada, Puño Trueno y Paranormal; habilidad: **Absorbe Fuego**; objeto: **Carbón**.
 
 Son estadísticas base de la tercera generación, tomadas de
-`src/data/pokemon/species_info.h`. La dificultad de generación del equipo
-diario (mínimo de estadísticas base, IV, probabilidad de legendario, etc.) no
-cambia con respecto a Daily Red.
+`src/data/pokemon/species_info.h`. La generación del equipo diario conserva sus
+reglas. El equipo de GOLD suma 3289 puntos de estadísticas base, frente a los
+2954 del equipo anterior de RED: son 335 puntos más (aproximadamente un 11,3 %).
+Las comparaciones de dificultad anteriores con RED ya no describen al rival
+actual.
 
-El nombre de ORO, su clase de entrenador Campeón, su sprite de combate (Ethan,
+El nombre de GOLD, su clase de entrenador Campeón, su sprite de combate (Ethan,
 de Hall of Legends) y sus indicadores de IA están en
-`[TRAINER_DAILYRED_RED]` dentro de `pokefirered/src/data/trainers.h`. Conserva
-la música de combate de Campeón (`src/pokemon.c`). El jugador es **HORTE**
+`[TRAINER_DAILYRED_RED]` dentro de `pokefirered/src/data/trainers.h`. El código
+conserva ese identificador interno heredado, pero el entrenador se llama GOLD.
+Conserva la música de combate de Campeón (`src/pokemon.c`). El jugador es **HORTE**
 (sprites calvo en el mapa, frontal VS y espalda de combate). FireRed no asigna
 EV a los entrenadores; un enganche de tres líneas en `CreateNPCTrainerParty`
 (`src/battle_main.c`) aplica la tabla de EV. Las naturalezas se obtienen con
@@ -284,7 +275,7 @@ la fórmula habitual de FireRed basada en el nombre y no se pueden configurar.
 
 `pokefirered/`, `.toolchain/` y `web/vendor/` no están versionados (véase
 `.gitignore`); en una copia limpia se vuelven a crear con los scripts. Los
-sprites de `web/game/` (ORO y su equipo) sí están versionados; solo se ignora
+sprites de `web/game/` (GOLD y su equipo) sí están versionados; solo se ignora
 la ROM compilada (`.gba` / `.gba.gz`). `git -C pokefirered diff` muestra
 todos los cambios respecto al código original.
 
@@ -321,13 +312,13 @@ npm run teams -- --random 40      # Genera 40 semillas aleatorias
   JavaScript, por separado del generador en C.
 - una misma semilla produce el mismo equipo y semillas diferentes producen
   equipos distintos.
-- el jugador empieza al pie de las escaleras, RED mira hacia el lado contrario
-  (también después de cada partida) y hablar con RED inicia un combate de
+- el jugador empieza al pie de las escaleras, GOLD mira hacia el lado contrario
+  (también después de cada partida) y hablar con GOLD inicia un combate de
   entrenador con el fondo de montaña.
 - el estilo de combate está en SET desde el inicio, el menú Opciones no permite
-  cambiarlo y, cuando debilitas a un Pokémon de RED, este envía al siguiente
+  cambiarlo y, cuando debilitas a un Pokémon de GOLD, este envía al siguiente
   sin preguntar «¿Cambiará LEAF de POKéMON?».
-- el equipo de RED en combate coincide con su configuración de IV, objetos y EV.
+- el equipo de GOLD en combate coincide con su configuración de IV, objetos y EV.
 - se procesan tanto la victoria como la derrota: no hay derrota total, se
   actualizan los contadores y después aparece un equipo nuevo.
 - el modo diario recibe el récord de la web, informa del inicio, resultado y
@@ -345,7 +336,7 @@ persistencia tras recargar), el mismo equipo en un segundo navegador ese día,
 una derrota al día siguiente, abandonar durante el combate (cuenta como
 derrota), saltarse un día (se reinician las rachas) y una partida de práctica
 (`?seed=`, no se registra). También comprueba la pantalla 3× (720×480), el
-sprite de RED, la vista móvil, la cruceta táctil y la pantalla de error de
+sprite de GOLD, la vista móvil, la cruceta táctil y la pantalla de error de
 descarga con la opción «Reintentar».
 
 **Comprobación manual:** abre `http://localhost:8080/?seed=42` para una
@@ -427,5 +418,5 @@ tests/                               pruebas de navegador y herramienta de equip
 Dentro de `pokefirered/`, el código de Daily Gold está en `include/dailyred.h`,
 `include/constants/dailyred.h`, `src/dailyred.c` (flujo y semilla),
 `src/dailyred_team.c` (generador de equipos), `src/dailyred_boss.c` (equipo
-de ORO), `data/maps/DailyRed_Summit/` y `data/layouts/DailyRed_Summit/`
+de GOLD), `data/maps/DailyRed_Summit/` y `data/layouts/DailyRed_Summit/`
 (el mapa).
