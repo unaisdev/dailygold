@@ -1,0 +1,97 @@
+# Empaqueta y publica el content pack cuando se crea un tag content-v*.
+#
+# El launcher (hortelanos-daily) lee:
+#   GET /repos/unaisdev/dailygold/releases/latest
+#   asset: dailygold-content.zip (+ SHA256SUMS)
+name: Release content pack
+
+on:
+  push:
+    tags:
+      - 'content-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer sin prefijo (ej. 0.1.0). Si vacío, usa content/game.manifest.json'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VER="${{ inputs.version }}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" == content-v* ]]; then
+            VER="${GITHUB_REF_NAME#content-v}"
+          else
+            VER="$(python3 -c "import json; print(json.load(open('content/game.manifest.json'))['contentVersion'])")"
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "tag=content-v$VER" >> "$GITHUB_OUTPUT"
+          export VER
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path('content/game.manifest.json')
+          m = json.loads(path.read_text())
+          m['contentVersion'] = os.environ['VER']
+          path.write_text(json.dumps(m, indent=2) + '\n')
+          print('contentVersion =', m['contentVersion'])
+          PY
+
+      - name: Verify ROM is present
+        run: |
+          test -f web/game/dailyred.gba.gz
+          test -f web/game/gold.png
+          test -f web/game/red.png
+          gzip -t web/game/dailyred.gba.gz
+
+      - name: Package content
+        run: |
+          chmod +x scripts/verify-content.sh scripts/package-content.sh
+          scripts/package-content.sh
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+          VER: ${{ steps.ver.outputs.version }}
+        run: |
+          NOTES=$(cat <<EOF
+          ## Daily Gold content \`${TAG}\`
+
+          Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
+
+          | Campo | Valor |
+          |-------|--------|
+          | Asset | \`dailygold-content.zip\` |
+          | Protocolo | \`dailyred-conf-v2+status-v1\` |
+          | minLauncherVersion | \`0.1.0\` |
+
+          El launcher descarga este zip desde \`/releases/latest\` y verifica \`SHA256SUMS\`.
+          EOF
+          )
+
+          ASSETS=(
+            dist/content/dailygold-content.zip
+            dist/content/SHA256SUMS
+          )
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --title "Daily Gold content ${VER}" \
+              --notes "$NOTES" \
+              --latest
+          fi

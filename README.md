@@ -19,6 +19,7 @@ simula los combates.
 - [Generación de equipos](#generacion-de-equipos)
 - [Equipo de GOLD](#equipo-de-gold)
 - [Flujo de desarrollo](#flujo-de-desarrollo)
+- [Content packs (Hortelano's Daily)](#content-packs-hortelanos-daily)
 - [Pruebas y depuración](#pruebas-y-depuracion)
 - [Ejecución local](#ejecucion-local)
 - [Derechos de autor y licencias](#derechos-de-autor-y-licencias)
@@ -285,6 +286,33 @@ semilla inyectada, empieza en la pantalla de título; pulsa Start.
 
 La web no necesita compilarse: usa HTML, CSS y módulos ES en `web/`.
 
+## Content packs (Hortelano's Daily)
+
+El launcher de escritorio
+[Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily) instala Daily
+Gold como un **content pack** descargado desde las GitHub Releases de este repo.
+
+| Campo | Convención |
+|-------|------------|
+| Tag | `content-vMAJOR.MINOR.PATCH` |
+| Asset | `dailygold-content.zip` |
+| Checksums | `SHA256SUMS` |
+| Manifest | `content/game.manifest.json` (`contentVersion`, `protocolId`, …) |
+
+Flujo del launcher: consulta `/releases/latest` → compara la versión con el pack
+local → si hay una más nueva, descarga el zip, verifica el SHA-256 y lo
+descomprime en caliente (exige `game.manifest.json` en la raíz).
+
+```sh
+scripts/build-rom.sh            # ROM + sprites en web/game/
+scripts/package-content.sh      # → dist/content/dailygold-content.zip + SHA256SUMS
+scripts/release-content.sh      # crea el Release content-v… en GitHub
+# o: git tag content-v0.1.0 && git push origin content-v0.1.0
+```
+
+Detalle del contrato, layout del zip y orden al bumpear el protocolo:
+[docs/CONTENT_RELEASES.md](docs/CONTENT_RELEASES.md).
+
 ## Pruebas y depuración
 
 Las pruebas ejecutan la ROM real en Chrome sin interfaz gráfica, mediante el
@@ -404,13 +432,19 @@ fuente; el pie de la página también lleva a esa lista.
 ## Estructura del proyecto
 
 ```
+content/game.manifest.json           manifest del pack para Hortelano's Daily
+docs/CONTENT_RELEASES.md             contrato de Releases content-v*
 patches/pokefirered-dailyred.patch   cambios a pret/pokefirered
 scripts/setup-macos.sh               herramientas de compilación y libpng
 scripts/get-pokefirered.sh           descarga fijada del código original y parches
 scripts/save-patch.sh                cambios de pokefirered/ → patches/
 scripts/build-rom.sh                 make modern → web/game/dailyred.gba.gz
+scripts/package-content.sh           zip dailygold-content.zip + SHA256SUMS
+scripts/release-content.sh           publica Release content-v* en GitHub
+scripts/verify-content.sh            comprueba manifest + magic en la ROM
 scripts/fetch-vendor.sh              Nostalgist, núcleo mGBA y fuente (versiones verificadas)
 scripts/serve.mjs                    servidor estático local
+.github/workflows/release-content.yml  CI al pushear tags content-v*
 web/                                 sitio web
 tests/                               pruebas de navegador y herramienta de equipos
 ```

@@ -3,6 +3,12 @@
 # scripts/setup-macos.sh
 /.toolchain/
 
+# scripts/get-pokefirered.sh
+/pokefirered/
+
+# scripts/package-content.sh
+/dist/
+
 # Wrangler's local cache (Cloudflare deploys)
 /.wrangler/
 
