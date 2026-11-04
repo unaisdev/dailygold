@@ -668,7 +668,7 @@ index 50cfd49..a6026cf 100644
  	$(GFX) $< $@ -mwidth 2 -mheight 4
  
 diff --git a/src/battle_ai_script_commands.c b/src/battle_ai_script_commands.c
-index 4df9977..e51035f 100644
+index 4df9977..caa6386 100644
 --- a/src/battle_ai_script_commands.c
 +++ b/src/battle_ai_script_commands.c
 @@ -9,6 +9,8 @@
@@ -680,21 +680,104 @@ index 4df9977..e51035f 100644
  
  #define AI_ACTION_DONE          0x0001
  #define AI_ACTION_FLEE          0x0002
-@@ -365,6 +367,7 @@ u8 BattleAI_ChooseMoveOrAction(void)
+@@ -42,6 +44,60 @@ AI scripts.
+ static EWRAM_DATA const u8 *sAIScriptPtr = NULL;
+ extern u8 *gBattleAI_ScriptsTable[];
+
++static bool8 IsTargetMoveLethalToBattler(u8 attacker, u8 defender)
++{
++    u8 i;
++    u8 savedBattlerAttacker = gBattlerAttacker;
++    u8 savedBattlerTarget = gBattlerTarget;
++    u8 savedCritMultiplier = gCritMultiplier;
++    u8 savedMoveResultFlags = gMoveResultFlags;
++    u8 savedDmgMultiplier = gBattleScripting.dmgMultiplier;
++    u8 savedDynamicMoveType = gBattleStruct->dynamicMoveType;
++    u16 savedCurrentMove = gCurrentMove;
++    u16 savedBattleMovePower = gBattleMovePower;
++    u16 savedDynamicBasePower = gDynamicBasePower;
++    s32 savedBattleMoveDamage = gBattleMoveDamage;
++    bool8 isLethal = FALSE;
++
++    gBattlerAttacker = attacker;
++    gBattlerTarget = defender;
++    gDynamicBasePower = 0;
++    gBattleStruct->dynamicMoveType = 0;
++    gBattleScripting.dmgMultiplier = 1;
++    gCritMultiplier = 1;
++
++    for (i = 0; i < MAX_MON_MOVES; i++)
++    {
++        u16 move = gBattleMons[attacker].moves[i];
++
++        if (move == MOVE_NONE || gBattleMons[attacker].pp[i] == 0 || gBattleMoves[move].power <= 1)
++            continue;
++
++        gCurrentMove = move;
++        gMoveResultFlags = 0;
++        AI_CalcDmg(attacker, defender);
++        TypeCalc(move, attacker, defender);
++        if (!(gMoveResultFlags & MOVE_RESULT_DOESNT_AFFECT_FOE)
++         && gBattleMoveDamage >= gBattleMons[defender].hp)
++        {
++            isLethal = TRUE;
++            break;
++        }
++    }
++
++    gBattlerAttacker = savedBattlerAttacker;
++    gBattlerTarget = savedBattlerTarget;
++    gCritMultiplier = savedCritMultiplier;
++    gMoveResultFlags = savedMoveResultFlags;
++    gBattleScripting.dmgMultiplier = savedDmgMultiplier;
++    gBattleStruct->dynamicMoveType = savedDynamicMoveType;
++    gCurrentMove = savedCurrentMove;
++    gBattleMovePower = savedBattleMovePower;
++    gDynamicBasePower = savedDynamicBasePower;
++    gBattleMoveDamage = savedBattleMoveDamage;
++    return isLethal;
++}
++
+ static void Cmd_if_random_less_than(void);
+ static void Cmd_if_random_greater_than(void);
+ static void Cmd_if_random_equal(void);
+@@ -365,6 +421,8 @@ u8 BattleAI_ChooseMoveOrAction(void)
      u8 currentMoveArray[MAX_MON_MOVES];
      u8 consideredMoveArray[MAX_MON_MOVES];
      u8 numOfBestMoves;
 +    bool8 hasOtherMove;
++    bool8 hasOtherAttack;
      s32 i;
  
      RecordLastUsedMoveByTarget();
-@@ -386,12 +389,63 @@ u8 BattleAI_ChooseMoveOrAction(void)
+@@ -386,12 +444,86 @@ u8 BattleAI_ChooseMoveOrAction(void)
      if (AI_THINKING_STRUCT->aiAction & AI_ACTION_WATCH)
          return AI_CHOICE_WATCH;
  
 -    numOfBestMoves = 1;
 -    currentMoveArray[0] = AI_THINKING_STRUCT->score[0];
 -    consideredMoveArray[0] = 0;
++    // If a damaging move the opponent still has PP for can KO boosted
++    // Heracross, spend the Attack boost instead of using Swords Dance again.
++    hasOtherAttack = FALSE;
++    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
++     && gBattleMons[gBattlerAttacker].species == SPECIES_HERACROSS
++     && gBattleMons[gBattlerAttacker].statStages[STAT_ATK] > DEFAULT_STAT_STAGE
++     && IsTargetMoveLethalToBattler(gBattlerTarget, gBattlerAttacker))
++    {
++        for (i = 0; i < MAX_MON_MOVES; i++)
++        {
++            if (gBattleMons[gBattlerAttacker].moves[i] != MOVE_SWORDS_DANCE
++             && gBattleMons[gBattlerAttacker].moves[i] != MOVE_NONE
++             && gBattleMons[gBattlerAttacker].pp[i] != 0
++             && gBattleMoves[gBattleMons[gBattlerAttacker].moves[i]].power != 0)
++            {
++                hasOtherAttack = TRUE;
++                break;
++            }
++        }
++    }
++
 +    // Toxic is part of Daily Gold Umbreon's intended strategy. The vanilla
 +    // viability script only rewards Toxic when the user also knows Protect
 +    // or a Sp. Def-raising move, neither of which Umbreon has in this roster.
@@ -744,6 +827,8 @@ index 4df9977..e51035f 100644
      {
 +        if (hasOtherMove && gBattleMons[gBattlerAttacker].moves[i] == MOVE_WISH)
 +            continue;
++        if (hasOtherAttack && gBattleMons[gBattlerAttacker].moves[i] == MOVE_SWORDS_DANCE)
++            continue;
 +
 +        if (numOfBestMoves == 0)
 +        {
@@ -756,7 +841,7 @@ index 4df9977..e51035f 100644
          if (currentMoveArray[0] < AI_THINKING_STRUCT->score[i])
          {
              numOfBestMoves = 1;
-@@ -405,6 +459,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
+@@ -405,6 +537,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
          }
      }
  
@@ -765,7 +850,7 @@ index 4df9977..e51035f 100644
 +
      return consideredMoveArray[Random() % numOfBestMoves]; // break any ties that exist.
  }
- 
+
 diff --git a/src/battle_bg.c b/src/battle_bg.c
 index 3bcc500..46841a1 100644
 --- a/src/battle_bg.c
