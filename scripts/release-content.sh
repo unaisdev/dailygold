@@ -15,6 +15,7 @@ if [[ -z "$VER" ]]; then
 fi
 TAG="content-v${VER}"
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+MIN_LAUNCHER=$(python3 -c "import json; print(json.load(open('$MANIFEST'))['compat']['minLauncherVersion'])")
 
 # Keep manifest version in sync when an explicit version is passed.
 python3 - "$MANIFEST" "$VER" <<'PY'
@@ -33,7 +34,9 @@ PY
 
 "$ROOT/scripts/package-content.sh"
 
-NOTES=$(cat <<EOF
+NOTES_FILE=$(mktemp)
+trap 'rm -f "$NOTES_FILE"' EXIT
+cat > "$NOTES_FILE" <<EOF
 ## Daily Gold content \`${TAG}\`
 
 Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
@@ -42,12 +45,11 @@ Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
 |-------|--------|
 | Asset | \`dailygold-content.zip\` |
 | Protocolo | \`dailyred-conf-v2+status-v1\` |
-| minLauncherVersion | \`$(python3 -c "import json; print(json.load(open('$MANIFEST'))['compat']['minLauncherVersion'])")\` |
+| minLauncherVersion | \`${MIN_LAUNCHER}\` |
 
 El launcher consulta \`GET /repos/${REPO}/releases/latest\`, descarga
 \`dailygold-content.zip\` y verifica el SHA-256 de \`SHA256SUMS\`.
 EOF
-)
 
 OUT="$ROOT/dist/content"
 ASSETS=(
@@ -62,8 +64,9 @@ else
   echo "Creating release $TAG…"
   gh release create "$TAG" "${ASSETS[@]}" \
     --repo "$REPO" \
+    --target main \
     --title "Daily Gold content ${VER}" \
-    --notes "$NOTES" \
+    --notes-file "$NOTES_FILE" \
     --latest
 fi
 
