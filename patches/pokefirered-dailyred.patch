@@ -1103,6 +1103,40 @@ index a6392be..d594a57 100644
              }
          }
          break;
+diff --git a/src/battle_script_commands.c b/src/battle_script_commands.c
+index 67f90a3..5e5bd0d 100644
+--- a/src/battle_script_commands.c
++++ b/src/battle_script_commands.c
+@@ -36,6 +36,8 @@
+ #include "constants/abilities.h"
+ #include "constants/pokemon.h"
+ #include "constants/maps.h"
++#include "constants/opponents.h"
++#include "constants/species.h"
+ 
+ extern const u8 *const gBattleScriptsForMoveEffects[];
+ 
+@@ -1225,6 +1227,19 @@ static void Cmd_damagecalc(void)
+ void AI_CalcDmg(u8 attacker, u8 defender)
+ {
+     u16 sideStatus = gSideStatuses[GET_BATTLER_SIDE(defender)];
++
++    // Eruption's real power scales with the user's current HP. Keep Gold's
++    // Typhlosion AI estimate in sync with the move's battle damage script.
++    if (gBattleMoves[gCurrentMove].effect == EFFECT_ERUPTION
++     && gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
++     && gBattleMons[attacker].species == SPECIES_TYPHLOSION
++     && gDynamicBasePower == 0)
++    {
++        gDynamicBasePower = gBattleMons[attacker].hp * gBattleMoves[gCurrentMove].power / gBattleMons[attacker].maxHP;
++        if (gDynamicBasePower == 0)
++            gDynamicBasePower = 1;
++    }
++
+     gBattleMoveDamage = CalculateBaseDamage(&gBattleMons[attacker], &gBattleMons[defender], gCurrentMove,
+                                             sideStatus, gDynamicBasePower,
+                                             gBattleStruct->dynamicMoveType, attacker, defender);
+
 diff --git a/src/battle_setup.c b/src/battle_setup.c
 index 6d62084..fe80fb3 100644
 --- a/src/battle_setup.c
