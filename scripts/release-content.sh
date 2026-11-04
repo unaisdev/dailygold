@@ -36,20 +36,27 @@ PY
 
 NOTES_FILE=$(mktemp)
 trap 'rm -f "$NOTES_FILE"' EXIT
-cat > "$NOTES_FILE" <<EOF
-## Daily Gold content \`${TAG}\`
+python3 - "$NOTES_FILE" "$TAG" "$REPO" "$MIN_LAUNCHER" <<'PY'
+from pathlib import Path
+import sys
+notes_path, tag, repo, min_launcher = sys.argv[1:5]
+notes_path = Path(notes_path)
+notes_path.write_text(
+    f"""## Daily Gold content `{tag}`
 
 Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
 
 | Campo | Valor |
 |-------|--------|
-| Asset | \`dailygold-content.zip\` |
-| Protocolo | \`dailyred-conf-v2+status-v1\` |
-| minLauncherVersion | \`${MIN_LAUNCHER}\` |
+| Asset | `dailygold-content.zip` |
+| Protocolo | `dailyred-conf-v2+status-v1` |
+| minLauncherVersion | `{min_launcher}` |
 
-El launcher consulta \`GET /repos/${REPO}/releases/latest\`, descarga
-\`dailygold-content.zip\` y verifica el SHA-256 de \`SHA256SUMS\`.
-EOF
+El launcher consulta `GET /repos/{repo}/releases/latest`, descarga
+`dailygold-content.zip` y verifica el SHA-256 de `SHA256SUMS`.
+"""
+)
+PY
 
 OUT="$ROOT/dist/content"
 ASSETS=(
@@ -58,10 +65,10 @@ ASSETS=(
 )
 
 if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
-  echo "Release $TAG already exists — uploading/replacing assets…"
+  echo "Release ${TAG} already exists - uploading/replacing assets..."
   gh release upload "$TAG" "${ASSETS[@]}" --repo "$REPO" --clobber
 else
-  echo "Creating release $TAG…"
+  echo "Creating release ${TAG}..."
   gh release create "$TAG" "${ASSETS[@]}" \
     --repo "$REPO" \
     --target main \
