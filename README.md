@@ -299,15 +299,18 @@ Gold como un **content pack** descargado desde las GitHub Releases de este repo.
 | Checksums | `SHA256SUMS` |
 | Manifest | `content/game.manifest.json` (`contentVersion`, `protocolId`, …) |
 
-Flujo del launcher: consulta `/releases/latest` → compara la versión con el pack
-local → si hay una más nueva, descarga el zip, verifica el SHA-256 y lo
-descomprime en caliente (exige `game.manifest.json` en la raíz).
+**Cada push a `main`** dispara
+[`.github/workflows/release-content.yml`](.github/workflows/release-content.yml):
+sube el patch (`0.1.0` → `0.1.1` …), actualiza el manifest y publica un Release
+nuevo marcado como *latest*. El launcher consulta `/releases/latest`, compara la
+versión con el pack local y, si hay una más nueva, descarga el zip, verifica el
+SHA-256 y lo descomprime en caliente.
 
 ```sh
-scripts/build-rom.sh            # ROM + sprites en web/game/
+git push origin main            # CI publica content-v… automáticamente
+# opcional en local:
 scripts/package-content.sh      # → dist/content/dailygold-content.zip + SHA256SUMS
-scripts/release-content.sh      # crea el Release content-v… en GitHub
-# o: git tag content-v0.1.0 && git push origin content-v0.1.0
+scripts/release-content.sh 0.2.0  # forzar MAJOR/MINOR a mano
 ```
 
 Detalle del contrato, layout del zip y orden al bumpear el protocolo:
@@ -444,7 +447,7 @@ scripts/release-content.sh           publica Release content-v* en GitHub
 scripts/verify-content.sh            comprueba manifest + magic en la ROM
 scripts/fetch-vendor.sh              Nostalgist, núcleo mGBA y fuente (versiones verificadas)
 scripts/serve.mjs                    servidor estático local
-.github/workflows/release-content.yml  CI al pushear tags content-v*
+.github/workflows/release-content.yml  CI: Release content-v* en cada push a main
 web/                                 sitio web
 tests/                               pruebas de navegador y herramienta de equipos
 ```

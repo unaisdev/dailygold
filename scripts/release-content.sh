@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Crea (o actualiza) un GitHub Release de content pack desde main.
+# En condiciones normales NO hace falta: cada push a main ya publica un Release
+# vía .github/workflows/release-content.yml (patch bump automático).
 #
 # Uso:
 #   scripts/release-content.sh              # usa contentVersion del manifest
-#   scripts/release-content.sh 0.1.0        # fuerza la versión
+#   scripts/release-content.sh 0.2.0        # fuerza MAJOR/MINOR a mano
 #
 # Requisitos: gh autenticado, working tree limpio recomendado, ROM construida.
 set -euo pipefail

@@ -1,4 +1,5 @@
-# Empaqueta y publica el content pack cuando se crea un tag content-v*.
+# Publica un content pack nuevo en cada push a main (patch bump automático).
+# También responde a tags content-v* y a lanzamientos manuales.
 #
 # El launcher (hortelanos-daily) lee:
 #   GET /repos/unaisdev/dailygold/releases/latest
@@ -7,14 +8,20 @@ name: Release content pack
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'content-v*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'SemVer sin prefijo (ej. 0.1.0). Si vacío, usa content/game.manifest.json'
+        description: 'SemVer sin prefijo (ej. 0.1.1). Vacío = siguiente patch automático'
         required: false
         default: ''
+
+concurrency:
+  group: release-content
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -25,19 +32,70 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Needed so the version-bump commit can push back to main.
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve version
         id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VER="${{ inputs.version }}"
+          set -euo pipefail
+
+          latest_tag() {
+            gh release list --limit 100 --json tagName \
+              --jq '[.[].tagName | select(startswith("content-v"))] | first // empty'
+          }
+
+          bump_patch() {
+            python3 - "$1" <<'PY'
+          import sys
+          ver = sys.argv[1].strip().lstrip("v")
+          parts = ver.split(".")
+          while len(parts) < 3:
+              parts.append("0")
+          major, minor, patch = (int(parts[0]), int(parts[1]), int(parts[2]))
+          print(f"{major}.{minor}.{patch + 1}")
+          PY
+          }
+
+          if [ -n "${INPUT_VERSION:-}" ]; then
+            VER="$INPUT_VERSION"
+            SOURCE="workflow_dispatch"
           elif [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" == content-v* ]]; then
             VER="${GITHUB_REF_NAME#content-v}"
+            SOURCE="tag"
+          elif [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" == "main" ]]; then
+            LATEST="$(latest_tag || true)"
+            if [ -n "$LATEST" ]; then
+              VER="$(bump_patch "${LATEST#content-v}")"
+            else
+              VER="$(python3 -c "import json; print(json.load(open('content/game.manifest.json'))['contentVersion'])")"
+              # If that version already has a release, still bump.
+              if gh release view "content-v${VER}" >/dev/null 2>&1; then
+                VER="$(bump_patch "$VER")"
+              fi
+            fi
+            SOURCE="main-push"
           else
             VER="$(python3 -c "import json; print(json.load(open('content/game.manifest.json'))['contentVersion'])")"
+            SOURCE="manifest"
           fi
+
+          # Guarantee a free tag (race / manual tags).
+          while gh release view "content-v${VER}" >/dev/null 2>&1; do
+            echo "content-v${VER} already exists — bumping patch"
+            VER="$(bump_patch "$VER")"
+          done
+
           echo "version=$VER" >> "$GITHUB_OUTPUT"
           echo "tag=content-v$VER" >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
+          echo "Resolved contentVersion=$VER (source=$SOURCE)"
+
           export VER
           python3 - <<'PY'
           import json, os
@@ -46,8 +104,22 @@ jobs:
           m = json.loads(path.read_text())
           m['contentVersion'] = os.environ['VER']
           path.write_text(json.dumps(m, indent=2) + '\n')
-          print('contentVersion =', m['contentVersion'])
+          print('Wrote content/game.manifest.json contentVersion =', m['contentVersion'])
           PY
+
+      - name: Commit contentVersion bump on main
+        if: steps.ver.outputs.source == 'main-push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- content/game.manifest.json; then
+            echo "contentVersion already up to date"
+          else
+            git add content/game.manifest.json
+            git commit -m "chore: bump contentVersion to ${{ steps.ver.outputs.version }}"
+            git push origin HEAD:main
+          fi
 
       - name: Verify ROM is present
         run: |
@@ -66,21 +138,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.ver.outputs.tag }}
           VER: ${{ steps.ver.outputs.version }}
+          SOURCE: ${{ steps.ver.outputs.source }}
         run: |
-          NOTES=$(cat <<EOF
-          ## Daily Gold content \`${TAG}\`
+          set -euo pipefail
+          MIN_LAUNCHER=$(python3 -c "import json; print(json.load(open('content/game.manifest.json'))['compat']['minLauncherVersion'])")
+          SHA=$(git rev-parse HEAD)
+          NOTES_FILE=$(mktemp)
+          python3 - "$NOTES_FILE" "$TAG" "$VER" "$MIN_LAUNCHER" "$SOURCE" "$SHA" <<'PY'
+          from pathlib import Path
+          import sys
+          path, tag, ver, min_launcher, source, sha = sys.argv[1:7]
+          Path(path).write_text(
+          f"""## Daily Gold content `{tag}`
 
           Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
 
           | Campo | Valor |
           |-------|--------|
-          | Asset | \`dailygold-content.zip\` |
-          | Protocolo | \`dailyred-conf-v2+status-v1\` |
-          | minLauncherVersion | \`0.1.0\` |
+          | Asset | `dailygold-content.zip` |
+          | Protocolo | `dailyred-conf-v2+status-v1` |
+          | minLauncherVersion | `{min_launcher}` |
+          | Origen | `{source}` |
+          | Commit | `{sha}` |
 
-          El launcher descarga este zip desde \`/releases/latest\` y verifica \`SHA256SUMS\`.
-          EOF
+          El launcher descarga este zip desde `/releases/latest` y verifica `SHA256SUMS`.
+          """
           )
+          PY
 
           ASSETS=(
             dist/content/dailygold-content.zip
@@ -88,10 +172,15 @@ jobs:
           )
 
           if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — refreshing assets"
             gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            gh release edit "$TAG" --notes-file "$NOTES_FILE" --latest
           else
             gh release create "$TAG" "${ASSETS[@]}" \
               --title "Daily Gold content ${VER}" \
-              --notes "$NOTES" \
+              --notes-file "$NOTES_FILE" \
+              --target "$SHA" \
               --latest
           fi
+
+          echo "Published https://github.com/${{ github.repository }}/releases/tag/${TAG}"

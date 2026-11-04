@@ -41,9 +41,29 @@ assets/gold.png
 assets/red-fallback.png
 ```
 
-`content/game.manifest.json` es la fuente de verdad de `contentVersion`,
-`protocolId` y `compat.minLauncherVersion`. La ROM y los sprites se toman de
-`web/game/` al empaquetar (no se duplican en Git dentro de `content/`).
+`content/game.manifest.json` guarda `contentVersion`, `protocolId` y
+`compat.minLauncherVersion`. La ROM y los sprites se toman de `web/game/` al
+empaquetar (no se duplican en Git dentro de `content/`).
+
+## Releases automáticos en cada push a `main`
+
+El workflow [`.github/workflows/release-content.yml`](../.github/workflows/release-content.yml)
+se ejecuta en **cada push a `main`** y:
+
+1. Lee el último Release `content-v*`
+2. Sube el **patch** SemVer (`0.1.0` → `0.1.1` → `0.1.2` …)
+3. Actualiza `content/game.manifest.json` y hace commit
+   `chore: bump contentVersion to X.Y.Z` (con `GITHUB_TOKEN`, no re-dispara el workflow)
+4. Empaqueta `dailygold-content.zip` + `SHA256SUMS`
+5. Publica el Release `content-vX.Y.Z` y lo marca como *latest*
+
+Así el launcher siempre puede pedir `/releases/latest` y obtener el pack del
+último `main`.
+
+También puedes:
+
+- Lanzar el workflow a mano (`workflow_dispatch`) y opcionalmente fijar la versión
+- Pushear un tag `content-v*` si quieres forzar una versión concreta
 
 ## Empaquetar en local
 
@@ -52,40 +72,22 @@ scripts/build-rom.sh          # si la ROM no está al día
 scripts/package-content.sh    # → dist/content/dailygold-content.zip + SHA256SUMS
 ```
 
-## Publicar un Release
+## Publicar a mano (opcional)
 
-### Opción A — script (recomendado en local)
-
-```sh
-# Desde main, con la ROM construida y el manifest en la versión deseada:
-scripts/release-content.sh          # usa contentVersion del manifest
-# o
-scripts/release-content.sh 0.1.1    # fuerza versión y actualiza el manifest
-```
-
-Esto crea el tag `content-v…` / Release con `dailygold-content.zip` + `SHA256SUMS`
-y lo marca como *latest*.
-
-### Opción B — tag + Actions
+Normalmente **no hace falta**: un `git push origin main` ya publica Release.
 
 ```sh
-# 1. Sube a main el manifest con contentVersion nueva y la ROM si cambió
-git push origin main
-
-# 2. Crea el tag (dispara .github/workflows/release-content.yml)
-git tag content-v0.1.1
-git push origin content-v0.1.1
+# Forzar una versión concreta desde tu máquina:
+scripts/release-content.sh 0.2.0
 ```
-
-También puedes lanzar el workflow a mano (`workflow_dispatch`) desde la pestaña
-Actions.
 
 ## Versionado
 
 - SemVer: `MAJOR.MINOR.PATCH`
-- Tag canónico = `content-v` + versión del manifest
-- Sube `contentVersion` en `content/game.manifest.json` en el mismo commit que
-  cambia ROM, protocolo o assets del pack
+- Tag canónico = `content-v` + versión
+- En `main`, el patch lo incrementa CI; usa `MAJOR`/`MINOR` a mano solo si
+  rompes compatibilidad del pack o del protocolo (y sube
+  `compat.minLauncherVersion` cuando corresponda)
 
 ## Orden si cambia el protocolo ROM
 
