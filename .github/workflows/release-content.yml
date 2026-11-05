@@ -141,30 +141,12 @@ jobs:
           SOURCE: ${{ steps.ver.outputs.source }}
         run: |
           set -euo pipefail
-          MIN_LAUNCHER=$(python3 -c "import json; print(json.load(open('content/game.manifest.json'))['compat']['minLauncherVersion'])")
           SHA=$(git rev-parse HEAD)
           NOTES_FILE=$(mktemp)
-          python3 - "$NOTES_FILE" "$TAG" "$VER" "$MIN_LAUNCHER" "$SOURCE" "$SHA" <<'PY'
-          from pathlib import Path
-          import sys
-          path, tag, ver, min_launcher, source, sha = sys.argv[1:7]
-          Path(path).write_text(
-          f"""## Daily Gold content `{tag}`
-
-          Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
-
-          | Campo | Valor |
-          |-------|--------|
-          | Asset | `dailygold-content.zip` |
-          | Protocolo | `dailyred-conf-v2+status-v1` |
-          | minLauncherVersion | `{min_launcher}` |
-          | Origen | `{source}` |
-          | Commit | `{sha}` |
-
-          El launcher descarga este zip desde `/releases/latest` y verifica `SHA256SUMS`.
-          """
-          )
-          PY
+          chmod +x scripts/build-release-notes.sh
+          # Body con ## Novedades (modal del launcher) + ## Instalación.
+          # Contrato: docs/RELEASE_NOTES.md — hortelanos-daily lee solo Novedades.
+          scripts/build-release-notes.sh "$NOTES_FILE" "$TAG" "$VER" "$SOURCE" "$SHA"
 
           ASSETS=(
             dist/content/dailygold-content.zip

@@ -299,13 +299,16 @@ Gold como un **content pack** descargado desde las GitHub Releases de este repo.
 | Asset | `dailygold-content.zip` |
 | Checksums | `SHA256SUMS` |
 | Manifest | `content/game.manifest.json` (`contentVersion`, `protocolId`, …) |
+| Body | `## Novedades` en castellano (modal del launcher) — [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md) |
 
 **Cada push a `main`** dispara
 [`.github/workflows/release-content.yml`](.github/workflows/release-content.yml):
 sube el patch (`0.1.0` → `0.1.1` …), actualiza el manifest y publica un Release
-nuevo marcado como *latest*. El launcher consulta `/releases/latest`, compara la
-versión con el pack local y, si hay una más nueva, descarga el zip, verifica el
-SHA-256 y lo descomprime en caliente.
+nuevo marcado como *latest*, con body generado por
+`scripts/build-release-notes.sh`. El launcher consulta `/releases/latest`,
+compara la versión con el pack local y, si hay una más nueva, descarga el zip,
+verifica el SHA-256, lo descomprime en caliente y muestra las **Novedades** del
+body.
 
 ```sh
 git push origin main            # CI publica content-v… automáticamente
@@ -438,12 +441,14 @@ fuente; el pie de la página también lleva a esa lista.
 ```
 content/game.manifest.json           manifest del pack para Hortelano's Daily
 docs/CONTENT_RELEASES.md             contrato de Releases content-v*
+docs/RELEASE_NOTES.md                body ## Novedades (modal del launcher)
 patches/pokefirered-dailyred.patch   cambios a pret/pokefirered
 scripts/setup-macos.sh               herramientas de compilación y libpng
 scripts/get-pokefirered.sh           descarga fijada del código original y parches
 scripts/save-patch.sh                cambios de pokefirered/ → patches/
 scripts/build-rom.sh                 make modern → web/game/dailyred.gba.gz
 scripts/package-content.sh           zip dailygold-content.zip + SHA256SUMS
+scripts/build-release-notes.sh       body del Release (## Novedades + ## Instalación)
 scripts/release-content.sh           publica Release content-v* en GitHub
 scripts/verify-content.sh            comprueba manifest + magic en la ROM
 scripts/fetch-vendor.sh              Nostalgist, núcleo mGBA y fuente (versiones verificadas)

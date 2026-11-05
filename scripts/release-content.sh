@@ -17,7 +17,6 @@ if [[ -z "$VER" ]]; then
 fi
 TAG="content-v${VER}"
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
-MIN_LAUNCHER=$(python3 -c "import json; print(json.load(open('$MANIFEST'))['compat']['minLauncherVersion'])")
 
 # Keep manifest version in sync when an explicit version is passed.
 python3 - "$MANIFEST" "$VER" <<'PY'
@@ -38,27 +37,10 @@ PY
 
 NOTES_FILE=$(mktemp)
 trap 'rm -f "$NOTES_FILE"' EXIT
-python3 - "$NOTES_FILE" "$TAG" "$REPO" "$MIN_LAUNCHER" <<'PY'
-from pathlib import Path
-import sys
-notes_path, tag, repo, min_launcher = sys.argv[1:5]
-notes_path = Path(notes_path)
-notes_path.write_text(
-    f"""## Daily Gold content `{tag}`
-
-Pack para [Hortelano's Daily](https://github.com/unaisdev/hortelanos-daily).
-
-| Campo | Valor |
-|-------|--------|
-| Asset | `dailygold-content.zip` |
-| Protocolo | `dailyred-conf-v2+status-v1` |
-| minLauncherVersion | `{min_launcher}` |
-
-El launcher consulta `GET /repos/{repo}/releases/latest`, descarga
-`dailygold-content.zip` y verifica el SHA-256 de `SHA256SUMS`.
-"""
-)
-PY
+SHA=$(git -C "$ROOT" rev-parse HEAD)
+chmod +x "$ROOT/scripts/build-release-notes.sh"
+# ## Novedades para el modal del launcher + ## Instalación (docs/RELEASE_NOTES.md).
+"$ROOT/scripts/build-release-notes.sh" "$NOTES_FILE" "$TAG" "$VER" "manual" "$SHA"
 
 OUT="$ROOT/dist/content"
 ASSETS=(
@@ -69,6 +51,7 @@ ASSETS=(
 if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
   echo "Release ${TAG} already exists - uploading/replacing assets..."
   gh release upload "$TAG" "${ASSETS[@]}" --repo "$REPO" --clobber
+  gh release edit "$TAG" --repo "$REPO" --notes-file "$NOTES_FILE" --latest
 else
   echo "Creating release ${TAG}..."
   gh release create "$TAG" "${ASSETS[@]}" \
