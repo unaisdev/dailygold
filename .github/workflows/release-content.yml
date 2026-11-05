@@ -107,16 +107,37 @@ jobs:
           print('Wrote content/game.manifest.json contentVersion =', m['contentVersion'])
           PY
 
+      - name: Build release notes body
+        id: notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+          VER: ${{ steps.ver.outputs.version }}
+          SOURCE: ${{ steps.ver.outputs.source }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/content
+          NOTES_FILE="$PWD/dist/content/RELEASE_BODY.md"
+          SHA=$(git rev-parse HEAD)
+          chmod +x scripts/build-release-notes.sh scripts/clear-novedades.sh
+          # Captura ## Novedades desde content/NOVEDADES.md (o commits filtrados)
+          # ANTES de vaciar el archivo en el bump.
+          scripts/build-release-notes.sh "$NOTES_FILE" "$TAG" "$VER" "$SOURCE" "$SHA"
+          echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          cat "$NOTES_FILE"
+
       - name: Commit contentVersion bump on main
         if: steps.ver.outputs.source == 'main-push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- content/game.manifest.json; then
-            echo "contentVersion already up to date"
+          chmod +x scripts/clear-novedades.sh
+          scripts/clear-novedades.sh
+          git add content/game.manifest.json content/NOVEDADES.md
+          if git diff --cached --quiet; then
+            echo "nothing to commit for bump/novedades"
           else
-            git add content/game.manifest.json
             git commit -m "chore: bump contentVersion to ${{ steps.ver.outputs.version }}"
             git push origin HEAD:main
           fi
@@ -138,15 +159,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.ver.outputs.tag }}
           VER: ${{ steps.ver.outputs.version }}
-          SOURCE: ${{ steps.ver.outputs.source }}
+          NOTES_FILE: ${{ steps.notes.outputs.notes_file }}
         run: |
           set -euo pipefail
           SHA=$(git rev-parse HEAD)
-          NOTES_FILE=$(mktemp)
-          chmod +x scripts/build-release-notes.sh
-          # Body con ## Novedades (modal del launcher) + ## Instalación.
-          # Contrato: docs/RELEASE_NOTES.md — hortelanos-daily lee solo Novedades.
-          scripts/build-release-notes.sh "$NOTES_FILE" "$TAG" "$VER" "$SOURCE" "$SHA"
+          test -f "$NOTES_FILE"
 
           ASSETS=(
             dist/content/dailygold-content.zip

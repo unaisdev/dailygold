@@ -62,9 +62,9 @@ se ejecuta en **cada push a `main`** y:
 Así el launcher siempre puede pedir `/releases/latest`, obtener el pack del
 último `main` y mostrar las notas del body en el modal **Novedades**.
 
-**Agentes:** al tocar releases o el workflow, no quitéis el bloque `## Novedades`
-ni mezcléis metadatos técnicos ahí — ver [RELEASE_NOTES.md](RELEASE_NOTES.md).
-La generación automática está en `scripts/build-release-notes.sh`.
+**Agentes:** antes del push, rellenad bullets en `content/NOVEDADES.md` (castellano,
+jugador). Ver [RELEASE_NOTES.md](RELEASE_NOTES.md). Generación:
+`scripts/build-release-notes.sh` (+ `clear-novedades.sh` en el bump de CI).
 
 También puedes:
 

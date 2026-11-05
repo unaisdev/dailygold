@@ -299,7 +299,7 @@ Gold como un **content pack** descargado desde las GitHub Releases de este repo.
 | Asset | `dailygold-content.zip` |
 | Checksums | `SHA256SUMS` |
 | Manifest | `content/game.manifest.json` (`contentVersion`, `protocolId`, …) |
-| Body | `## Novedades` en castellano (modal del launcher) — [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md) |
+| Body | `## Novedades` desde `content/NOVEDADES.md` — [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md) |
 
 **Cada push a `main`** dispara
 [`.github/workflows/release-content.yml`](.github/workflows/release-content.yml):
@@ -442,6 +442,7 @@ fuente; el pie de la página también lleva a esa lista.
 content/game.manifest.json           manifest del pack para Hortelano's Daily
 docs/CONTENT_RELEASES.md             contrato de Releases content-v*
 docs/RELEASE_NOTES.md                body ## Novedades (modal del launcher)
+content/NOVEDADES.md                 bullets pendientes (jugador) para el próximo release
 patches/pokefirered-dailyred.patch   cambios a pret/pokefirered
 scripts/setup-macos.sh               herramientas de compilación y libpng
 scripts/get-pokefirered.sh           descarga fijada del código original y parches
@@ -449,6 +450,7 @@ scripts/save-patch.sh                cambios de pokefirered/ → patches/
 scripts/build-rom.sh                 make modern → web/game/dailyred.gba.gz
 scripts/package-content.sh           zip dailygold-content.zip + SHA256SUMS
 scripts/build-release-notes.sh       body del Release (## Novedades + ## Instalación)
+scripts/clear-novedades.sh           vacía bullets de content/NOVEDADES.md tras capturarlos
 scripts/release-content.sh           publica Release content-v* en GitHub
 scripts/verify-content.sh            comprueba manifest + magic en la ROM
 scripts/fetch-vendor.sh              Nostalgist, núcleo mGBA y fuente (versiones verificadas)

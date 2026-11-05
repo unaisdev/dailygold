@@ -20,16 +20,23 @@ Matices:
 - Corte estricto: solo el bloque tras `## Novedades` hasta el siguiente `## …`.
 - Markdown mínimo en Novedades: bullets `-` / `*` y `**negrita**`. Evitad tablas,
   links `[…](…)`, checklists y listas numeradas (se ven crudas).
-- Sin límite duro de longitud (scroll), pero pocos bullets. Al generar desde
-  commits, filtrar `chore:` / `ci:` / refactors / ruido interno.
+- Sin límite duro de longitud (scroll), pero pocos bullets.
 
-## Para agentes (obligatorio al commit/push a main / publicar content-v*)
+## Para agentes (antes de push a main)
 
-El workflow de push a `main` y `scripts/release-content.sh` generan el body con
-`scripts/build-release-notes.sh`. No quitéis `## Novedades` ni mezcléis metadatos
-técnicos ahí. Revisad/reescribid bullets si salen crudos desde commits.
+1. Edita **`content/NOVEDADES.md`**: añade bullets `- …` en castellano (lo que el
+   jugador debe ver). Solo esas líneas entran en el body.
+2. Haz commit y `git push origin main`. El workflow:
+   - Genera el body con `## Novedades` + `## Instalación`
+   - Publica el Release `content-v*`
+   - Vacía los bullets de `content/NOVEDADES.md` en el bump
+3. No pongas en los bullets texto tipo `## Novedades`, nombres de scripts, CI ni
+   mensajes de commit en inglés.
 
-## Plantilla
+Si `content/NOVEDADES.md` no tiene bullets, el generador intenta commits filtrados
+(sin `chore:`/`ci:`/ruido) y, si no hay nada usable, un fallback genérico.
+
+## Plantilla del body publicado
 
 ```text
 ## Novedades
@@ -40,10 +47,8 @@ técnicos ahí. Revisad/reescribid bullets si salen crudos desde commits.
 ## Instalación
 
 - Asset: `dailygold-content.zip`
-- Checksums: `SHA256SUMS`
 - …
 ```
 
 - **Sí** en Novedades: bugs visibles, pantallas/controles, reglas, sensación al jugar.
-- **No** en Novedades: refactors, CI, dependencias, SHA, nombres de assets, bumps de
-  `contentVersion`, mensajes `chore:` / `ci:` / `docs:` / `test:`.
+- **No** en Novedades: refactors, CI, dependencias, SHA, assets, bumps de versión.

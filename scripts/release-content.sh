@@ -38,9 +38,10 @@ PY
 NOTES_FILE=$(mktemp)
 trap 'rm -f "$NOTES_FILE"' EXIT
 SHA=$(git -C "$ROOT" rev-parse HEAD)
-chmod +x "$ROOT/scripts/build-release-notes.sh"
-# ## Novedades para el modal del launcher + ## Instalación (docs/RELEASE_NOTES.md).
+chmod +x "$ROOT/scripts/build-release-notes.sh" "$ROOT/scripts/clear-novedades.sh"
+# ## Novedades desde content/NOVEDADES.md (+ ## Instalación). Ver docs/RELEASE_NOTES.md.
 "$ROOT/scripts/build-release-notes.sh" "$NOTES_FILE" "$TAG" "$VER" "manual" "$SHA"
+"$ROOT/scripts/clear-novedades.sh"
 
 OUT="$ROOT/dist/content"
 ASSETS=(
