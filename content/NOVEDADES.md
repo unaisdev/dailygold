@@ -7,4 +7,7 @@ Tras publicar, este archivo se vacía otra vez.
 **Público:** castellano claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
 Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 
-- Sin cambios que notes al jugar.
+<!-- Ejemplo:
+- Arreglado: el combate del día se reiniciaba si cerrabas a medias.
+- GOLD ya no usa el mismo equipo dos días seguidos.
+-->
