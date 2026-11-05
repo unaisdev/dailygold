@@ -1,11 +1,12 @@
 # Notas para agentes
 
-## Releases `content-v*` (push a main / publicar)
+## Releases de content pack (push a main)
 
-1. **Antes del push:** escribe en `content/NOVEDADES.md` bullets `- …` en castellano
-   (solo lo que el jugador note). Ese archivo es la fuente de `## Novedades`.
-2. No uses mensajes de commit como notas: el modal del launcher mostraría ruido
-   (p. ej. “Add player-facing ## Novedades…”).
-3. Metadatos técnicos van en `## Instalación` (los genera el script).
-4. Contrato: [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
-5. Scripts: `build-release-notes.sh` (body) + `clear-novedades.sh` (vacía bullets tras capturarlos en CI).
+**Público del body:** un usuario normal. Habla claro, sin jerga de desarrollo.
+Nada de tags (`content-v*`), SHA, firmas, CI, nombres de zip técnicos ni docs internas.
+Si no lo entendería tu abuela o un amigo que solo quiere jugar, no va en `## Novedades`.
+
+1. **Antes del push:** bullets en `content/NOVEDADES.md` (`- …`, castellano, jugador).
+2. El body publicado es solo `## Novedades` (sin sección técnica).
+3. Contrato: [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
+4. Scripts: `build-release-notes.sh` + `clear-novedades.sh` (CI).

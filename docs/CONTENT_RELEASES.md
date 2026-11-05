@@ -12,7 +12,7 @@ comprobar `/releases/latest` y actualizar el juego al vuelo.
 | Asset principal | `dailygold-content.zip` |
 | Checksums | `SHA256SUMS` en el mismo Release |
 | Dentro del zip | `game.manifest.json` en la **raíz**, más `rom/` y `assets/` |
-| Body del Release | Debe incluir `## Novedades` (castellano, cambios visibles). El launcher lo pinta en el modal **Novedades**. Ver [RELEASE_NOTES.md](RELEASE_NOTES.md). |
+| Body del Release | Solo `## Novedades` en castellano claro (sin jerga). Ver [RELEASE_NOTES.md](RELEASE_NOTES.md). |
 
 Puntero en el catálogo del launcher:
 
@@ -56,8 +56,8 @@ se ejecuta en **cada push a `main`** y:
 3. Actualiza `content/game.manifest.json` y hace commit
    `chore: bump contentVersion to X.Y.Z` (con `GITHUB_TOKEN`, no re-dispara el workflow)
 4. Empaqueta `dailygold-content.zip` + `SHA256SUMS`
-5. Publica el Release `content-vX.Y.Z` (body con `## Novedades` + `## Instalación`)
-   y lo marca como *latest*
+5. Publica el Release `content-vX.Y.Z` (body solo con `## Novedades`) y lo marca
+   como *latest*
 
 Así el launcher siempre puede pedir `/releases/latest`, obtener el pack del
 último `main` y mostrar las notas del body en el modal **Novedades**.

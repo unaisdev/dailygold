@@ -449,7 +449,7 @@ scripts/get-pokefirered.sh           descarga fijada del código original y parc
 scripts/save-patch.sh                cambios de pokefirered/ → patches/
 scripts/build-rom.sh                 make modern → web/game/dailyred.gba.gz
 scripts/package-content.sh           zip dailygold-content.zip + SHA256SUMS
-scripts/build-release-notes.sh       body del Release (## Novedades + ## Instalación)
+scripts/build-release-notes.sh       body del Release (solo ## Novedades, tono jugador)
 scripts/clear-novedades.sh           vacía bullets de content/NOVEDADES.md tras capturarlos
 scripts/release-content.sh           publica Release content-v* en GitHub
 scripts/verify-content.sh            comprueba manifest + magic en la ROM

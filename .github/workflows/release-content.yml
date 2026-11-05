@@ -120,8 +120,7 @@ jobs:
           NOTES_FILE="$PWD/dist/content/RELEASE_BODY.md"
           SHA=$(git rev-parse HEAD)
           chmod +x scripts/build-release-notes.sh scripts/clear-novedades.sh
-          # Captura ## Novedades desde content/NOVEDADES.md (o commits filtrados)
-          # ANTES de vaciar el archivo en el bump.
+          # Solo ## Novedades (tono jugador). Capturar ANTES de vaciar NOVEDADES.md.
           scripts/build-release-notes.sh "$NOTES_FILE" "$TAG" "$VER" "$SOURCE" "$SHA"
           echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
           cat "$NOTES_FILE"
