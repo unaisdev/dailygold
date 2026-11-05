@@ -6,11 +6,11 @@ FILE="$ROOT/content/NOVEDADES.md"
 cat > "$FILE" <<'EOF'
 # Novedades pendientes (jugador)
 
-Bullets en castellano para el próximo release.
-Solo líneas que empiecen por `- ` entran en el modal Novedades del launcher.
-Tras publicar, el workflow vacía los bullets de este archivo.
+El agente de turno debe rellenar bullets ANTES de pushear a main.
+Solo líneas `- …` entran en el modal Novedades. CI falla si van vacíos.
+Tras publicar, este archivo se vacía otra vez.
 
-Habla claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
+**Público:** castellano claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
 Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 
 <!-- Ejemplo:

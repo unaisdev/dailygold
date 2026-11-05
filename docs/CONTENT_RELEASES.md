@@ -62,9 +62,9 @@ se ejecuta en **cada push a `main`** y:
 Así el launcher siempre puede pedir `/releases/latest`, obtener el pack del
 último `main` y mostrar las notas del body en el modal **Novedades**.
 
-**Agentes:** antes del push, rellenad bullets en `content/NOVEDADES.md` (castellano,
-jugador). Ver [RELEASE_NOTES.md](RELEASE_NOTES.md). Generación:
-`scripts/build-release-notes.sh` (+ `clear-novedades.sh` en el bump de CI).
+**Agentes:** en cada push a `main`, rellenad solos `content/NOVEDADES.md` (castellano,
+jugador) antes de pushear. Sin bullets, CI falla. Ver [RELEASE_NOTES.md](RELEASE_NOTES.md)
+y `AGENTS.md`.
 
 También puedes:
 

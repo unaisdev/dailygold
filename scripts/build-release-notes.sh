@@ -1,67 +1,27 @@
 #!/usr/bin/env bash
 # Genera el body de un Release content-v* para GitHub.
-# Solo ## Novedades, tono jugador (sin jerga). Ver docs/RELEASE_NOTES.md.
-# Preferencia: bullets de content/NOVEDADES.md; si no hay, commits filtrados.
+# Solo ## Novedades, tono jugador. Fuente: content/NOVEDADES.md
+# Ver docs/RELEASE_NOTES.md y AGENTS.md.
+#
+# Por defecto exige bullets en content/NOVEDADES.md (para que el agente los
+# rellene antes del push). ALLOW_EMPTY_NOVEDADES=1 desactiva el fallo.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:?usage: build-release-notes.sh <outfile> <tag> <ver> <source> <sha>}"
 TAG="${2:?}"
-# ver/source/sha se aceptan por compatibilidad con el workflow; el body no los incluye.
 : "${3:-}" "${4:-}" "${5:-}"
 NOVEDADES_FILE="$ROOT/content/NOVEDADES.md"
+ALLOW_EMPTY="${ALLOW_EMPTY_NOVEDADES:-0}"
 
-PREV_TAG=$(
-  git -C "$ROOT" tag -l 'content-v*' --sort=-version:refname \
-    | grep -vxF "$TAG" \
-    | head -n1 \
-    || true
-)
-
-RANGE="HEAD"
-if [[ -n "${PREV_TAG:-}" ]]; then
-  RANGE="${PREV_TAG}..HEAD"
-fi
-
-export NOVEDADES_FILE
+export NOVEDADES_FILE ALLOW_EMPTY
 NOVEDADES=$(
-  git -C "$ROOT" log "$RANGE" --pretty=format:'%s' --no-merges 2>/dev/null \
-    | python3 -c '
+  python3 -c '
 import os, re, sys
 from pathlib import Path
 
-FALLBACK = "- Pequeños ajustes en Daily Gold."
 MAX_BULLETS = 8
-
-SKIP = re.compile(
-    r"""(?ix)
-    ^(chore|ci|docs|test|build|style|refactor)(\(.+\))?\s*:
-    |^bump\s+contentversion
-    |^merge\s+
-    |release\s*notes
-    |build-release-notes
-    |novedades(\s+body|\s+pendientes)?
-    |\bagents\.md\b
-    |content/novedades
-    |workflow
-    |github\s*actions
-    |auto-?publish
-    |content\s*pack\s*release
-    |content-v\d
-    |sha256
-    |minlauncher
-    |package-content
-    |verify-content
-    """
-)
-
-NOISE = re.compile(
-    r"""(?ix)
-    ##\s*
-    |^\s*#+\s*
-    |\[skip\s*ci\]
-    """
-)
+FALLBACK = "- Sin cambios que notes al jugar."
 
 def bullets_from_novedades_file(path: Path) -> list[str]:
     if not path.is_file():
@@ -90,41 +50,28 @@ def bullets_from_novedades_file(path: Path) -> list[str]:
             break
     return out
 
-def bullets_from_commits(subjects: list[str]) -> list[str]:
-    out = []
-    seen = set()
-    for subj in subjects:
-        subj = subj.strip()
-        if not subj or SKIP.search(subj) or NOISE.search(subj):
-            continue
-        display = re.sub(r"(?i)^(feat|fix|perf|improv)(\(.+\))?\s*:\s*", "", subj).strip()
-        display = re.sub(r"#+\s*", "", display).strip()
-        display = re.sub(r"\s+", " ", display)
-        if not display or len(display) < 8:
-            continue
-        if re.search(r"(?i)\b(release|workflow|readme|script|repo|ci)\b", display) and not re.search(
-            r"(?i)\b(gold|combate|equipo|men[uú]|batalla|jugador|pantalla)\b", display
-        ):
-            continue
-        display = display[0].upper() + display[1:]
-        key = display.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        out.append(f"- {display}")
-        if len(out) >= MAX_BULLETS:
-            break
-    return out
-
 path = Path(os.environ["NOVEDADES_FILE"])
 bullets = bullets_from_novedades_file(path)
-source = "content/NOVEDADES.md"
+allow_empty = os.environ.get("ALLOW_EMPTY_NOVEDADES", "0") == "1"
+
 if not bullets:
-    bullets = bullets_from_commits(sys.stdin.read().splitlines())
-    source = "commits"
-if not bullets:
+    if not allow_empty:
+        print(
+            """ERROR: faltan novedades de jugador en content/NOVEDADES.md
+
+El agente debe, ANTES de pushear a main:
+  1. Escribir bullets "- …" en castellano claro (lo que el jugador note).
+  2. Sin tags, SHA, CI, zips ni jerga de desarrollo.
+  3. Si no hay nada visible: "- Sin cambios que notes al jugar."
+
+Ver AGENTS.md y docs/RELEASE_NOTES.md.""",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     bullets = [FALLBACK]
     source = "fallback"
+else:
+    source = "content/NOVEDADES.md"
 
 print("\n".join(bullets))
 print(f"novedades_source={source}", file=sys.stderr)

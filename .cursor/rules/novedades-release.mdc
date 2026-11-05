@@ -1,0 +1,24 @@
+---
+description: Antes de push a main, rellenar Novedades de jugador en content/NOVEDADES.md
+alwaysApply: true
+---
+
+# Novedades del content pack (obligatorio)
+
+Este repo publica un Release en **cada push a `main`**. El launcher muestra solo
+`## Novedades` del body. Tú (el agente) debes generar esas notas **antes de pushear**.
+
+## Qué hacer siempre al terminar trabajo y pushear a main
+
+1. Resume qué ha cambiado **para quien juega** (no para quien desarrolla).
+2. Escribe bullets en `content/NOVEDADES.md` (líneas que empiecen por `- `).
+3. Luego commit + push a `main`.
+
+**Público:** un usuario normal. Habla claro, sin jerga de desarrollo.
+Nada de tags (`content-v*`), SHA, firmas, CI, nombres de zip técnicos ni docs internas.
+Si no lo entendería tu abuela o un amigo que solo quiere jugar, no va aquí.
+
+Si no hay nada visible al jugar: `- Sin cambios que notes al jugar.`
+
+Si dejas `content/NOVEDADES.md` sin bullets, **CI falla** al publicar el Release.
+No uses el mensaje de commit como nota. Detalle: `docs/RELEASE_NOTES.md` y `AGENTS.md`.
