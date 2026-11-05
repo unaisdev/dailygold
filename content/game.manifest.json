@@ -1,7 +1,7 @@
 {
   "id": "dailygold",
   "name": "Daily Gold",
-  "contentVersion": "0.1.4",
+  "contentVersion": "0.1.5",
   "protocolId": "dailyred-conf-v2+status-v1",
   "rom": {
     "path": "rom/dailyred.gba.gz",
