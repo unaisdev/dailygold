@@ -227,8 +227,7 @@ Gyarados, Ampharos, Heracross, Umbreon, Ho-Oh y Typhlosion. Todos están al
 nivel 100, con IV perfectos, objetos equipados y EV completos. El Gyarados
 inicial es variocolor, igual que en Hall of Legends. Umbreon ocupa el cuarto
 puesto en la formación actual. El combate tiene lugar
-en la sala del Campeón. Gyarados tiene amistad máxima (255), por lo que
-Retribución alcanza su potencia máxima de 102.
+en la sala del Campeón.
 
 | Pokémon | PS | Atq | Def | Vel | At. Esp. | Def. Esp. | Total |
 |---|---|---|---|---|---|---|---|
@@ -242,7 +241,7 @@ Retribución alcanza su potencia máxima de 102.
 
 ### Pokémon, movimientos, habilidades y objetos
 
-- **Gyarados** — Danza Dragón, Terremoto, Avalancha y Retribución; habilidad: **Intimidación**; objeto: **Baya Ziuela**.
+- **Gyarados** — Danza Dragón, Terremoto, Avalancha y Cascada; habilidad: **Intimidación**; objeto: **Baya Ziuela**.
 - **Ampharos** — Rayo, Puño Hielo, Onda Trueno y Pantalla Luz; habilidad: **Electricidad Estática**; objeto: **Imán**.
 - **Heracross** — Danza Espada, Megacuerno, Demolición y Avalancha; habilidad: **Agallas**; objeto: **Polvo Plata**.
 - **Umbreon** — Deseo, Protección, Tóxico y Finta; habilidad: **Sincronía**; objeto: **Restos**.
