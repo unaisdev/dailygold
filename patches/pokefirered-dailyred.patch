@@ -107405,3 +107405,32 @@ index 75f0e67..ad94f15 100644
              DestroyTask(FindTaskIdByFunc(Task_TitleScreenMain));
          }
          break;
+diff --git a/data/battle_ai_scripts.s b/data/battle_ai_scripts.s
+index 85d043d..45dc116 100644
+--- a/data/battle_ai_scripts.s
++++ b/data/battle_ai_scripts.s
+@@ -2631,6 +2631,24 @@ AI_CV_Endeavor_End::
+ 	end
+ 
+ AI_CV_Eruption::
++	if_hp_more_than AI_USER, 50, AI_CV_Eruption_CheckType
++	if_hp_more_than AI_USER, 40, AI_CV_Eruption_LowHpScoreDown1
++	if_hp_more_than AI_USER, 25, AI_CV_Eruption_ScoreDown2
++	score -3
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_ScoreDown3::
++	score -3
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_ScoreDown2::
++	score -2
++
++AI_CV_Eruption_LowHpScoreDown1::
++	score -1
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_CheckType::
+ 	if_type_effectiveness AI_EFFECTIVENESS_x0_25, AI_CV_Eruption_ScoreDown1
+ 	if_type_effectiveness AI_EFFECTIVENESS_x0_5, AI_CV_Eruption_ScoreDown1
+ 	if_target_faster AI_CV_Eruption2
