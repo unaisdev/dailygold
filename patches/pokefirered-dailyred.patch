@@ -106437,7 +106437,7 @@ new file mode 100644
 index 0000000..67cfe13
 --- /dev/null
 +++ b/src/dailyred_team.c
-@@ -0,0 +1,513 @@
+@@ -0,0 +1,516 @@
 +#include "global.h"
 +#include "dailyred.h"
 +#include "party_menu.h"
@@ -106699,7 +106699,9 @@ index 0000000..67cfe13
 +
 +    for (i = 0; i < TUTOR_MOVE_COUNT; i++)
 +    {
-+        if (sTutorLearnsets[species] & (1 << i))
++        // Dream Eater is only eligible through level-up.
++        if (sTutorMoves[i] != MOVE_DREAM_EATER
++         && (sTutorLearnsets[species] & (1 << i)))
 +            AddCandidateMove(moves, &count, sTutorMoves[i]);
 +    }
 +    // The three Kanto starter tutors are separate from the regular tutor table.
@@ -106713,7 +106715,8 @@ index 0000000..67cfe13
 +    {
 +        u16 eggMoves[EGG_MOVES_ARRAY_COUNT];
 +        for (i = 0; i < DailyRed_GetEggMoves(species, eggMoves); i++)
-+            AddCandidateMove(moves, &count, eggMoves[i]);
++            if (eggMoves[i] != MOVE_DREAM_EATER)
++                AddCandidateMove(moves, &count, eggMoves[i]);
 +    }
 +    return count;
 +}
