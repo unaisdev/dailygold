@@ -1,5 +1,5 @@
 diff --git a/data/battle_ai_scripts.s b/data/battle_ai_scripts.s
-index 85d043d..ea84925 100644
+index 85d043d..2bba5b9 100644
 --- a/data/battle_ai_scripts.s
 +++ b/data/battle_ai_scripts.s
 @@ -50,6 +50,8 @@ gBattleAI_ScriptsTable::
@@ -11,7 +11,89 @@ index 85d043d..ea84925 100644
  @	if_move MOVE_FISSURE, AI_CBM_CheckIfNegatesType  @ Improvement in Emerald
  @	if_move MOVE_HORN_DRILL, AI_CBM_CheckIfNegatesType
  	get_how_powerful_move_is
-@@ -2631,6 +2633,24 @@ AI_CV_Endeavor_End::
+@@ -100,6 +102,7 @@ AI_CheckBadMove_CheckSoundproof::
+ 	if_move MOVE_UPROAR, Score_Minus10
+ 	if_move MOVE_METAL_SOUND, Score_Minus10
+ 	if_move MOVE_GRASS_WHISTLE, Score_Minus10
++	if_move MOVE_HYPER_VOICE, Score_Minus10
+ 
+ AI_CheckBadMove_CheckEffect::
+ 	if_effect EFFECT_SLEEP, AI_CBM_Sleep
+@@ -214,6 +217,8 @@ AI_CheckBadMove_CheckEffect::
+ 	end
+ 
+ AI_CBM_Sleep::
++	if_status2 AI_TARGET, STATUS2_SUBSTITUTE, Score_Minus10
++	if_side_affecting AI_TARGET, SIDE_STATUS_SAFEGUARD, Score_Minus10
+ 	get_ability AI_TARGET
+ 	if_equal ABILITY_INSOMNIA, Score_Minus10
+ 	if_equal ABILITY_VITAL_SPIRIT, Score_Minus10
+@@ -342,6 +347,8 @@ AI_CBM_Roar::
+ 	end
+ 
+ AI_CBM_Poison::
++	if_status2 AI_TARGET, STATUS2_SUBSTITUTE, Score_Minus10
++	if_side_affecting AI_TARGET, SIDE_STATUS_SAFEGUARD, Score_Minus10
+ 	get_target_type1
+ 	if_equal TYPE_STEEL, Score_Minus10
+ 	if_equal TYPE_POISON, Score_Minus10
+@@ -388,6 +395,8 @@ AI_CBM_FocusEnergy::
+ 	end
+ 
+ AI_CBM_Confuse::
++	if_status2 AI_TARGET, STATUS2_SUBSTITUTE, Score_Minus10
++	if_side_affecting AI_TARGET, SIDE_STATUS_SAFEGUARD, Score_Minus10
+ 	if_status2 AI_TARGET, STATUS2_CONFUSION, Score_Minus5
+ 	get_ability AI_TARGET
+ 	if_equal ABILITY_OWN_TEMPO, Score_Minus10
+@@ -399,6 +408,8 @@ AI_CBM_Reflect::
+ 	end
+ 
+ AI_CBM_Paralyze::
++	if_status2 AI_TARGET, STATUS2_SUBSTITUTE, Score_Minus10
++	if_side_affecting AI_TARGET, SIDE_STATUS_SAFEGUARD, Score_Minus10
+ 	if_type_effectiveness AI_EFFECTIVENESS_x0, Score_Minus10
+ 	get_ability AI_TARGET
+ 	if_equal ABILITY_LIMBER, Score_Minus10
+@@ -533,6 +544,8 @@ AI_CBM_Torment::
+ 	end
+ 
+ AI_CBM_WillOWisp::
++	if_status2 AI_TARGET, STATUS2_SUBSTITUTE, Score_Minus10
++	if_side_affecting AI_TARGET, SIDE_STATUS_SAFEGUARD, Score_Minus10
+ 	get_ability AI_TARGET
+ 	if_equal ABILITY_WATER_VEIL, Score_Minus10
+ 	if_status AI_TARGET, STATUS1_ANY, Score_Minus10
+@@ -1395,10 +1408,8 @@ AI_CV_HealWeather_ScoreDown2::
+ AI_CV_Heal::
+ 	if_hp_equal AI_USER, 100, AI_CV_Heal3
+ 	if_target_faster AI_CV_Heal4
+-	score -8
+-	goto AI_CV_Heal_End
++	goto AI_CV_Heal2
+ 
+-@ Never reached
+ AI_CV_Heal2:
+ 	if_hp_less_than AI_USER, 50, AI_CV_Heal5
+ 	if_hp_more_than AI_USER, 80, AI_CV_Heal3
+@@ -2030,7 +2041,7 @@ AI_CV_Protect::
+ 	if_status3 AI_TARGET, STATUS3_YAWN, AI_CV_Protect_ScoreUp2
+ 	get_last_used_move AI_TARGET
+ 	get_move_effect_from_result
+-	if_not_equal EFFECT_LOCK_ON, AI_CV_Protect_ScoreUp2
++	if_not_equal EFFECT_LOCK_ON, AI_CV_Protect2
+ 	goto AI_CV_Protect2
+ 
+ AI_CV_Protect_ScoreUp2::
+@@ -2594,6 +2605,7 @@ AI_CV_Revenge_End::
+ 
+ AI_CV_BrickBreak::
+ 	if_side_affecting AI_TARGET, SIDE_STATUS_REFLECT, AI_CV_BrickBreak_ScoreUp1
++	if_side_affecting AI_TARGET, SIDE_STATUS_LIGHTSCREEN, AI_CV_BrickBreak_ScoreUp1
+ 	goto AI_CV_BrickBreak_End
+ 
+ AI_CV_BrickBreak_ScoreUp1::
+@@ -2631,6 +2643,24 @@ AI_CV_Endeavor_End::
  	end
  
  AI_CV_Eruption::
@@ -105512,7 +105594,7 @@ index 50cfd49..a6026cf 100644
  	$(GFX) $< $@ -mwidth 2 -mheight 4
  
 diff --git a/src/battle_ai_script_commands.c b/src/battle_ai_script_commands.c
-index 4df9977..99c5436 100644
+index 4df9977..6eeaa40 100644
 --- a/src/battle_ai_script_commands.c
 +++ b/src/battle_ai_script_commands.c
 @@ -9,6 +9,8 @@
@@ -105524,10 +105606,89 @@ index 4df9977..99c5436 100644
  
  #define AI_ACTION_DONE          0x0001
  #define AI_ACTION_FLEE          0x0002
-@@ -42,6 +44,60 @@ AI scripts.
+@@ -42,6 +44,138 @@ AI scripts.
  static EWRAM_DATA const u8 *sAIScriptPtr = NULL;
  extern u8 *gBattleAI_ScriptsTable[];
  
++// Use revealed abilities, or the only ability a species can have. Do not
++// reveal a second ability just to estimate an attack's damage.
++static u8 GetKnownAbilityForAI(u8 battler)
++{
++    u16 species = gBattleMons[battler].species;
++
++    if (GetBattlerSide(battler) != B_SIDE_PLAYER)
++        return gBattleMons[battler].ability;
++    if (BATTLE_HISTORY->abilities[GET_BATTLER_SIDE(battler)] != ABILITY_NONE)
++        return BATTLE_HISTORY->abilities[GET_BATTLER_SIDE(battler)];
++    if (gSpeciesInfo[species].abilities[1] == ABILITY_NONE)
++        return gSpeciesInfo[species].abilities[0];
++    return ABILITY_NONE;
++}
++
++static bool8 KnownAbilityBlocksMove(u16 move, u8 defender)
++{
++    u8 ability = GetKnownAbilityForAI(defender);
++    u8 type = gBattleMoves[move].type;
++
++    if (ability == ABILITY_FLASH_FIRE && type == TYPE_FIRE
++     && !(gBattleMons[defender].status1 & STATUS1_FREEZE))
++        return TRUE;
++    // In Gen 3 Volt Absorb does not block Thunder Wave.
++    if (gBattleMoves[move].power != 0
++     && ((ability == ABILITY_VOLT_ABSORB && type == TYPE_ELECTRIC)
++      || (ability == ABILITY_WATER_ABSORB && type == TYPE_WATER)))
++        return TRUE;
++    if (ability == ABILITY_SOUNDPROOF)
++    {
++        switch (move)
++        {
++        case MOVE_GROWL: case MOVE_ROAR: case MOVE_SING: case MOVE_SUPERSONIC:
++        case MOVE_SCREECH: case MOVE_SNORE: case MOVE_UPROAR:
++        case MOVE_METAL_SOUND: case MOVE_GRASS_WHISTLE: case MOVE_HYPER_VOICE:
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++
++// TypeCalc returns immunity flags; it does not publish them in the global
++// flags, and Levitate/Wonder Guard need not zero its damage accumulator.
++static void AI_ApplyTypeAndAbility(u16 move, u8 attacker, u8 defender)
++{
++    u8 flags = TypeCalc(move, attacker, defender);
++
++    gMoveResultFlags |= flags;
++    if ((flags & MOVE_RESULT_NO_EFFECT) || KnownAbilityBlocksMove(move, defender))
++    {
++        gMoveResultFlags |= MOVE_RESULT_DOESNT_AFFECT_FOE;
++        gBattleMoveDamage = 0;
++    }
++}
++
++static void AI_EstimateMoveDamage(u16 move, u8 attacker, u8 defender)
++{
++    gDynamicBasePower = 0;
++    gBattleStruct->dynamicMoveType = 0;
++    gBattleScripting.dmgMultiplier = 1;
++    gMoveResultFlags = 0;
++    gCritMultiplier = 1;
++    gCurrentMove = move;
++    AI_CalcDmg(attacker, defender);
++    AI_ApplyTypeAndAbility(move, attacker, defender);
++}
++
++// A successful hit still does at least one damage after rounding; an
++// immunity must remain exactly zero in every simulated damage comparison.
++static s32 AI_SimulatedDamage(u8 moveIndex)
++{
++    s32 damage;
++
++    if (gBattleMoveDamage == 0)
++        return 0;
++    damage = gBattleMoveDamage * AI_THINKING_STRUCT->simulatedRNG[moveIndex] / 100;
++    return damage == 0 ? 1 : damage;
++}
++
 +static bool8 IsTargetMoveLethalToBattler(u8 attacker, u8 defender)
 +{
 +    u8 i;
@@ -105559,8 +105720,7 @@ index 4df9977..99c5436 100644
 +
 +        gCurrentMove = move;
 +        gMoveResultFlags = 0;
-+        AI_CalcDmg(attacker, defender);
-+        TypeCalc(move, attacker, defender);
++        AI_EstimateMoveDamage(move, attacker, defender);
 +        if (!(gMoveResultFlags & MOVE_RESULT_DOESNT_AFFECT_FOE)
 +         && gBattleMoveDamage >= gBattleMons[defender].hp)
 +        {
@@ -105585,64 +105745,132 @@ index 4df9977..99c5436 100644
  static void Cmd_if_random_less_than(void);
  static void Cmd_if_random_greater_than(void);
  static void Cmd_if_random_equal(void);
-@@ -360,11 +416,69 @@ void BattleAI_SetupAIData(void)
+@@ -360,11 +494,139 @@ void BattleAI_SetupAIData(void)
      AI_THINKING_STRUCT->aiFlags = gTrainers[gTrainerBattleOpponent_A].aiFlags;
  }
  
-+// Keep a lower-damage attack from tying with the best attack just because
-+// both can KO the target.
-+static void DailyGoldGyaradosPreferHigherDamageMove(void)
++static u8 DailyGoldMoveAccuracy(u16 move)
 +{
-+    s32 moveDamage[MAX_MON_MOVES];
++    s32 stage;
++    u32 accuracy = gBattleMoves[move].accuracy;
++
++    if (accuracy == 0 || gBattleMoves[move].effect == EFFECT_ALWAYS_HIT)
++        return 100;
++    stage = gBattleMons[gBattlerAttacker].statStages[STAT_ACC]
++          - gBattleMons[gBattlerTarget].statStages[STAT_EVASION];
++    if (stage > 6)
++        stage = 6;
++    if (stage < -6)
++        stage = -6;
++    if (stage >= 0)
++        accuracy = accuracy * (3 + stage) / 3;
++    else
++        accuracy = accuracy * 3 / (3 - stage);
++    return accuracy > 100 ? 100 : accuracy;
++}
++
++// Resolve tied attacks without allowing a damage preference to override an
++// immunity penalty. A reliable finishing attack takes priority over excess damage.
++static void DailyGoldPreferAttack(void)
++{
++    s32 damage[MAX_MON_MOVES];
 +    s32 bestDamage = -1;
-+    u8 bestDamageScore = 0;
++    s8 bestScore = 0;
++    u8 bestAccuracy = 0;
 +    u8 i;
++    bool8 hasFinisher = FALSE;
++    bool8 gyarados = gBattleMons[gBattlerAttacker].species == SPECIES_GYARADOS;
 +
-+    if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED
-+     || gBattleMons[gBattlerAttacker].species != SPECIES_GYARADOS)
++    if (gTrainerBattleOpponent_A != TRAINER_DAILYRED_RED)
 +        return;
-+
++    for (i = 0; i < MAX_MON_MOVES; i++)
++        if (AI_THINKING_STRUCT->score[i] > bestScore)
++            bestScore = AI_THINKING_STRUCT->score[i];
 +    for (i = 0; i < MAX_MON_MOVES; i++)
 +    {
 +        u16 move = gBattleMons[gBattlerAttacker].moves[i];
++        u8 accuracy = DailyGoldMoveAccuracy(move);
 +
-+        moveDamage[i] = -1;
-+        if (move == MOVE_NONE || AI_THINKING_STRUCT->score[i] == 0
-+         || gBattleMons[gBattlerAttacker].pp[i] == 0
++        damage[i] = -1;
++        if (AI_THINKING_STRUCT->score[i] != bestScore || bestScore == 0
++         || move == MOVE_NONE || gBattleMons[gBattlerAttacker].pp[i] == 0
 +         || gBattleMoves[move].power <= 1)
 +            continue;
-+
-+        gDynamicBasePower = 0;
-+        gBattleStruct->dynamicMoveType = 0;
-+        gBattleScripting.dmgMultiplier = 1;
-+        gMoveResultFlags = 0;
-+        gCritMultiplier = 1;
-+        gCurrentMove = move;
-+        AI_CalcDmg(gBattlerAttacker, gBattlerTarget);
-+        TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
-+        moveDamage[i] = gBattleMoveDamage * AI_THINKING_STRUCT->simulatedRNG[i] / 100;
-+        if (moveDamage[i] == 0)
-+            moveDamage[i] = 1;
-+
-+        if (moveDamage[i] > bestDamage)
-+            bestDamage = moveDamage[i];
++        AI_EstimateMoveDamage(move, gBattlerAttacker, gBattlerTarget);
++        damage[i] = AI_SimulatedDamage(i);
++        if (damage[i] <= 0)
++            continue;
++        if (damage[i] > bestDamage)
++            bestDamage = damage[i];
++        if (damage[i] >= gBattleMons[gBattlerTarget].hp)
++        {
++            hasFinisher = TRUE;
++            if (accuracy == 0)
++                accuracy = 100;
++            if (accuracy > bestAccuracy)
++                bestAccuracy = accuracy;
++        }
 +    }
++    for (i = 0; i < MAX_MON_MOVES; i++)
++    {
++        u16 move = gBattleMons[gBattlerAttacker].moves[i];
++        u8 accuracy = DailyGoldMoveAccuracy(move);
++
++        if (damage[i] < 0)
++            continue;
++        if (accuracy == 0)
++            accuracy = 100;
++        if ((hasFinisher && (damage[i] < gBattleMons[gBattlerTarget].hp || accuracy < bestAccuracy))
++         || (!hasFinisher && gyarados && damage[i] < bestDamage))
++            AI_THINKING_STRUCT->score[i] = bestScore - 1;
++    }
++}
++
++// Retain a forced bad move only if there is no useful legal alternative.
++static u8 DailyGoldIneffectiveMoves(void)
++{
++    u8 mask = 0;
++    u8 i;
++    u8 target = gBattlerTarget;
++    u8 user = gBattlerAttacker;
++    u8 ability = GetKnownAbilityForAI(target);
++    bool8 statusBlocked = gBattleMons[target].status1 != STATUS1_NONE
++        || (gBattleMons[target].status2 & STATUS2_SUBSTITUTE)
++        || (gSideStatuses[GetBattlerSide(target)] & SIDE_STATUS_SAFEGUARD);
 +
 +    for (i = 0; i < MAX_MON_MOVES; i++)
 +    {
-+        if (moveDamage[i] == bestDamage && AI_THINKING_STRUCT->score[i] > bestDamageScore)
-+            bestDamageScore = AI_THINKING_STRUCT->score[i];
-+    }
++        u16 move = gBattleMons[user].moves[i];
++        bool8 ineffective = FALSE;
 +
-+    if (bestDamageScore == 0)
-+        return;
-+
-+    for (i = 0; i < MAX_MON_MOVES; i++)
-+    {
-+        if (moveDamage[i] >= 0 && moveDamage[i] < bestDamage
-+         && AI_THINKING_STRUCT->score[i] >= bestDamageScore)
-+            AI_THINKING_STRUCT->score[i] = bestDamageScore - 1;
++        if (gBattleMoves[move].power > 1)
++        {
++            AI_EstimateMoveDamage(move, user, target);
++            ineffective = gBattleMoveDamage == 0;
++        }
++        switch (move)
++        {
++        case MOVE_TOXIC:
++            ineffective = statusBlocked || ability == ABILITY_IMMUNITY
++                || IS_BATTLER_OF_TYPE(target, TYPE_POISON) || IS_BATTLER_OF_TYPE(target, TYPE_STEEL);
++            break;
++        case MOVE_THUNDER_WAVE:
++            ineffective = statusBlocked || ability == ABILITY_LIMBER || IS_BATTLER_OF_TYPE(target, TYPE_GROUND);
++            break;
++        case MOVE_WISH:
++            ineffective = gWishFutureKnock.wishCounter[user] != 0;
++            break;
++        case MOVE_RECOVER:
++            ineffective = gBattleMons[user].hp == gBattleMons[user].maxHP;
++            break;
++        case MOVE_LIGHT_SCREEN:
++            ineffective = (gSideStatuses[GetBattlerSide(user)] & SIDE_STATUS_LIGHTSCREEN) != 0;
++            break;
++        }
++        if (ineffective)
++            mask |= gBitTable[i];
 +    }
++    return mask;
 +}
 +
  u8 BattleAI_ChooseMoveOrAction(void)
@@ -105650,20 +105878,26 @@ index 4df9977..99c5436 100644
      u8 currentMoveArray[MAX_MON_MOVES];
      u8 consideredMoveArray[MAX_MON_MOVES];
      u8 numOfBestMoves;
-+    bool8 hasOtherMove;
 +    bool8 hasOtherAttack;
++    u8 limitations;
++    u8 candidates;
++    u8 ineffective;
      s32 i;
  
      RecordLastUsedMoveByTarget();
-@@ -386,12 +500,94 @@ u8 BattleAI_ChooseMoveOrAction(void)
+@@ -386,12 +648,141 @@ u8 BattleAI_ChooseMoveOrAction(void)
      if (AI_THINKING_STRUCT->aiAction & AI_ACTION_WATCH)
          return AI_CHOICE_WATCH;
  
 -    numOfBestMoves = 1;
 -    currentMoveArray[0] = AI_THINKING_STRUCT->score[0];
 -    consideredMoveArray[0] = 0;
-+    DailyGoldGyaradosPreferHigherDamageMove();
-+
++    limitations = CheckMoveLimitations(gBattlerAttacker, 0, 0xFF);
++    for (i = 0; i < MAX_MON_MOVES; i++)
++        if (limitations & gBitTable[i])
++            AI_THINKING_STRUCT->score[i] = 0;
+ 
+-    for (i = 1; i < MAX_MON_MOVES; i++)
 +    // Avoid spending Gyarados's last turn on Dragon Dance. At low HP,
 +    // or when the target can KO it, use an available attack instead.
 +    // Boosted Heracross likewise spends its boost when threatened with a KO.
@@ -105675,7 +105909,7 @@ index 4df9977..99c5436 100644
 +         || (gBattleMons[gBattlerAttacker].species == SPECIES_HERACROSS
 +             && gBattleMons[gBattlerAttacker].statStages[STAT_ATK] > DEFAULT_STAT_STAGE
 +             && IsTargetMoveLethalToBattler(gBattlerTarget, gBattlerAttacker))))
-+    {
+     {
 +        for (i = 0; i < MAX_MON_MOVES; i++)
 +        {
 +            if (gBattleMons[gBattlerAttacker].moves[i] != MOVE_NONE
@@ -105689,9 +105923,8 @@ index 4df9977..99c5436 100644
 +        }
 +    }
 +
-+    // Toxic is part of Daily Gold Umbreon's intended strategy. The vanilla
-+    // viability script only rewards Toxic when the user also knows Protect
-+    // or a Sp. Def-raising move, neither of which Umbreon has in this roster.
++    // Favor Umbreon's poison strategy only when Toxic is legal and healing
++    // is not urgent. Later candidate validation still rejects protected targets.
 +    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
 +     && gBattleMons[gBattlerAttacker].species == SPECIES_UMBREON
 +     && gBattleMons[gBattlerTarget].status1 == STATUS1_NONE
@@ -105707,7 +105940,8 @@ index 4df9977..99c5436 100644
 +        for (i = 0; i < MAX_MON_MOVES; i++)
 +        {
 +            if (gBattleMons[gBattlerAttacker].moves[i] == MOVE_TOXIC
-+             && gBattleMons[gBattlerAttacker].pp[i] != 0)
++             && !(limitations & gBitTable[i])
++             && gBattleMons[gBattlerAttacker].hp * 2 > gBattleMons[gBattlerAttacker].maxHP)
 +            {
 +                // Scores are signed 8-bit values; 150 overflowed and made Toxic undesirable.
 +                AI_THINKING_STRUCT->score[i] = 127;
@@ -105716,27 +105950,70 @@ index 4df9977..99c5436 100644
 +        }
 +    }
 +
-+    // Wish fails while a previous Wish is still pending. Avoid choosing it
-+    // again when the battler has another move with PP available.
-+    hasOtherMove = FALSE;
-+    if (gWishFutureKnock.wishCounter[gBattlerAttacker] != 0)
++    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
 +    {
 +        for (i = 0; i < MAX_MON_MOVES; i++)
 +        {
-+            if (gBattleMons[gBattlerAttacker].pp[i] != 0
-+             && gBattleMons[gBattlerAttacker].moves[i] != MOVE_WISH)
++            u16 move = gBattleMons[gBattlerAttacker].moves[i];
++            if (limitations & gBitTable[i])
++                continue;
++            if (move == MOVE_LIGHT_SCREEN && !(gSideStatuses[GetBattlerSide(gBattlerAttacker)] & SIDE_STATUS_LIGHTSCREEN))
 +            {
-+                hasOtherMove = TRUE;
-+                break;
++                u16 revealed = gLastMoves[gBattlerTarget];
++                if (revealed != MOVE_NONE && revealed != 0xFFFF && gBattleMoves[revealed].power != 0)
++                {
++                    if (IS_TYPE_SPECIAL(gBattleMoves[revealed].type)
++                     && gBattleMons[gBattlerAttacker].hp * 2 > gBattleMons[gBattlerAttacker].maxHP)
++                        AI_THINKING_STRUCT->score[i] = 101;
++                    else
++                        AI_THINKING_STRUCT->score[i] = 98;
++                }
 +            }
++            if (move == MOVE_WISH && gWishFutureKnock.wishCounter[gBattlerAttacker] == 0)
++            {
++                u8 j;
++                bool8 canFinish = FALSE;
++                for (j = 0; j < MAX_MON_MOVES; j++)
++                {
++                    u16 attack = gBattleMons[gBattlerAttacker].moves[j];
++                    if ((limitations & gBitTable[j]) || gBattleMoves[attack].power <= 1)
++                        continue;
++                    AI_EstimateMoveDamage(attack, gBattlerAttacker, gBattlerTarget);
++                    if (AI_SimulatedDamage(j) >= gBattleMons[gBattlerTarget].hp)
++                        canFinish = TRUE;
++                }
++                if (canFinish)
++                {
++                    AI_THINKING_STRUCT->score[i] = 97;
++                    continue;
++                }
++                if (gBattleMons[gBattlerAttacker].hp * 2 <= gBattleMons[gBattlerAttacker].maxHP)
++                    AI_THINKING_STRUCT->score[i] = 106;
++                else if (gBattleMons[gBattlerAttacker].hp == gBattleMons[gBattlerAttacker].maxHP)
++                    AI_THINKING_STRUCT->score[i] = 97;
++            }
++            if (move == MOVE_PROTECT && gWishFutureKnock.wishCounter[gBattlerAttacker] != 0
++             && gBattleMons[gBattlerAttacker].hp < gBattleMons[gBattlerAttacker].maxHP
++             && gDisableStructs[gBattlerAttacker].protectUses == 0)
++                AI_THINKING_STRUCT->score[i] += 3;
 +        }
 +    }
- 
--    for (i = 1; i < MAX_MON_MOVES; i++)
++    candidates = (~limitations) & 0xF;
++    if (gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED)
++    {
++        ineffective = DailyGoldIneffectiveMoves();
++        if (candidates & ~ineffective)
++            candidates &= ~ineffective;
++    }
++    for (i = 0; i < MAX_MON_MOVES; i++)
++        if (!(candidates & gBitTable[i]))
++            AI_THINKING_STRUCT->score[i] = 0;
++    DailyGoldPreferAttack();
++
 +    numOfBestMoves = 0;
 +    for (i = 0; i < MAX_MON_MOVES; i++)
-     {
-+        if (hasOtherMove && gBattleMons[gBattlerAttacker].moves[i] == MOVE_WISH)
++    {
++        if (!(candidates & gBitTable[i]))
 +            continue;
 +        if (hasOtherAttack
 +         && (gBattleMons[gBattlerAttacker].moves[i] == MOVE_SWORDS_DANCE
@@ -105754,7 +106031,7 @@ index 4df9977..99c5436 100644
          if (currentMoveArray[0] < AI_THINKING_STRUCT->score[i])
          {
              numOfBestMoves = 1;
-@@ -405,6 +601,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
+@@ -405,6 +796,9 @@ u8 BattleAI_ChooseMoveOrAction(void)
          }
      }
  
@@ -105764,6 +106041,155 @@ index 4df9977..99c5436 100644
      return consideredMoveArray[Random() % numOfBestMoves]; // break any ties that exist.
  }
  
+@@ -459,6 +853,9 @@ static void RecordLastUsedMoveByTarget(void)
+ {
+     s32 i;
+ 
++    if (gLastMoves[gBattlerTarget] == MOVE_NONE || gLastMoves[gBattlerTarget] == 0xFFFF)
++        return;
++
+     for (i = 0; i < 8; i++)
+     {
+         if (BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] == 0)
+@@ -996,11 +1393,8 @@ static void Cmd_get_how_powerful_move_is(void)
+                 && gBattleMoves[gBattleMons[gBattlerAttacker].moves[checkedMove]].power > 1)
+             {
+                 gCurrentMove = gBattleMons[gBattlerAttacker].moves[checkedMove];
+-                AI_CalcDmg(gBattlerAttacker, gBattlerTarget);
+-                TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+-                moveDmgs[checkedMove] = gBattleMoveDamage * AI_THINKING_STRUCT->simulatedRNG[checkedMove] / 100;
+-                if (moveDmgs[checkedMove] == 0)
+-                    moveDmgs[checkedMove] = 1;
++                AI_EstimateMoveDamage(gCurrentMove, gBattlerAttacker, gBattlerTarget);
++                moveDmgs[checkedMove] = AI_SimulatedDamage(checkedMove);
+             }
+             else
+             {
+@@ -1215,7 +1609,7 @@ static void Cmd_get_highest_type_effectiveness(void)
+ 
+         if (gCurrentMove != MOVE_NONE)
+         {
+-            TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
++            AI_ApplyTypeAndAbility(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+ 
+             if (gBattleMoveDamage == 120) // Super effective STAB.
+                 gBattleMoveDamage = AI_EFFECTIVENESS_x2;
+@@ -1250,7 +1644,7 @@ static void Cmd_if_type_effectiveness(void)
+     gBattleMoveDamage = AI_EFFECTIVENESS_x1;
+     gCurrentMove = AI_THINKING_STRUCT->moveConsidered;
+ 
+-    TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
++    AI_ApplyTypeAndAbility(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+ 
+     if (gBattleMoveDamage == 120) // Super effective STAB.
+         gBattleMoveDamage = AI_EFFECTIVENESS_x2;
+@@ -1486,14 +1880,9 @@ static void Cmd_if_can_faint(void)
+     gMoveResultFlags = 0;
+     gCritMultiplier = 1;
+     gCurrentMove = AI_THINKING_STRUCT->moveConsidered;
+-    AI_CalcDmg(gBattlerAttacker, gBattlerTarget);
+-    TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
++    AI_EstimateMoveDamage(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+ 
+-    gBattleMoveDamage = gBattleMoveDamage * AI_THINKING_STRUCT->simulatedRNG[AI_THINKING_STRUCT->movesetIndex] / 100;
+-
+-    // Moves always do at least 1 damage.
+-    if (gBattleMoveDamage == 0)
+-        gBattleMoveDamage = 1;
++    gBattleMoveDamage = AI_SimulatedDamage(AI_THINKING_STRUCT->movesetIndex);
+ 
+     if (gBattleMons[gBattlerTarget].hp <= gBattleMoveDamage)
+         sAIScriptPtr = T1_READ_PTR(sAIScriptPtr + 1);
+@@ -1515,12 +1904,9 @@ static void Cmd_if_cant_faint(void)
+     gMoveResultFlags = 0;
+     gCritMultiplier = 1;
+     gCurrentMove = AI_THINKING_STRUCT->moveConsidered;
+-    AI_CalcDmg(gBattlerAttacker, gBattlerTarget);
+-    TypeCalc(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+-
+-    gBattleMoveDamage = gBattleMoveDamage * AI_THINKING_STRUCT->simulatedRNG[AI_THINKING_STRUCT->movesetIndex] / 100;
++    AI_EstimateMoveDamage(gCurrentMove, gBattlerAttacker, gBattlerTarget);
+ 
+-    // This macro is missing the damage 0 = 1 assumption.
++    gBattleMoveDamage = AI_SimulatedDamage(AI_THINKING_STRUCT->movesetIndex);
+ 
+     if (gBattleMons[gBattlerTarget].hp > gBattleMoveDamage)
+         sAIScriptPtr = T1_READ_PTR(sAIScriptPtr + 1);
+@@ -1618,10 +2004,16 @@ static void Cmd_if_has_move_with_effect(void)
+     case AI_TARGET_PARTNER:
+         for (i = 0; i < 8; i++)
+         {
+-            if (gBattleMons[gBattlerAttacker].moves[i] != 0 && gBattleMoves[BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i]].effect == sAIScriptPtr[2])
++            if (BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] != MOVE_NONE
++             && BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] != 0xFFFF
++             && gBattleMoves[BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i]].effect == sAIScriptPtr[2])
+                 break;
+         }
+-        sAIScriptPtr = T1_READ_PTR(sAIScriptPtr + 3);
++        if (i != 8)
++            sAIScriptPtr = T1_READ_PTR(sAIScriptPtr + 3);
++        else
++            sAIScriptPtr += 7;
++        break;
+     }
+ }
+ 
+@@ -1647,10 +2039,16 @@ static void Cmd_if_doesnt_have_move_with_effect(void)
+     case AI_TARGET_PARTNER:
+         for (i = 0; i < 8; i++)
+         {
+-            if (BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] != 0 && gBattleMoves[BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i]].effect == sAIScriptPtr[2])
++            if (BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] != MOVE_NONE
++             && BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i] != 0xFFFF
++             && gBattleMoves[BATTLE_HISTORY->usedMoves[gBattlerTarget >> 1][i]].effect == sAIScriptPtr[2])
+                 break;
+         }
+-        sAIScriptPtr += 7;
++        if (i == 8)
++            sAIScriptPtr = T1_READ_PTR(sAIScriptPtr + 3);
++        else
++            sAIScriptPtr += 7;
++        break;
+     }
+ }
+ 
+@@ -1825,21 +2223,33 @@ static void Cmd_get_used_held_item(void)
+ 
+ static void Cmd_get_move_type_from_result(void)
+ {
+-    AI_THINKING_STRUCT->funcResult = gBattleMoves[AI_THINKING_STRUCT->funcResult].type;
++    u32 move = AI_THINKING_STRUCT->funcResult;
++
++    if (move >= MOVES_COUNT)
++        move = MOVE_NONE;
++    AI_THINKING_STRUCT->funcResult = gBattleMoves[move].type;
+ 
+     sAIScriptPtr += 1;
+ }
+ 
+ static void Cmd_get_move_power_from_result(void)
+ {
+-    AI_THINKING_STRUCT->funcResult = gBattleMoves[AI_THINKING_STRUCT->funcResult].power;
++    u32 move = AI_THINKING_STRUCT->funcResult;
++
++    if (move >= MOVES_COUNT)
++        move = MOVE_NONE;
++    AI_THINKING_STRUCT->funcResult = gBattleMoves[move].power;
+ 
+     sAIScriptPtr += 1;
+ }
+ 
+ static void Cmd_get_move_effect_from_result(void)
+ {
+-    AI_THINKING_STRUCT->funcResult = gBattleMoves[AI_THINKING_STRUCT->funcResult].effect;
++    u32 move = AI_THINKING_STRUCT->funcResult;
++
++    if (move >= MOVES_COUNT)
++        move = MOVE_NONE;
++    AI_THINKING_STRUCT->funcResult = gBattleMoves[move].effect;
+ 
+     sAIScriptPtr += 1;
+ }
 diff --git a/src/battle_bg.c b/src/battle_bg.c
 index 3bcc500..46841a1 100644
 --- a/src/battle_bg.c
@@ -106017,7 +106443,7 @@ index a6392be..d594a57 100644
          }
          break;
 diff --git a/src/battle_script_commands.c b/src/battle_script_commands.c
-index 67f90a3..b36b26e 100644
+index 67f90a3..c2abd9f 100644
 --- a/src/battle_script_commands.c
 +++ b/src/battle_script_commands.c
 @@ -36,6 +36,8 @@
@@ -106029,16 +106455,19 @@ index 67f90a3..b36b26e 100644
  
  extern const u8 *const gBattleScriptsForMoveEffects[];
  
-@@ -1225,6 +1227,18 @@ static void Cmd_damagecalc(void)
+@@ -1225,11 +1227,29 @@ static void Cmd_damagecalc(void)
  void AI_CalcDmg(u8 attacker, u8 defender)
  {
      u16 sideStatus = gSideStatuses[GET_BATTLER_SIDE(defender)];
++
++    // Brick Break removes screens before damage is calculated.
++    if (gBattleMoves[gCurrentMove].effect == EFFECT_BRICK_BREAK)
++        sideStatus &= ~(SIDE_STATUS_REFLECT | SIDE_STATUS_LIGHTSCREEN);
 +
 +    // Eruption's real power scales with the user's current HP. Keep Gold's
 +    // Typhlosion AI estimate in sync with the move's battle damage script.
 +    if (gBattleMoves[gCurrentMove].effect == EFFECT_ERUPTION
 +     && gTrainerBattleOpponent_A == TRAINER_DAILYRED_RED
-+     && gBattleMons[attacker].species == SPECIES_TYPHLOSION
 +     && gDynamicBasePower == 0)
 +    {
 +        gDynamicBasePower = gBattleMons[attacker].hp * gBattleMoves[gCurrentMove].power / gBattleMons[attacker].maxHP;
@@ -106048,6 +106477,14 @@ index 67f90a3..b36b26e 100644
      gBattleMoveDamage = CalculateBaseDamage(&gBattleMons[attacker], &gBattleMons[defender], gCurrentMove,
                                              sideStatus, gDynamicBasePower,
                                              gBattleStruct->dynamicMoveType, attacker, defender);
+     gDynamicBasePower = 0;
+     gBattleMoveDamage = gBattleMoveDamage * gCritMultiplier * gBattleScripting.dmgMultiplier;
++    if (gBattleMoves[gCurrentMove].effect == EFFECT_FLINCH_MINIMIZE_HIT
++     && (gStatuses3[defender] & STATUS3_MINIMIZED))
++        gBattleMoveDamage *= 2;
+ 
+     if (gStatuses3[attacker] & STATUS3_CHARGED_UP && gBattleMoves[gCurrentMove].type == TYPE_ELECTRIC)
+         gBattleMoveDamage *= 2;
 diff --git a/src/battle_setup.c b/src/battle_setup.c
 index 6d62084..fe80fb3 100644
 --- a/src/battle_setup.c

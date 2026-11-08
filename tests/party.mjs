@@ -80,8 +80,8 @@ export function formatMon(mon) {
 }
 
 // --- Learnsets, parsed from the decomp's data files ----------------------------
-// Used to check that every generated move is one the species can really learn
-// (by level-up or TM/HM), independently of the C generator.
+// Independently validate all sources allowed by the generator: level-up,
+// TM/HM, tutors and egg moves. Dream Eater is restricted to level-up.
 let learnsets;
 
 // Keeps only the FIRERED side of `#if defined(FIRERED)` / `#elif defined(LEAFGREEN)`
@@ -126,13 +126,30 @@ function loadLearnsets() {
     const name = block.match(/^(\w+)\]/)[1];
     tmhm.set(name, [...block.matchAll(/TMHM\((TM|HM)(\d\d)_/g)].map((x) => tmMoves[(x[1] === 'HM' ? 50 : 0) + Number(x[2]) - 1]));
   }
-  return { levelUp, tmhm };
+  const tutor = new Map();
+  for (const block of read('src/data/pokemon/tutor_learnsets.h').split(/\n\s*\[SPECIES_/).slice(1)) {
+    const name = block.match(/^(\w+)\]/)[1];
+    tutor.set(name, [...block.matchAll(/TUTOR\(MOVE_(\w+)\)/g)]
+      .filter((m) => m[1] !== 'DREAM_EATER').map((m) => moveId.get(m[1])));
+  }
+  for (const [name, move] of [['VENUSAUR', 'FRENZY_PLANT'], ['CHARIZARD', 'BLAST_BURN'], ['BLASTOISE', 'HYDRO_CANNON']]) {
+    tutor.set(name, [...(tutor.get(name) ?? []), moveId.get(move)]);
+  }
+  const egg = new Map();
+  for (const m of read('src/data/pokemon/egg_moves.h').matchAll(/egg_moves\((\w+),([\s\S]*?)\)/g)) {
+    egg.set(m[1], [...m[2].matchAll(/MOVE_(\w+)/g)]
+      .filter((x) => x[1] !== 'DREAM_EATER').map((x) => moveId.get(x[1])));
+  }
+  return { levelUp, tmhm, tutor, egg };
 }
 
 export function learnableMoves(species) {
   learnsets ??= loadLearnsets();
   const name = SPECIES.get(species);
-  return new Set([...(learnsets.levelUp.get(name) ?? []), ...(learnsets.tmhm.get(name) ?? [])]);
+  return new Set([
+    ...(learnsets.levelUp.get(name) ?? []), ...(learnsets.tmhm.get(name) ?? []),
+    ...(learnsets.tutor.get(name) ?? []), ...(learnsets.egg.get(name) ?? []),
+  ]);
 }
 
 // --- Held items: the pools from dailyred_team.c, and move types ----------------
