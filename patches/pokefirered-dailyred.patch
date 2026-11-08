@@ -1,3 +1,41 @@
+diff --git a/data/battle_ai_scripts.s b/data/battle_ai_scripts.s
+index 85d043d..ea84925 100644
+--- a/data/battle_ai_scripts.s
++++ b/data/battle_ai_scripts.s
+@@ -50,6 +50,8 @@ gBattleAI_ScriptsTable::
+ 	.4byte AI_FirstBattle
+ 
+ AI_CheckBadMove::
++@ Eruption still needs immunity checks despite its special power evaluation.
++	if_move MOVE_ERUPTION, AI_CBM_CheckIfNegatesType
+ @	if_move MOVE_FISSURE, AI_CBM_CheckIfNegatesType  @ Improvement in Emerald
+ @	if_move MOVE_HORN_DRILL, AI_CBM_CheckIfNegatesType
+ 	get_how_powerful_move_is
+@@ -2631,6 +2633,24 @@ AI_CV_Endeavor_End::
+ 	end
+ 
+ AI_CV_Eruption::
++	if_hp_more_than AI_USER, 50, AI_CV_Eruption_CheckType
++	if_hp_more_than AI_USER, 40, AI_CV_Eruption_LowHpScoreDown1
++	if_hp_more_than AI_USER, 25, AI_CV_Eruption_ScoreDown2
++	score -3
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_ScoreDown3::
++	score -3
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_ScoreDown2::
++	score -2
++
++AI_CV_Eruption_LowHpScoreDown1::
++	score -1
++	goto AI_CV_Eruption_CheckType
++
++AI_CV_Eruption_CheckType::
+ 	if_type_effectiveness AI_EFFECTIVENESS_x0_25, AI_CV_Eruption_ScoreDown1
+ 	if_type_effectiveness AI_EFFECTIVENESS_x0_5, AI_CV_Eruption_ScoreDown1
+ 	if_target_faster AI_CV_Eruption2
 diff --git a/data/event_scripts.s b/data/event_scripts.s
 index 88d7594..9b6bbdc 100644
 --- a/data/event_scripts.s
@@ -106336,7 +106374,7 @@ index 0000000..a8a5b83
 +}
 diff --git a/src/dailyred_boss.c b/src/dailyred_boss.c
 new file mode 100644
-index 0000000..667b291
+index 0000000..b504c79
 --- /dev/null
 +++ b/src/dailyred_boss.c
 @@ -0,0 +1,92 @@
@@ -106434,7 +106472,7 @@ index 0000000..667b291
 +};
 diff --git a/src/dailyred_team.c b/src/dailyred_team.c
 new file mode 100644
-index 0000000..67cfe13
+index 0000000..fda47eb
 --- /dev/null
 +++ b/src/dailyred_team.c
 @@ -0,0 +1,516 @@
@@ -107414,32 +107452,3 @@ index 75f0e67..ad94f15 100644
              DestroyTask(FindTaskIdByFunc(Task_TitleScreenMain));
          }
          break;
-diff --git a/data/battle_ai_scripts.s b/data/battle_ai_scripts.s
-index 85d043d..45dc116 100644
---- a/data/battle_ai_scripts.s
-+++ b/data/battle_ai_scripts.s
-@@ -2631,6 +2631,24 @@ AI_CV_Endeavor_End::
- 	end
- 
- AI_CV_Eruption::
-+	if_hp_more_than AI_USER, 50, AI_CV_Eruption_CheckType
-+	if_hp_more_than AI_USER, 40, AI_CV_Eruption_LowHpScoreDown1
-+	if_hp_more_than AI_USER, 25, AI_CV_Eruption_ScoreDown2
-+	score -3
-+	goto AI_CV_Eruption_CheckType
-+
-+AI_CV_Eruption_ScoreDown3::
-+	score -3
-+	goto AI_CV_Eruption_CheckType
-+
-+AI_CV_Eruption_ScoreDown2::
-+	score -2
-+
-+AI_CV_Eruption_LowHpScoreDown1::
-+	score -1
-+	goto AI_CV_Eruption_CheckType
-+
-+AI_CV_Eruption_CheckType::
- 	if_type_effectiveness AI_EFFECTIVENESS_x0_25, AI_CV_Eruption_ScoreDown1
- 	if_type_effectiveness AI_EFFECTIVENESS_x0_5, AI_CV_Eruption_ScoreDown1
- 	if_target_faster AI_CV_Eruption2
