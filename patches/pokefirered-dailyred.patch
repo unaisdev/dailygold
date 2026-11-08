@@ -106416,7 +106416,7 @@ index 0000000..667b291
 +// RNG or changing the player's Daily Gold team generation.
 +const u8 gDailyRedBossNatures[DAILYRED_BOSS_PARTY_SIZE] =
 +{
-+    NATURE_ADAMANT, NATURE_MODEST, NATURE_JOLLY,
++    NATURE_SERIOUS, NATURE_MODEST, NATURE_JOLLY,
 +    NATURE_CAREFUL, NATURE_SERIOUS, NATURE_TIMID,
 +};
 +
