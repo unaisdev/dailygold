@@ -1,4 +1,13 @@
-- GOLD evita ataques que no afectan al rival cuando tiene una alternativa útil.
-- Arreglado: Umbreon podía insistir en usar Tóxico aunque estuviera bajo Mofa o Anulación.
-- Ho-Oh aprovecha mejor Recuperación y Umbreon coordina mejor Deseo y Protección.
-- GOLD valora mejor la precisión al rematar, las pantallas defensivas y el efecto de Reducción.
+# Novedades pendientes (jugador)
+
+El agente de turno debe rellenar bullets ANTES de pushear a main.
+Solo líneas `- …` entran en el modal Novedades. CI falla si van vacíos.
+Tras publicar, este archivo se vacía otra vez.
+
+**Público:** castellano claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
+Si no lo entendería alguien que solo quiere jugar, no lo pongas.
+
+<!-- Ejemplo:
+- Arreglado: el combate del día se reiniciaba si cerrabas a medias.
+- GOLD ya no usa el mismo equipo dos días seguidos.
+-->
