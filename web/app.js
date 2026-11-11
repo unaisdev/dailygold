@@ -179,6 +179,15 @@ async function startRun() {
         // debugging tools in tests/ read the game's RAM.
         savestate_file_compression: false,
         savestate_thumbnail_enable: false,
+        // Controles documentados en la guía (teclado ES / layout habitual).
+        input_player1_a: 'x',
+        input_player1_b: 'z',
+        input_player1_start: 'enter',
+        input_player1_select: 'rshift',
+        input_player1_up: 'up',
+        input_player1_down: 'down',
+        input_player1_left: 'left',
+        input_player1_right: 'right',
       },
     });
 

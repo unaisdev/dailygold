@@ -1,7 +1,11 @@
 # Everything below is recreated by the scripts in scripts/ (see README).
 
-# scripts/setup-macos.sh
+# scripts/setup-macos.sh (dir or symlink to a sibling toolchain)
 /.toolchain/
+/.toolchain
+
+# scripts/fetch-spanish-locale.py (Acimut pret_europe sparse clone)
+/.cache/
 
 # scripts/get-pokefirered.sh
 /pokefirered/

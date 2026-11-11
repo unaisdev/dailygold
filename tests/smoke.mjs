@@ -95,7 +95,7 @@ async function finishBattle(page, battlesBefore) {
 async function waitForActionMenu(page) {
   // Battle intro takes a few seconds; press A until the turn menu is up.
   for (let i = 0; i < 12; i++) { await sleep(700); await press(page, 'a'); }
-  await press(page, 'b'); // back out of FIGHT if we entered it
+  await press(page, 'b'); // salir de LUCHA si se entró
   await sleep(500);
 }
 

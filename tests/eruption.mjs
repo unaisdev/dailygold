@@ -78,7 +78,7 @@ try {
     set(history + 0x20, [ability(targetAbility), 0]);
     set(symbol('gRngValue'), rng);
     await patchMemory(page, writes);
-    await press(page, 'a'); // FIGHT.
+    await press(page, 'a'); // LUCHA.
     await sleep(1000);
     await press(page, 'a'); // Choose Growl; the opponent now evaluates its moves.
     await sleep(1500);

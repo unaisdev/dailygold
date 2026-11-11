@@ -10,9 +10,10 @@ victorias, derrotas y rachas se guardan en tu navegador.
 
 Cada combate se ejecuta en el motor original de Pokémon FireRed: el juego parte
 de la decompilación [pret/pokefirered](https://github.com/pret/pokefirered),
-con algunos cambios propios, se compila como ROM de GBA y se ejecuta en el
-navegador mediante el emulador mGBA compilado para WebAssembly. JavaScript no
-simula los combates.
+con algunos cambios propios y las tablas de texto oficiales de **Rojo Fuego
+(España)** (movimientos, naturalezas, menús, etc.), se compila como ROM de GBA
+en castellano y se ejecuta en el navegador mediante el emulador mGBA compilado
+para WebAssembly. JavaScript no simula los combates.
 
 - [Inicio rápido (macOS)](#inicio-rapido-macos)
 - [Cómo funciona](#como-funciona)
@@ -34,9 +35,9 @@ ni una ROM: el juego se compila desde el código fuente.
 
 ```sh
 scripts/setup-macos.sh      # Instala el compilador ARM y libpng en .toolchain/ (aprox. 1 GB, una vez)
-scripts/get-pokefirered.sh  # Descarga pret/pokefirered en el commit fijado y aplica patches/
+scripts/get-pokefirered.sh  # Descarga pret/pokefirered, aplica patches/ y locale/es (castellano)
 scripts/fetch-vendor.sh     # Descarga el emulador, su núcleo y la fuente en web/vendor/
-scripts/build-rom.sh        # Compila la ROM y genera web/game/dailyred.gba.gz
+scripts/build-rom.sh        # Compila la ROM en castellano → web/game/dailyred.gba.gz
 node scripts/serve.mjs      # Abre http://localhost:8080
 ```
 
@@ -45,7 +46,7 @@ node scripts/serve.mjs      # Abre http://localhost:8080
 ## Cómo funciona
 
 ```
-pret/pokefirered @ 037335f + patches/  ──make modern──▶  pokefirered_modern.gba
+pret/pokefirered @ 037335f + patches/ + locale/es  ──make modern──▶  pokefirered_modern.gba
                                                               │ gzip (16 MB → 5,5 MB)
 web/ (archivos estáticos)                                     ▼
   index.html + app.js ── fetch ──▶ game/dailyred.gba.gz, vendor/mgba_libretro.wasm
@@ -443,6 +444,9 @@ docs/CONTENT_RELEASES.md             contrato de Releases content-v*
 docs/RELEASE_NOTES.md                body ## Novedades (modal del launcher)
 content/NOVEDADES.md                 bullets pendientes (jugador) para el próximo release
 patches/pokefirered-dailyred.patch   cambios a pret/pokefirered
+locale/es/                           tablas de texto oficiales Rojo Fuego (ES-ES)
+scripts/fetch-spanish-locale.py      regenera locale/es desde Acimut pret_europe
+scripts/apply-locale.sh              aplica locale/es sobre pokefirered/
 scripts/setup-macos.sh               herramientas de compilación y libpng
 scripts/get-pokefirered.sh           descarga fijada del código original y parches
 scripts/save-patch.sh                cambios de pokefirered/ → patches/

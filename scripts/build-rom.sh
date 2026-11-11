@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Builds the modified FireRed ROM with the project-local toolchain
-# (see scripts/setup-macos.sh) and puts a gzipped copy in web/game/ for the website.
+# Builds the modified FireRed ROM (castellano ES-ES) with the project-local
+# toolchain (see scripts/setup-macos.sh) and puts a gzipped copy in web/game/.
 #
 #   scripts/build-rom.sh            # normal build
 #   scripts/build-rom.sh clean      # any extra args are passed to make
@@ -13,6 +13,16 @@ GAME="$ROOT/pokefirered"
 if [ ! -x "$TC/arm-none-eabi/bin/arm-none-eabi-gcc" ]; then
   echo "Toolchain missing. Run scripts/setup-macos.sh first."; exit 1
 fi
+if [ ! -d "$GAME/src" ]; then
+  echo "Missing pokefirered/. Run scripts/get-pokefirered.sh first."; exit 1
+fi
+
+# Ensure Spanish locale overlays are present (idempotent).
+if [[ ! -f "$ROOT/locale/es/SOURCE.json" ]]; then
+  PYTHON="$(command -v python || command -v python3)"
+  "$PYTHON" "$ROOT/scripts/fetch-spanish-locale.py"
+fi
+"$ROOT/scripts/apply-locale.sh"
 
 # gbagfx asks pkg-config for libpng; clang also honours these variables,
 # which lets it find our static libpng without pkg-config/Homebrew.

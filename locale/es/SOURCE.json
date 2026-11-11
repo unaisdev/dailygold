@@ -1,0 +1,7 @@
+{
+  "source": "https://github.com/Acimut/pokefirered.git",
+  "ref": "pret_europe",
+  "commit": "6651454608dcc61356b60c20154214d773689730",
+  "language": "es-ES",
+  "notes": "Official Spanish (Spain) FireRed string tables. Daily Gold ships a single castellano ROM (no bilingual switch)."
+}

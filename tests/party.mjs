@@ -16,9 +16,10 @@ function readConstants(file, prefix) {
 export const SPECIES = readConstants('include/constants/species.h', 'SPECIES_');
 export const MOVES = readConstants('include/constants/moves.h', 'MOVE_');
 export const ITEMS = readConstants('include/constants/items.h', 'ITEM_');
-const NATURES = ['Hardy', 'Lonely', 'Brave', 'Adamant', 'Naughty', 'Bold', 'Docile', 'Relaxed', 'Impish', 'Lax',
-  'Timid', 'Hasty', 'Serious', 'Jolly', 'Naive', 'Modest', 'Mild', 'Quiet', 'Bashful', 'Rash', 'Calm', 'Gentle',
-  'Sassy', 'Careful', 'Quirky'];
+// Nombres de naturalezas (castellano ES-ES / Rojo Fuego).
+const NATURES = ['Fuerte', 'Huraña', 'Audaz', 'Firme', 'Pícara', 'Osada', 'Dócil', 'Plácida', 'Agitada', 'Floja',
+  'Miedosa', 'Activa', 'Seria', 'Alegre', 'Ingenua', 'Modesta', 'Afable', 'Mansa', 'Tímida', 'Alocada', 'Serena', 'Amable',
+  'Grosera', 'Cauta', 'Rara'];
 
 // Order of the four 12-byte substructures (Growth, Attacks, EVs, Misc) by personality % 24.
 const ORDERS = ['GAEM', 'GAME', 'GEAM', 'GEMA', 'GMAE', 'GMEA', 'AGEM', 'AGME', 'AEGM', 'AEMG', 'AMGE', 'AMEG',

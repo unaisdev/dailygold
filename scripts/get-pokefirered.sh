@@ -26,4 +26,11 @@ trap 'rm -f "$NORMALIZED_PATCH"' EXIT
 PYTHON="$(command -v python || command -v python3)"
 "$PYTHON" "$ROOT/scripts/normalize-binary-patch.py" < "$PATCH" > "$NORMALIZED_PATCH"
 git -C "$GAME" apply --binary --ignore-space-change --ignore-whitespace --whitespace=nowarn "$NORMALIZED_PATCH"
+# Castellano (ES-ES) string tables from Acimut pret_europe overlays.
+if [[ ! -f "$ROOT/locale/es/SOURCE.json" ]]; then
+  echo ">> Generating locale/es from pret_europe"
+  PYTHON="$(command -v python || command -v python3)"
+  "$PYTHON" "$ROOT/scripts/fetch-spanish-locale.py"
+fi
+"$ROOT/scripts/apply-locale.sh"
 echo "Done. Build with: scripts/build-rom.sh"

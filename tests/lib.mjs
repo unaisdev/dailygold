@@ -273,7 +273,7 @@ export async function startRedBattle(page) {
   }
   if (!(await getStatus(page)).inBattle) throw new Error('battle did not start');
   for (let i = 0; i < 12; i++) { await sleep(700); await press(page, 'a'); }
-  await press(page, 'b'); // back out of FIGHT if we entered it
+  await press(page, 'b'); // salir de LUCHA si se entró
   await sleep(500);
 }
 
