@@ -7,5 +7,7 @@ Tras publicar, este archivo se vacía otra vez.
 **Público:** castellano claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
 Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 
-- El juego ya está entero en castellano de España: movimientos, naturalezas, menús y mensajes de combate.
-- Los textos de GOLD al enviar Pokémon también van en castellano.
+<!-- Ejemplo:
+- Arreglado: el combate del día se reiniciaba si cerrabas a medias.
+- GOLD ya no usa el mismo equipo dos días seguidos.
+-->
