@@ -98,4 +98,8 @@ path.write_text(text2, encoding="utf-8")
 print(f"  battle_message.c: replaced {replaced} string literals")
 PY
 
+# European FireRed puts the nickname before " enemigo"/" salvaje"; English
+# puts the prefix first. Without this, Spanish prefixes glue to the name.
+python3 "$LOCALE/patches/battle_message_eu_nick_order.py" "$GAME/src/battle_message.c"
+
 echo "Done. Locale es-ES applied to pokefirered/"
