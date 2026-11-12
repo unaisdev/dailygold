@@ -56,6 +56,9 @@ for mon in gyarados ampharos heracross umbreon ho_oh typhlosion; do
   [ "$mon" = "ho_oh" ] && dst_name="ho-oh"
   cp "$src" "$ROOT/web/game/team/${dst_name}.png"
 done
+# Species icons + RAM symbols for the past-teams archive preview.
+node "$ROOT/scripts/gen-archive-assets.mjs"
+
 echo
 echo "Built $ROM"
 echo "Website copy: web/game/dailyred.gba.gz ($(wc -c < "$ROOT/web/game/dailyred.gba.gz" | tr -d ' ') bytes)"

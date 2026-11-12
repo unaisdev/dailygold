@@ -11,3 +11,6 @@ Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 - Arreglado: el combate del día se reiniciaba si cerrabas a medias.
 - GOLD ya no usa el mismo equipo dos días seguidos.
 -->
+
+- Nuevo: puedes ver y practicar con los equipos de días pasados (hasta ayer), sin gastar el intento del día.
+- Al pasar el ratón por el altavoz puedes ajustar el volumen; al entrar suena al 25%.
