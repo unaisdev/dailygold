@@ -7,4 +7,7 @@ Tras publicar, este archivo se vacía otra vez.
 **Público:** castellano claro, sin jerga. Nada de tags, SHA, CI ni nombres técnicos.
 Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 
-- Arreglado: en combate ya no se pegan las palabras (por ejemplo «enemigo» junto al nombre del Pokémon).
+<!-- Ejemplo:
+- Arreglado: el combate del día se reiniciaba si cerrabas a medias.
+- GOLD ya no usa el mismo equipo dos días seguidos.
+-->
