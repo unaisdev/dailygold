@@ -6,6 +6,8 @@
 //
 // Run after scripts/build-rom.sh (needs the ELF for symbols).
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -149,6 +151,11 @@ for (let id = 1; id < NUM_SPECIES; id++) {
 }
 
 const symbols = readSymbols();
+// romSha256 ties the addresses to this exact ROM: the content pack ships them
+// (archive/symbols.json) and scripts/verify-content.sh rejects a mismatch.
+symbols.romSha256 = createHash('sha256')
+  .update(gunzipSync(readFileSync(join(ROOT, 'web/game/dailyred.gba.gz'))))
+  .digest('hex');
 writeFileSync(join(ROOT, 'web/game/symbols.json'), `${JSON.stringify(symbols, null, 2)}\n`);
 
 const icons = copyIcons();

@@ -13,6 +13,9 @@ MANIFEST="$ROOT/content/game.manifest.json"
 ROM_SRC="$ROOT/web/game/dailyred.gba.gz"
 GOLD_SRC="$ROOT/web/game/gold.png"
 RED_SRC="$ROOT/web/game/red.png"
+# RAM addresses for the launcher's historical archive (scripts/gen-archive-assets.mjs).
+# They move with every ROM build, so they travel in the pack next to the ROM.
+SYMBOLS_SRC="$ROOT/web/game/symbols.json"
 OUT_DIR="$ROOT/dist/content"
 STAGING="$OUT_DIR/staging"
 
@@ -28,6 +31,10 @@ if [[ ! -f "$GOLD_SRC" || ! -f "$RED_SRC" ]]; then
   echo "Missing title sprites under web/game/ — run scripts/build-rom.sh first." >&2
   exit 1
 fi
+if [[ ! -f "$SYMBOLS_SRC" ]]; then
+  echo "Missing $SYMBOLS_SRC — run scripts/gen-archive-assets.mjs after build-rom.sh." >&2
+  exit 1
+fi
 
 "$ROOT/scripts/verify-content.sh"
 
@@ -35,11 +42,12 @@ ID=$(python3 -c "import json; print(json.load(open('$MANIFEST'))['id'])")
 VER=$(python3 -c "import json; print(json.load(open('$MANIFEST'))['contentVersion'])")
 
 rm -rf "$STAGING"
-mkdir -p "$STAGING/rom" "$STAGING/assets"
+mkdir -p "$STAGING/rom" "$STAGING/assets" "$STAGING/archive"
 cp "$MANIFEST" "$STAGING/game.manifest.json"
 cp "$ROM_SRC" "$STAGING/rom/dailyred.gba.gz"
 cp "$GOLD_SRC" "$STAGING/assets/gold.png"
 cp "$RED_SRC" "$STAGING/assets/red-fallback.png"
+cp "$SYMBOLS_SRC" "$STAGING/archive/symbols.json"
 
 # Re-verify against staging copy
 python3 - "$STAGING/rom/dailyred.gba.gz" <<'PY'
