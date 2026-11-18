@@ -11,5 +11,3 @@ Si no lo entendería alguien que solo quiere jugar, no lo pongas.
 - Arreglado: el combate del día se reiniciaba si cerrabas a medias.
 - GOLD ya no usa el mismo equipo dos días seguidos.
 -->
-
-- Sin cambios que notes al jugar.
